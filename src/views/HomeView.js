@@ -8,7 +8,7 @@ export class HomeView {
       <nav class="fixed top-0 z-50 w-full border-b border-stone-200/50 bg-stone-50/90 shadow-sm backdrop-blur-md dark:border-stone-800/50 dark:bg-stone-950/90">
         <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
           <div class="text-2xl font-bold tracking-tighter text-green-900 font-h1 dark:text-green-500">
-            <img alt="Rocoto Logo" class="h-12 w-auto" src="${restaurantInfo.logoUrl}" />
+            <img alt="Rocoto Logo" class="h-20 w-auto" src="${restaurantInfo.logoUrl}" />
           </div>
           <div class="flex items-center space-x-8">
             <a class="border-b-2 border-green-900 pb-1 font-button text-green-900 dark:border-green-400 dark:text-green-400" href="#hero">Home</a>
@@ -106,7 +106,7 @@ export class HomeView {
         <footer class="w-full border-t border-stone-200 bg-stone-100 px-6 py-12 dark:border-stone-800 dark:bg-stone-900">
           <div class="mx-auto grid max-w-7xl grid-cols-1 gap-8 text-center md:grid-cols-3 md:text-left">
             <div>
-              <img alt="Rocoto Logo" class="mb-4 h-10 w-auto" src="${restaurantInfo.logoUrl}" />
+              <img alt="Rocoto" class="mb-4 h-16 w-auto" src="${restaurantInfo.logoUrl}" />
               <p class="max-w-xs font-serif text-sm text-stone-500">Explorando la riqueza de la cocina peruano-china desde el corazon de Lima.</p>
             </div>
             <div class="flex flex-col gap-3">

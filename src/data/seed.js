@@ -3,12 +3,11 @@ import { RestaurantInfo } from "../models/RestaurantInfo.js";
 export const restaurantInfo = new RestaurantInfo({
   name: "Rocoto Restaurante Chifa",
   slogan: "Tradicion y Sabor Chifa",
-  logoUrl:
-    "https://lh3.googleusercontent.com/aida/ADBb0uiODUgYTKi4Z0c-I5lUo0FRXJHhpIbYjrRpKN-McGODYBS4MmUicgk0dSok8aFbSuf6emHl7Vr4nppUQFu4HaFygUyKCdmGb_KrY7bTwBx1_hLWkM-pXXU8F8HWZ3w07zKinvNUSFmTbFzvzWOHIb6iN56CL4RZ_JFAaS9onInPOEgDSeWRgj40FJaUEcIoMBnABaOclmHIz0RquG2BHWxg-E6FrlXFKbUURLqMH9Q-40V1bJU8rahDBvCvf0zAr4YKStH3NcHSeEI",
-  address: "Av. Petit Thouars 4500, Miraflores, Lima - Peru",
-  phone: "+51 (01) 444-5566",
+  logoUrl: "https://res.cloudinary.com/dhcgrkrdc/image/upload/v1777585589/Logo_Rest_Rocoto_Horizontal_bgslwf.png",
+  address: "C. Peru 379, San Ramon 12840, Peru",
+  phone: "+51995750239",
   email: "hola@rocotochifa.pe",
-  schedule: "Lun - Sab 12:00 PM - 11:00 PM | Dom 12:00 PM - 9:00 PM",
+  schedule: "12:00 PM - 3:00 PM y 7:00 PM - 11:00 PM",
 });
 
 export const menuSeed = [
