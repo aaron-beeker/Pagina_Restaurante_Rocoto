@@ -212,6 +212,7 @@ export class HomeView {
     photoInput.addEventListener("change", () => {
       const file = photoInput.files?.[0];
       if (!file) return;
+      this.setDailyMenuOcrStatus(`Foto cargada: ${file.name}. Iniciando analisis...`);
       onFileSelected(file);
       photoInput.value = "";
     });

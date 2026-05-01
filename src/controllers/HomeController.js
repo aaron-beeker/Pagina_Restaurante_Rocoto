@@ -47,6 +47,7 @@ export class HomeController {
     this.homeView.setDailyMenuOcrStatus("Procesando imagen y extrayendo texto...");
 
     try {
+      await this.ensureTesseractLoaded();
       const extractedText = await this.extractTextFromImage(file);
       const parsedMenu = this.parseDailyMenuText(extractedText);
       const mergedMenu = { ...this.restaurantInfo.dailyMenu, ...parsedMenu };
@@ -63,6 +64,29 @@ export class HomeController {
     }
   }
 
+  ensureTesseractLoaded() {
+    if (window.Tesseract) return Promise.resolve();
+
+    return new Promise((resolve, reject) => {
+      const existingScript = document.querySelector('script[data-ocr="tesseract"]');
+      if (existingScript) {
+        existingScript.addEventListener("load", () => resolve(), { once: true });
+        existingScript.addEventListener("error", () => reject(new Error("No se pudo cargar el motor OCR.")), {
+          once: true,
+        });
+        return;
+      }
+
+      const script = document.createElement("script");
+      script.src = "https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js";
+      script.async = true;
+      script.dataset.ocr = "tesseract";
+      script.onload = () => resolve();
+      script.onerror = () => reject(new Error("No se pudo cargar el motor OCR."));
+      document.head.appendChild(script);
+    });
+  }
+
   async extractTextFromImage(file) {
     if (!window.Tesseract) {
       throw new Error("OCR no disponible en este momento.");
@@ -74,6 +98,9 @@ export class HomeController {
 
   parseDailyMenuText(rawText) {
     const text = rawText.replace(/\r/g, "");
+    if (!text.trim()) {
+      throw new Error("No se detecto texto. Toma otra foto con mejor luz y enfoque.");
+    }
     const lines = text
       .split("\n")
       .map((line) => line.trim())
