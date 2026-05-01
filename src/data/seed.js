@@ -10,6 +10,20 @@ export const restaurantInfo = new RestaurantInfo({
   schedule: "12:00 PM - 3:00 PM y 7:00 PM - 11:00 PM",
   mapsUrl: "https://maps.app.goo.gl/1NC2sP5WzcQLqr2i9",
   mapsEmbedUrl: "https://www.google.com/maps?q=Restaurante%20Rocoto%2C%20C.%20Peru%20379%2C%20San%20Ramon%2C%20Peru&output=embed",
+  dailyMenu: {
+    title: "Menu Diario",
+    description: "Disfruta una seleccion especial para el almuerzo, preparada con sabor casero.",
+    steps: [
+      { title: "Entrada (A elegir)", items: ["Crema de alverja"] },
+      {
+        title: "Segundo (A elegir)",
+        items: ["Estofado de pollo", "Aji de gallina", "Locro de zapallo con pescado frito"],
+      },
+      { title: "Acompanamiento", items: ["Guarnicion a elegir: yuca, frejol o papa sancochada."] },
+    ],
+    price: "8.00",
+    availableTime: "12:00 PM - 3:00 PM",
+  },
 });
 
 export const menuSeed = [

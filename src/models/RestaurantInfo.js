@@ -1,5 +1,5 @@
 export class RestaurantInfo {
-  constructor({ name, slogan, logoUrl, address, phone, email, schedule, mapsUrl, mapsEmbedUrl }) {
+  constructor({ name, slogan, logoUrl, address, phone, email, schedule, mapsUrl, mapsEmbedUrl, dailyMenu }) {
     this.name = name;
     this.slogan = slogan;
     this.logoUrl = logoUrl;
@@ -9,5 +9,6 @@ export class RestaurantInfo {
     this.schedule = schedule;
     this.mapsUrl = mapsUrl;
     this.mapsEmbedUrl = mapsEmbedUrl;
+    this.dailyMenu = dailyMenu;
   }
 }

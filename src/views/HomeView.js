@@ -3,6 +3,24 @@ export class HomeView {
     this.rootElement = rootElement;
   }
 
+  renderDailyMenuSteps(dailyMenu) {
+    return (dailyMenu.steps || [])
+      .map(
+        (step, index) => `
+          <div class="flex items-start gap-4">
+            <span class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary font-button text-white">${index + 1}</span>
+            <div>
+              <h3 class="font-h3 text-h3 text-on-background">${step.title}</h3>
+              <ul class="mt-2 list-disc space-y-1 pl-5 font-body-md text-on-surface-variant">
+                ${(step.items || []).map((item) => `<li>${item}</li>`).join("")}
+              </ul>
+            </div>
+          </div>
+        `,
+      )
+      .join("");
+  }
+
   renderShell(restaurantInfo) {
     this.rootElement.innerHTML = `
       <nav class="fixed top-0 z-50 w-full border-b border-stone-200/50 bg-stone-50/90 shadow-sm backdrop-blur-md dark:border-stone-800/50 dark:bg-stone-950/90">
@@ -42,46 +60,30 @@ export class HomeView {
             <div class="grid grid-cols-1 items-center gap-10 lg:grid-cols-2">
               <div>
                 <span class="mb-3 block font-label-caps uppercase tracking-widest text-secondary">Especial del Dia</span>
-                <h2 class="mb-4 font-h1 text-h1 text-on-background">Menu Diario</h2>
-                <p class="mb-8 max-w-xl font-body-lg text-on-surface-variant">
-                  Disfruta una seleccion especial para el almuerzo, preparada con sabor casero.
+                <h2 class="mb-4 font-h1 text-h1 text-on-background" id="daily-menu-title">${restaurantInfo.dailyMenu.title}</h2>
+                <p class="mb-8 max-w-xl font-body-lg text-on-surface-variant" id="daily-menu-description">
+                  ${restaurantInfo.dailyMenu.description}
                 </p>
 
-                <div class="space-y-6">
-                  <div class="flex items-start gap-4">
-                    <span class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary font-button text-white">1</span>
-                    <div>
-                      <h3 class="font-h3 text-h3 text-on-background">Entrada (A elegir)</h3>
-                      <ul class="mt-2 list-disc space-y-1 pl-5 font-body-md text-on-surface-variant">
-                        <li>Crema de alverja</li>
-                      </ul>
-                    </div>
-                  </div>
-
-                  <div class="flex items-start gap-4">
-                    <span class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary font-button text-white">2</span>
-                    <div>
-                      <h3 class="font-h3 text-h3 text-on-background">Segundo (A elegir)</h3>
-                      <ul class="mt-2 list-disc space-y-1 pl-5 font-body-md text-on-surface-variant">
-                        <li>Estofado de pollo</li>
-                        <li>Aji de gallina</li>
-                        <li>Locro de zapallo con pescado frito</li>
-                      </ul>
-                    </div>
-                  </div>
-
-                  <div class="flex items-start gap-4">
-                    <span class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary font-button text-white">3</span>
-                    <div>
-                      <h3 class="font-h3 text-h3 text-on-background">Acompañamiento</h3>
-                      <p class="mt-2 font-body-md text-on-surface-variant">Guarnicion a elegir: yuca, frejol o papa sancochada.</p>
-                    </div>
-                  </div>
+                <div class="space-y-6" id="daily-menu-steps">
+                  ${this.renderDailyMenuSteps(restaurantInfo.dailyMenu)}
                 </div>
 
-                <div class="mt-8 inline-block rounded-xl border-l-4 border-secondary bg-surface-container p-6">
+                <div class="mt-8 inline-block rounded-xl border-l-4 border-secondary bg-surface-container p-6" id="daily-menu-price-box">
                   <span class="font-label-caps text-on-surface-variant">Precio del Dia</span>
-                  <p class="mt-1 font-display text-3xl text-primary">S/ 8.00</p>
+                  <p class="mt-1 font-display text-3xl text-primary" id="daily-menu-price">S/ ${restaurantInfo.dailyMenu.price}</p>
+                </div>
+                <div class="mt-6 rounded-xl border border-surface-variant bg-surface-container-low p-4">
+                  <p class="mb-3 font-body-sm text-on-surface-variant">
+                    Sube una foto del menu escrito a mano para extraer el contenido y actualizar esta seccion automaticamente.
+                  </p>
+                  <div class="flex flex-wrap items-center gap-3">
+                    <label class="cursor-pointer rounded-lg bg-primary px-4 py-2 font-button text-button text-white transition-all hover:brightness-110">
+                      Tomar/Subir foto
+                      <input accept="image/*" capture="environment" class="hidden" id="daily-menu-photo-input" type="file" />
+                    </label>
+                    <span class="font-body-sm text-on-surface-variant" id="daily-menu-ocr-status">Sincronizado con datos actuales.</span>
+                  </div>
                 </div>
               </div>
 
@@ -95,7 +97,7 @@ export class HomeView {
                 </div>
                 <div class="absolute -bottom-5 left-6 rounded-xl bg-white px-5 py-3 shadow-lg">
                   <p class="font-label-caps text-secondary">Disponible Hoy</p>
-                  <p class="font-body-sm text-on-surface-variant">12:00 PM - 3:00 PM</p>
+                  <p class="font-body-sm text-on-surface-variant" id="daily-menu-time">${restaurantInfo.dailyMenu.availableTime}</p>
                 </div>
               </div>
             </div>
@@ -202,5 +204,47 @@ export class HomeView {
         </footer>
       </main>
     `;
+  }
+
+  bindDailyMenuPhotoInput(onFileSelected) {
+    const photoInput = document.getElementById("daily-menu-photo-input");
+    if (!photoInput) return;
+    photoInput.addEventListener("change", () => {
+      const file = photoInput.files?.[0];
+      if (!file) return;
+      onFileSelected(file);
+      photoInput.value = "";
+    });
+  }
+
+  setDailyMenuOcrStatus(message, tone = "normal") {
+    const statusElement = document.getElementById("daily-menu-ocr-status");
+    if (!statusElement) return;
+    statusElement.textContent = message;
+    statusElement.className = "font-body-sm";
+
+    if (tone === "error") {
+      statusElement.classList.add("text-red-700");
+      return;
+    }
+    if (tone === "success") {
+      statusElement.classList.add("text-green-700");
+      return;
+    }
+    statusElement.classList.add("text-on-surface-variant");
+  }
+
+  updateDailyMenuSection(dailyMenu) {
+    const title = document.getElementById("daily-menu-title");
+    const description = document.getElementById("daily-menu-description");
+    const steps = document.getElementById("daily-menu-steps");
+    const price = document.getElementById("daily-menu-price");
+    const availableTime = document.getElementById("daily-menu-time");
+
+    if (title) title.textContent = dailyMenu.title;
+    if (description) description.textContent = dailyMenu.description;
+    if (steps) steps.innerHTML = this.renderDailyMenuSteps(dailyMenu);
+    if (price) price.textContent = `S/ ${dailyMenu.price}`;
+    if (availableTime) availableTime.textContent = dailyMenu.availableTime;
   }
 }
