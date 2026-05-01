@@ -11,7 +11,7 @@ export class MenuView {
         const activeClasses = isActive
           ? "bg-primary text-white border-primary"
           : "bg-white text-stone-700 border-stone-300 hover:border-primary";
-        return `<button class="rounded-full border px-4 py-2 text-sm font-body transition-colors ${activeClasses}" data-category="${category}">${category}</button>`;
+        return `<button class="rounded-full border px-4 py-2 font-button text-button transition-colors ${activeClasses}" data-category="${category}">${category}</button>`;
       })
       .join("");
 
@@ -38,7 +38,7 @@ export class MenuView {
               ${(item.tags || [])
                 .map(
                   (tag) =>
-                    `<span class="rounded bg-surface-container px-2 py-1 text-[10px] font-bold text-on-surface-variant">${tag}</span>`,
+                    `<span class="rounded bg-surface-container px-2 py-1 font-label-caps text-[10px] text-on-surface-variant">${tag}</span>`,
                 )
                 .join("")}
             </div>

@@ -8,7 +8,7 @@ export class HomeView {
       <nav class="fixed top-0 z-50 w-full border-b border-stone-200/50 bg-stone-50/90 shadow-sm backdrop-blur-md dark:border-stone-800/50 dark:bg-stone-950/90">
         <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
           <div class="text-2xl font-bold tracking-tighter text-green-900 font-h1 dark:text-green-500">
-            <img alt="Rocoto Logo" class="h-20 w-auto" src="${restaurantInfo.logoUrl}" />
+            <img alt="Rocoto Logo" class="h-14 w-auto" src="${restaurantInfo.logoUrl}" />
           </div>
           <div class="flex items-center space-x-8">
             <a class="border-b-2 border-green-900 pb-1 font-button text-green-900 dark:border-green-400 dark:text-green-400" href="#hero">Home</a>
@@ -39,19 +39,63 @@ export class HomeView {
 
         <section class="bg-surface-container-lowest py-xl" id="daily-menu">
           <div class="mx-auto max-w-7xl px-6">
-            <div class="flex flex-col items-center gap-12 md:flex-row">
-              <div class="md:w-1/2">
-                <span class="mb-4 block font-label-caps uppercase tracking-widest text-secondary">Especial del Dia</span>
-                <h2 class="mb-6 font-h1 text-h1 text-on-background">Menu Ejecutivo</h2>
-                <p class="mb-8 font-body-lg text-on-surface-variant">Disfruta de nuestra seleccion especial de lunes a viernes.</p>
-                <div class="mt-10 inline-block rounded-xl border-l-4 border-secondary bg-surface-container p-6">
-                  <span class="font-label-caps text-on-surface-variant">PRECIO EXCLUSIVO</span>
-                  <p class="mt-1 font-display text-3xl text-primary">S/ 24.90</p>
+            <div class="grid grid-cols-1 items-center gap-10 lg:grid-cols-2">
+              <div>
+                <span class="mb-3 block font-label-caps uppercase tracking-widest text-secondary">Especial del Dia</span>
+                <h2 class="mb-4 font-h1 text-h1 text-on-background">Menu Diario</h2>
+                <p class="mb-8 max-w-xl font-body-lg text-on-surface-variant">
+                  Disfruta una seleccion especial para el almuerzo, preparada con sabor casero.
+                </p>
+
+                <div class="space-y-6">
+                  <div class="flex items-start gap-4">
+                    <span class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary font-button text-white">1</span>
+                    <div>
+                      <h3 class="font-h3 text-h3 text-on-background">Entrada (A elegir)</h3>
+                      <ul class="mt-2 list-disc space-y-1 pl-5 font-body-md text-on-surface-variant">
+                        <li>Crema de alverja</li>
+                      </ul>
+                    </div>
+                  </div>
+
+                  <div class="flex items-start gap-4">
+                    <span class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary font-button text-white">2</span>
+                    <div>
+                      <h3 class="font-h3 text-h3 text-on-background">Segundo (A elegir)</h3>
+                      <ul class="mt-2 list-disc space-y-1 pl-5 font-body-md text-on-surface-variant">
+                        <li>Estofado de pollo</li>
+                        <li>Aji de gallina</li>
+                        <li>Locro de zapallo con pescado frito</li>
+                      </ul>
+                    </div>
+                  </div>
+
+                  <div class="flex items-start gap-4">
+                    <span class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary font-button text-white">3</span>
+                    <div>
+                      <h3 class="font-h3 text-h3 text-on-background">Acompañamiento</h3>
+                      <p class="mt-2 font-body-md text-on-surface-variant">Guarnicion a elegir: yuca, frejol o papa sancochada.</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="mt-8 inline-block rounded-xl border-l-4 border-secondary bg-surface-container p-6">
+                  <span class="font-label-caps text-on-surface-variant">Precio del Dia</span>
+                  <p class="mt-1 font-display text-3xl text-primary">S/ 8.00</p>
                 </div>
               </div>
-              <div class="relative md:w-1/2">
-                <div class="overflow-hidden rounded-2xl shadow-2xl transition-transform duration-500 hover:rotate-0 md:rotate-2">
-                  <img class="h-[550px] w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAEhvAaQwChvkGXG7Y_POsJKhTdmB-TFIpuySwsveejZLToQ0MuEeLfqoPpsXZxkkBGHWOVKZtFVJrCSTJouTJMev_JpS-DzB3l9Fqm2vyzWczKT_ygbKgelkETIzel2JMBFoA21s62zB8MOu4D9n5RxtoOynl32Of1xqyue2nxUxZWN2QXYz3W9xKo5DtV7RqDGx7w9LBKNWkpc2M9CgqCaWrLcagVVwoYGj88bUn_FcxW_F8i9qApz2i71oxtf3jpzuNpLG_L7m-D" />
+
+              <div class="relative">
+                <div class="overflow-hidden rounded-3xl shadow-2xl">
+                  <img
+                    alt="Menu diario Rocoto"
+                    class="h-[520px] w-full object-cover"
+                    src="https://images.unsplash.com/photo-1512058564366-18510be2db19?q=80&w=1600&auto=format&fit=crop"
+                  />
+                </div>
+                <div class="absolute -bottom-5 left-6 rounded-xl bg-white px-5 py-3 shadow-lg">
+                  <p class="font-label-caps text-secondary">Disponible Hoy</p>
+                  <p class="font-body-sm text-on-surface-variant">12:00 PM - 3:00 PM</p>
                 </div>
               </div>
             </div>
@@ -73,19 +117,43 @@ export class HomeView {
             <div class="grid grid-cols-1 items-center gap-12 lg:grid-cols-2">
               <div class="order-2 lg:order-1">
                 <div class="relative h-[450px] w-full overflow-hidden rounded-xl bg-surface-variant shadow-inner">
-                  <img class="h-full w-full object-cover opacity-80 grayscale transition-all duration-700 hover:grayscale-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAAJ2r3-jV6aZcO24HOJHB7H-Qk5ADzXO5PkwE5qScslOl4cW6pGkKVqGH2qq3U-p1coxOpSGaRzkt1fBSr8o9tdqDOcTDJMd8nBmuJfa2eDnMumgez_fB0qHBe6wJxGVl6WLChoV1KM7I76UbBQMJbBiy68gGtXxKahJdTdWyJ_D-xYiXE1ANFzMUOE0PfffF7Hji02AmCqOxLEdF4OQO-ylHsCOx2vqw9LXiVrpL6WzGl4DhZouzHm8RuiOtOs5ek74vCJLf97SZL" />
+                  <iframe
+                    class="h-full w-full"
+                    loading="lazy"
+                    referrerpolicy="no-referrer-when-downgrade"
+                    src="${restaurantInfo.mapsEmbedUrl}"
+                    title="Ubicacion de ${restaurantInfo.name} en Google Maps"
+                  ></iframe>
                 </div>
               </div>
               <div class="order-1 space-y-8 lg:order-2">
                 <div>
                   <span class="mb-4 block font-label-caps uppercase tracking-widest text-secondary">Visitanos</span>
-                  <h2 class="mb-6 font-h1 text-h1">Encuentranos en el Corazon de Lima</h2>
+                  <h2 class="mb-6 font-h1 text-h1">Tu Mesa de Diario te Espera Aquí.</h2>
                 </div>
                 <div class="space-y-3 text-on-surface-variant">
                   <p><strong>Direccion:</strong> ${restaurantInfo.address}</p>
                   <p><strong>Horarios:</strong> ${restaurantInfo.schedule}</p>
-                  <p><strong>Contacto:</strong> ${restaurantInfo.phone}</p>
+                  <p>
+                    <strong>Contacto:</strong>
+                    <a
+                      class="text-primary underline-offset-2 hover:underline"
+                      href="https://wa.me/${restaurantInfo.phone.replace(/\D/g, "")}"
+                      rel="noopener noreferrer"
+                      target="_blank"
+                    >
+                      ${restaurantInfo.phone}
+                    </a>
+                  </p>
                   <p><strong>Email:</strong> ${restaurantInfo.email}</p>
+                  <a
+                    class="inline-flex items-center rounded-lg bg-primary px-4 py-2 font-button text-white transition-all hover:brightness-110"
+                    href="${restaurantInfo.mapsUrl}"
+                    rel="noopener noreferrer"
+                    target="_blank"
+                  >
+                    Ver en Google Maps
+                  </a>
                 </div>
               </div>
             </div>
@@ -107,20 +175,27 @@ export class HomeView {
           <div class="mx-auto grid max-w-7xl grid-cols-1 gap-8 text-center md:grid-cols-3 md:text-left">
             <div>
               <img alt="Rocoto" class="mb-4 h-16 w-auto" src="${restaurantInfo.logoUrl}" />
-              <p class="max-w-xs font-serif text-sm text-stone-500">Explorando la riqueza de la cocina peruano-china desde el corazon de Lima.</p>
+              <p class="max-w-xs font-body-sm text-body-sm text-stone-500">Tu parada diaria para disfrutar de la riqueza gastronomica peruana y el toque unico del chifa tradicional.</p>
             </div>
             <div class="flex flex-col gap-3">
-              <h4 class="mb-2 font-h3 text-body-md font-bold text-green-900 dark:text-green-500">Enlaces</h4>
-              <a class="text-sm text-stone-500 transition-all hover:text-green-700 dark:hover:text-green-300" href="#">Facebook</a>
-              <a class="text-sm text-stone-500 transition-all hover:text-green-700 dark:hover:text-green-300" href="#">Instagram</a>
-              <a class="text-sm text-stone-500 transition-all hover:text-green-700 dark:hover:text-green-300" href="#">WhatsApp</a>
+              <h4 class="mb-2 font-h3 text-body-md text-green-900 dark:text-green-500">Enlaces</h4>
+              <a class="font-body-sm text-body-sm text-stone-500 transition-all hover:text-green-700 dark:hover:text-green-300" href="#">Facebook</a>
+              <a class="font-body-sm text-body-sm text-stone-500 transition-all hover:text-green-700 dark:hover:text-green-300" href="#">Instagram</a>
+              <a
+                class="font-body-sm text-body-sm text-stone-500 transition-all hover:text-green-700 dark:hover:text-green-300"
+                href="https://wa.me/${restaurantInfo.phone.replace(/\D/g, "")}"
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                WhatsApp
+              </a>
             </div>
             <div class="flex flex-col gap-4">
-              <h4 class="mb-2 font-h3 text-body-md font-bold text-green-900 dark:text-green-500">Newsletter</h4>
-              <p class="text-sm text-stone-500">Suscribete para recibir ofertas y noticias.</p>
+              <h4 class="mb-2 font-h3 text-body-md text-green-900 dark:text-green-500">Newsletter</h4>
+              <p class="font-body-sm text-body-sm text-stone-500">Suscribete para recibir ofertas y noticias.</p>
               <form class="flex gap-2">
-                <input class="flex-grow rounded-lg border-outline-variant bg-white p-2 text-sm focus:border-primary-container focus:ring-primary-container" placeholder="Email" type="email" />
-                <button class="rounded-lg bg-primary-container px-4 py-2 text-sm font-bold text-white">Unirme</button>
+                <input class="flex-grow rounded-lg border-outline-variant bg-white p-2 font-body-sm text-body-sm focus:border-primary-container focus:ring-primary-container" placeholder="Email" type="email" />
+                <button class="rounded-lg bg-primary-container px-4 py-2 font-button text-button text-white">Unirme</button>
               </form>
             </div>
           </div>
