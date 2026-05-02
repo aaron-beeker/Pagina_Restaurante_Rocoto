@@ -1,0 +1,16 @@
+{
+  "name": "pagina-restaurante-rocoto",
+  "version": "1.0.0",
+  "description": "Pagina web para Rocoto Restaurante Chifa",
+  "main": "index.html",
+  "scripts": {
+    "build": "echo 'No build step required'",
+    "dev": "npx serve ."
+  },
+  "dependencies": {
+    "firebase": "^10.7.1"
+  },
+  "devDependencies": {
+    "serve": "^14.2.0"
+  }
+}

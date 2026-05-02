@@ -3,23 +3,59 @@ export class HomeView {
     this.rootElement = rootElement;
   }
 
-  renderShell(restaurantInfo) {
-    this.rootElement.innerHTML = `
-      <nav class="fixed top-0 z-50 w-full border-b border-stone-200/50 bg-stone-50/90 shadow-sm backdrop-blur-md dark:border-stone-800/50 dark:bg-stone-950/90">
-        <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-          <div class="text-2xl font-bold tracking-tighter text-green-900 font-h1 dark:text-green-500">
-            <img alt="Rocoto Logo" class="h-14 w-auto" src="${restaurantInfo.logoUrl}" />
-          </div>
-          <div class="flex items-center space-x-8">
-            <a class="border-b-2 border-green-900 pb-1 font-button text-green-900 dark:border-green-400 dark:text-green-400" href="#hero">Home</a>
-            <a class="font-button text-stone-600 transition-colors hover:text-green-800 dark:text-stone-400 dark:hover:text-green-300" href="#daily-menu">Menu Diario</a>
-            <a class="font-button text-stone-600 transition-colors hover:text-green-800 dark:text-stone-400 dark:hover:text-green-300" href="#menu">La Carta</a>
-            <a class="font-button text-stone-600 transition-colors hover:text-green-800 dark:text-stone-400 dark:hover:text-green-300" href="#location">Contacto</a>
-          </div>
-        </div>
-      </nav>
+  renderShell(restaurantInfo, user = null, dailyMenu) {
+    const authSection = user 
+    ? `<div class="flex items-center gap-4">
+         <div class="flex items-center gap-2">
+           <svg class="h-6 w-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+           <div class="flex flex-col leading-tight">
+             <span class="text-xs font-bold text-stone-500 uppercase">Hola,</span>
+             <span class="text-sm font-bold text-primary uppercase">${user.name}</span>
+           </div>          
+         </div>
+         <!-- Botón de Salir -->
+        <button id="logout-btn" class="ml-2 p-2 text-stone-400 hover:text-secondary transition-colors" title="Cerrar Sesión">
+          <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
+        </button>
+         <div class="flex items-center rounded-full bg-[#d4f500] px-4 py-2 font-bold text-primary shadow-sm">
+           <svg class="mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-8 2a2 2 0 1 1-4 0 2 2 0 0 1 4 0z"></path></svg>
+           S/ 0.00
+         </div>
+       </div>`
+    : `<button id="login-btn" class="flex items-center gap-2 font-button text-stone-600 hover:text-primary">
+         <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
+         Iniciar Sesión
+       </button>`;
 
-      <main>
+  this.rootElement.innerHTML = `
+      <nav class="fixed top-0 z-50 w-full border-b border-stone-200/50 bg-stone-50/90 shadow-sm backdrop-blur-md dark:bg-stone-950/90">
+        <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-2">
+          <div class="flex items-center gap-8">
+            <img alt="Logo" class="h-10 w-auto" src="${restaurantInfo.logoUrl}" />
+            <div class="hidden items-center space-x-6 md:flex">
+              <a class="flex items-center gap-1 text-sm font-button text-primary" href="#hero">
+                <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path></svg>
+                Home
+              </a>
+              <a class="flex items-center gap-1 text-sm font-button text-stone-600 hover:text-primary" href="#daily-menu">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                Menu Diario
+              </a>
+              <a class="flex items-center gap-1 text-sm font-button text-stone-600 hover:text-primary" href="#menu">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                La Carta
+              </a>
+              <a class="flex items-center gap-1 text-sm font-button text-stone-600 hover:text-primary" href="#location">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
+                Contacto
+              </a>
+            </div>
+          </div>
+          ${authSection}
+        </div>
+      </nav>    
+
+      <main class="pt-16">
         <section class="relative flex h-screen items-center justify-center overflow-hidden" id="hero">
           <div class="absolute inset-0 z-0">
             <img class="h-full w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCHwOqzjB_U5Yp4IlQCBVwV6QcHZqbFjpNs1YpRhCuSNC534ocmEhlErhwaD80bTGJt4F-RnCrAfsoLk20WZnqlHgkL5GGlXyBUJnPRdxuoXCYNF-Tj5wLCdGpaEYrqFq_oIDEZf4T-rGEeoI0riQIzw05ob90qSppsfx-yEKuXzuDN7sQtGJO0CkvqtIaiydxq3eh9EIFbEoMcbegi_JsOsY25ysM8fYo5PJMiW09g2F38dfx17pY9JAwAZ0CWVTjYVHIn2HJEllAl" />
@@ -48,33 +84,36 @@ export class HomeView {
                 </p>
 
                 <div class="space-y-6">
+                  <!-- ENTRADAS -->
                   <div class="flex items-start gap-4">
-                    <span class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary font-button text-white">1</span>
+                    <span class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary font-button text-white text-sm">1</span>
                     <div>
-                      <h3 class="font-h3 text-h3 text-on-background">Entrada (A elegir)</h3>
+                      <h3 class="font-h3 text-h3 text-on-background">Entradas</h3>
                       <ul class="mt-2 list-disc space-y-1 pl-5 font-body-md text-on-surface-variant">
-                        <li>Crema de alverja</li>
+                        ${dailyMenu.entradas.map(e => `<li>${e}</li>`).join('')}
                       </ul>
                     </div>
                   </div>
 
+                  <!-- SEGUNDOS -->
                   <div class="flex items-start gap-4">
-                    <span class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary font-button text-white">2</span>
+                    <span class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary font-button text-white text-sm">2</span>
                     <div>
-                      <h3 class="font-h3 text-h3 text-on-background">Segundo (A elegir)</h3>
+                      <h3 class="font-h3 text-h3 text-on-background">Segundos</h3>
                       <ul class="mt-2 list-disc space-y-1 pl-5 font-body-md text-on-surface-variant">
-                        <li>Estofado de pollo</li>
-                        <li>Aji de gallina</li>
-                        <li>Locro de zapallo con pescado frito</li>
+                        ${dailyMenu.segundos.map(s => `<li>${s}</li>`).join('')}
                       </ul>
                     </div>
                   </div>
 
+                  <!-- REFRESCO -->
                   <div class="flex items-start gap-4">
-                    <span class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary font-button text-white">3</span>
+                    <span class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary font-button text-white text-sm">3</span>
                     <div>
-                      <h3 class="font-h3 text-h3 text-on-background">Acompañamiento</h3>
-                      <p class="mt-2 font-body-md text-on-surface-variant">Guarnicion a elegir: yuca, frejol o papa sancochada.</p>
+                      <h3 class="font-h3 text-h3 text-on-background">Bebidas</h3>
+                      <ul class="mt-2 list-disc space-y-1 pl-5 font-body-md text-on-surface-variant">              
+                        ${dailyMenu.refrescos.map(r => `<li>${r}</li>`).join('')}
+                      </ul>
                     </div>
                   </div>
                 </div>

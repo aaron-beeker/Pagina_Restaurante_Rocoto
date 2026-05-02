@@ -4,7 +4,7 @@ export const restaurantInfo = new RestaurantInfo({
   name: "Rocoto Restaurante Chifa",
   slogan: "Tradicion y Sabor Chifa",
   logoUrl: "https://res.cloudinary.com/dhcgrkrdc/image/upload/v1777604357/Logo_Rest_Rocoto_Horizontal_bgslwf.png",
-  address: "C. Peru 379, San Ramon 12840, Peru",
+  address: "Calle Peru 379, San Ramon 12840, Peru",
   phone: "+51995750239",
   email: "hola@rocotochifa.pe",
   schedule: "12:00 PM - 3:00 PM y 7:00 PM - 11:00 PM",
@@ -163,4 +163,86 @@ export const menuSeed = [
     imageUrl:
       "https://images.unsplash.com/photo-1526318472351-c75fcf070305?q=80&w=1200&auto=format&fit=crop",
   },
+
+// Añadir al array menuSeed en data/seed.js
+{
+  id: "arroz-pollo-huancaina",
+  name: "Arroz con Pollo con Papa a la Huancaína",
+  description: "Clásico peruano acompañado de cremosa salsa huancaína.",
+  category: "Menú del Día",
+  price: 10.00,
+  tags: ["ESPECIAL", "CRIOLLO"],
+  imageUrl: "URL_IMAGEN"
+},
+{
+  id: "adobo-chancho",
+  name: "Adobo de Chancho",
+  description: "Tiernos trozos de chancho en salsa de chicha de jora y ají panca.",
+  category: "Menú del Día",
+  price: 10.00,
+  tags: ["REGIONAL"],
+  imageUrl: "URL_IMAGEN"
+}
+// Repetir para: Puré con Asado, Tallarines Rojos, Chicharrón Colorado, Secos, etc.
+
+
 ];
+
+
+// Añade esto a menuSeed en src/data/seed.js
+export const recetarioPlatos = [
+  { 
+    id: 'ap-huancaina', 
+    name: 'Arroz con Pollo con Papa a la Huancaína', 
+    categoria: 'Fondo',
+    imageUrl: 'https://images.unsplash.com/photo-1626202340534-f1639844439c?q=80&w=1200&auto=format&fit=crop',
+    description: 'Arroz verde con presas de pollo, servido con la clásica crema de ají amarillo y queso.'
+  },
+  { 
+    id: 'adobo-chancho', 
+    name: 'Adobo de Chancho', 
+    categoria: 'Fondo',
+    imageUrl: 'https://images.unsplash.com/photo-1544124499-58912cbddaad?q=80&w=1200&auto=format&fit=crop',
+    description: 'Trozos de chancho macerados en chicha de jora y especias, servido con yuca sancochada.'
+  },
+  { 
+    id: 'pure-asado', 
+    name: 'Puré con Asado', 
+    categoria: 'Fondo',
+    imageUrl: 'https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=1200&auto=format&fit=crop',
+    description: 'Suave puré de papa amarilla acompañado de tierno asado de res en su jugo.'
+  },
+  { 
+    id: 't-rojos-huancaina', 
+    name: 'Tallarines Rojos con Papa a la Huancaína', 
+    categoria: 'Fondo',
+    imageUrl: 'https://images.unsplash.com/photo-1551183053-bf91a1d81141?q=80&w=1200&auto=format&fit=crop',
+    description: 'Tallarines en salsa de tomate y carne, acompañados de papa con crema huancaína.'
+  },
+  { 
+    id: 'chicharron-colorado', 
+    name: 'Chicharrón Colorado', 
+    categoria: 'Fondo',
+    imageUrl: 'https://images.unsplash.com/photo-1598515214211-89d3c73ae83b?q=80&w=1200&auto=format&fit=crop',
+    description: 'Chancho dorado en su propia grasa con salsa de ají colorado, servido con arroz y papas.'
+  },
+  { 
+    id: 'seco-huachana', 
+    name: 'Seco a la Huachana (Res/Pollo)', 
+    categoria: 'Fondo',
+    imageUrl: 'https://images.unsplash.com/photo-1514516345957-556ca7b2b7e3?q=80&w=1200&auto=format&fit=crop',
+    description: 'Guiso tradicional con culantro y especias, servido con frijoles y arroz blanco.'
+  },
+  { 
+    id: 'seco-norteña', 
+    name: 'Seco a la Norteña (Res/Pollo)', 
+    categoria: 'Fondo',
+    imageUrl: 'https://images.unsplash.com/photo-1473093295043-cdd812d0e601?q=80&w=1200&auto=format&fit=crop',
+    description: 'Especialidad norteña con loche y chicha de jora, acompañado de yucas y frijoles.'
+  }
+];
+
+
+// En src/data/seed.js añadir:
+export const opcionesEntradas = ["Crema de alverja", "Causa rellena", "Papa a la huancaína", "Sopa del día"];
+export const opcionesRefrescos = ["Chicha morada", "Maracuyá", "Limonada", "Té helado"];
