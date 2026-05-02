@@ -4,8 +4,8 @@
   "description": "Pagina web para Rocoto Restaurante Chifa",
   "main": "index.html",
   "scripts": {
-    "build": "echo 'No build step required'",
-    "dev": "npx serve ."
+    "start": "serve .",
+    "build": "echo 'Build skip'"
   },
   "dependencies": {
     "firebase": "^10.7.1"

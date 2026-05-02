@@ -31,15 +31,15 @@ export class HomeController {
       
       if (user) {
         // IMPORTANTE: Pon aquí tu correo real para que aparezca el botón de admin
-        const admins = ["beeker147@gmail.com", "nuevo-admin@gmail.com"];
+        const admins = ["beeker147@gmail.com", "mjeanfranco22@gmail.com"];
         
         this.currentUser = {
           name: user.displayName.split(' ')[0], // Solo tu primer nombre
-          email: user.email,
-          
+          email: user.email.toLowerCase().trim(),
           // Verificamos si el correo del usuario está en nuestra lista de admins
-          role: admins.includes(user.email) ? "admin" : "client"
+          role: admins.includes(user.email.toLowerCase().trim()) ? "admin" : "client"
         };
+        console.log("Rol asignado:", this.currentUser.role); // Revisa esto en la consola F12
       } else {
         this.currentUser = null;
       }
