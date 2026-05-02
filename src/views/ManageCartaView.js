@@ -86,11 +86,18 @@ export class ManageCartaView {
         // 2. Formulario de Añadir
         document.getElementById('add-plato-form').onsubmit = (e) => {
             e.preventDefault();
+            // Obtenemos el valor de la categoría seleccionada
+            const categoriaSeleccionada = document.getElementById('new-category').value;
+    
             const data = {
                 name: document.getElementById('new-name').value,
                 price: parseFloat(document.getElementById('new-price').value),
-                category: document.getElementById('new-category').value
+                // Convertimos el string a un Array para mantener la consistencia en Firebase
+                category: [categoriaSeleccionada], 
+                imageUrl: "https://images.unsplash.com/photo-1512058564366-18510be2db19?q=80&w=1200",
+                tags: ["NUEVO"]
             };
+            
             onAdd(data);
         };
 
@@ -166,17 +173,25 @@ export class ManageCartaView {
                     </tr>
                 </thead>
                 <tbody class="divide-y">
-                    ${platos.length > 0 ? platos.map(plato => `
+                    ${platos.length > 0 ? platos.map(plato => {
+                        // REPARACIÓN: Si category es un array, lo unimos con comas para mostrarlo
+                        const categoriaTexto = Array.isArray(plato.category) 
+                            ? plato.category.join(', ') 
+                            : plato.category;
+    
+                        return `
                         <tr class="hover:bg-stone-50 transition-colors">
                             <td class="py-4 px-2 font-bold text-stone-800">${plato.name}</td>
-                            <td class="py-4 px-2"><span class="rounded-full bg-stone-200 px-2 py-1 text-[10px]">${plato.category}</span></td>
+                            <td class="py-4 px-2">
+                                <span class="rounded-full bg-stone-200 px-2 py-1 text-[10px]">${categoriaTexto}</span>
+                            </td>
                             <td class="py-4 px-2 text-primary font-bold">S/ ${plato.price.toFixed(2)}</td>
                             <td class="py-4 px-2 text-right space-x-2">
                                 <button class="text-blue-600 hover:underline edit-btn" data-id="${plato.id}">Editar</button>
                                 <button class="text-secondary hover:underline delete-btn" data-id="${plato.id}">Eliminar</button>
                             </td>
-                        </tr>
-                    `).join('') : `<tr><td colspan="4" class="py-10 text-center text-stone-400">No se encontraron platos.</td></tr>`}
+                        </tr>`;
+                    }).join('') : `<tr><td colspan="4" class="py-10 text-center text-stone-400">No se encontraron platos.</td></tr>`}
                 </tbody>
             </table>
         `;

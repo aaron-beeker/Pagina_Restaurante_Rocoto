@@ -27,7 +27,15 @@ export class MenuRepository {
   // Re-implementamos getByCategory para que la vista no falle
   getByCategory(category) {
     if (category === "Todos") return this.allPlatos;
-    return this.allPlatos.filter(item => item.category === category);
+    
+    return this.allPlatos.filter(item => {
+      // Si la categoría en el objeto es un array, usamos includes
+      if (Array.isArray(item.category)) {
+        return item.category.includes(category);
+      }
+      // Si aún quedan datos viejos como string, comparamos directo
+      return item.category === category;
+    });
   }
 
   // Re-implementamos getCategories para los botones de la carta
@@ -91,8 +99,8 @@ export class MenuRepository {
         const platosRef = collection(db, "platos_carta");
         await addDoc(platosRef, {
             ...platoData,
-            imageUrl: platoData.imageUrl || "https://images.unsplash.com/photo-1512058564366-18510be2db19?q=80&w=1200", // Imagen por defecto
-            tags: ["NUEVO"]
+            // Nos aseguramos de que siempre sea un array antes de subir a Firebase
+            category: Array.isArray(platoData.category) ? platoData.category : [platoData.category]
         });
         return true;
     } catch (error) {
@@ -183,4 +191,35 @@ async updateCategory(id, nuevoNombre, antiguoNombre) {
       return false;
   }
 }
+
+async getOpcionesParaAdmin() {
+  try {
+    const platos = await this.getAllFromFirestore();
+    
+    // Definimos el precio filtro (en tu caso, 8 soles)
+    const PRECIO_MENU = 8;
+
+    return {
+      entradas: platos.filter(p => {
+        const esEntrada = Array.isArray(p.category) ? p.category.includes("Entradas") : p.category === "Entradas";
+        return esEntrada; // Las entradas suelen ser parte del paquete, podrías o no filtrar por precio aquí
+      }),
+      segundos: platos.filter(p => {
+        const cat = p.category;
+        const isEntrada = Array.isArray(cat) ? cat.includes("Entradas") : cat === "Entradas";
+        const isBebida = Array.isArray(cat) ? cat.includes("Bebidas") : cat === "Bebidas";
+        
+        // FILTRO CRÍTICO: No es entrada, no es bebida Y el precio es exactamente 8
+        return !isEntrada && !isBebida && p.price === PRECIO_MENU;
+      }),
+      refrescos: platos.filter(p => 
+        Array.isArray(p.category) ? p.category.includes("Bebidas") : p.category === "Bebidas"
+      )
+    };
+  } catch (error) {
+    console.error("Error al filtrar platos por precio:", error);
+    return { entradas: [], segundos: [], refrescos: [] };
+  }
+}
+
 }

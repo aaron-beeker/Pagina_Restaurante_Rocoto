@@ -92,17 +92,27 @@ export class HomeController {
               }
           },
           onSearch: (query) => {
-              const q = query.toLowerCase().trim();
-              const filtrados = platosOriginales.filter(p => 
-                  p.name.toLowerCase().includes(q) || 
-                  p.category.toLowerCase().includes(q)
-              );
-              const container = document.getElementById('table-container');
-              if (container) {
-                  container.innerHTML = manageView.renderTableBody(filtrados);
-                  manageView.attachTableEvents(acciones.onEdit, acciones.onDelete);
-              }
-          },
+            const q = query.toLowerCase().trim();
+            const filtrados = platosOriginales.filter(p => {
+                // Buscamos en el nombre
+                const coincideNombre = p.name.toLowerCase().includes(q);
+                
+                // Buscamos en las categorías (manejando que ahora es un array)
+                const coincideCategoria = Array.isArray(p.category)
+                    ? p.category.some(cat => cat.toLowerCase().includes(q))
+                    : p.category.toLowerCase().includes(q);
+        
+                return coincideNombre || coincideCategoria;
+            });
+        
+            const container = document.getElementById('table-container');
+            if (container) {
+                // Usamos el render de la vista para actualizar la tabla
+                container.innerHTML = manageView.renderTableBody(filtrados);
+                // Volvemos a conectar los eventos de los nuevos botones generados
+                manageView.attachTableEvents(acciones.onEdit, acciones.onDelete);
+            }
+        },
           
           onEdit: (id) => {
             const plato = platosOriginales.find(p => p.id === id);
@@ -139,10 +149,20 @@ export class HomeController {
 
   async renderAll() {
     await this.menuRepository.loadAllPlatos();
-    const dailyMenu = await this.menuRepository.getDailyMenuConfig();
+    //const dailyMenu = await this.menuRepository.getDailyMenuConfig();
+    const dailyMenuFromDB = await this.menuRepository.getDailyMenuConfig();
     
-    this.homeView.renderShell(this.restaurantInfo, this.currentUser, dailyMenu || this.currentDailyMenu);
+    //this.homeView.renderShell(this.restaurantInfo, this.currentUser, dailyMenu || this.currentDailyMenu);
+    // SOLUCIÓN: Actualizar el estado local con lo que viene de Firebase
     
+
+    if (dailyMenuFromDB) {
+      this.currentDailyMenu = dailyMenuFromDB;
+    }
+
+    // Ahora renderShell usará el menú actualizado
+    this.homeView.renderShell(this.restaurantInfo, this.currentUser, this.currentDailyMenu);
+
       // Lógica para el botón de SALIR
     const logoutBtn = document.getElementById("logout-btn");
     if (logoutBtn) {
@@ -186,7 +206,7 @@ export class HomeController {
   
     this.menuView.filterContainer = document.getElementById("menu-filters");
     this.menuView.gridContainer = document.getElementById("menu-grid");
-    this.renderMenu();
+    //this.renderMenu();
     await this.renderMenu();
   }
 
@@ -201,27 +221,24 @@ export class HomeController {
     }
   }
 
-  abrirSelectorMenuEjecutivo() {
-    const adminView = new AdminMenuView(document.getElementById('app'));
-    
-    adminView.render(recetarioPlatos, opcionesEntradas, opcionesRefrescos, async (nuevaConfig) => {
-      // 1. Intentamos guardar en Firebase
-      const exito = await this.menuRepository.saveDailyMenu(nuevaConfig);
+  async abrirSelectorMenuEjecutivo() {
+      const opciones = await this.menuRepository.getOpcionesParaAdmin();
+      const adminView = new AdminMenuView(document.getElementById('app'));
       
-      if (exito) {
-        // 2. Actualizamos la memoria local
-        this.currentDailyMenu = nuevaConfig;
-        // 3. Reiniciamos para mostrar los cambios
-        await this.initialize(); 
-        window.scrollTo(0, 0);
-        alert("¡El menú de hoy se ha publicado correctamente!");
-      } else {
-        alert("Hubo un error al conectar con la base de datos.");
-      }
-    });
-  
-    const backBtn = document.getElementById('back-to-home');
-    if(backBtn) backBtn.onclick = () => this.initialize();
+      // Le pasamos las listas completas de objetos (entradas, segundos, refrescos)
+      adminView.render(
+          opciones.segundos, 
+          opciones.entradas, 
+          opciones.refrescos, 
+          async (nuevaConfig) => {
+              const exito = await this.menuRepository.saveDailyMenu(nuevaConfig);
+              if (exito) {
+                  this.currentDailyMenu = nuevaConfig;
+                  await this.renderAll();
+                  alert("Menú actualizado");
+              }
+          }
+      );
   }
 
   
@@ -232,21 +249,23 @@ export class HomeController {
     
     if (this.activeCategory === "Todos" || this.activeCategory === "Menú del Día") {
       const platosElegidosAdmin = this.currentDailyMenu.segundos.map(nombre => {
-        const datosPlato = recetarioPlatos.find(p => p.name === nombre);
-        const finalImageUrl = (datosPlato && datosPlato.imageUrl && datosPlato.imageUrl !== "URL_IMAGEN") 
-          ? datosPlato.imageUrl 
-          : "https://images.unsplash.com/photo-1512058564366-18510be2db19?q=80&w=1200";
+        // REPARACIÓN: Buscar en la memoria local de platos cargados de Firebase
+        const datosPlato = this.menuRepository.allPlatos.find(p => p.name === nombre);
         
+        const finalImageUrl = (datosPlato && datosPlato.imageUrl)
+            ? datosPlato.imageUrl
+            : "https://images.unsplash.com/photo-1512058564366-18510be2db19?q=80&w=1200";
+
         return {
-          id: `daily-${nombre.toLowerCase().replace(/\s+/g, '-')}`,
-          name: nombre,
-          description: datosPlato ? datosPlato.description : `Menú completo con entrada y bebida.`,
-          category: "Menú del Día",
-          price: 8.00,
-          tags: ["MENÚ DEL DÍA", "RECOMENDADO"],
-          imageUrl: finalImageUrl
+            id: `daily-${nombre.toLowerCase().replace(/\s+/g, '-')}`,
+            name: nombre,
+            description: datosPlato ? datosPlato.description : `Menú completo con entrada y bebida.`,
+            category: "Menú del Día",
+            price: 8.00,
+            tags: ["MENÚ DEL DÍA", "RECOMENDADO"],
+            imageUrl: finalImageUrl
         };
-      });
+    });
 
       if (this.activeCategory === "Menú del Día") {
         items = platosElegidosAdmin;
@@ -257,7 +276,8 @@ export class HomeController {
 
     // 2. OBTENER CATEGORÍAS REALES DE FIREBASE (Cambio clave)
     const categoriasDB = await this.menuRepository.getCategoriesFromFirestore();
-    const nombresCategorias = ["Todos", "Menú del Día", ...categoriasDB.map(c => c.nombre)];
+    // Después (solo usa lo que viene de Firebase y el botón "Todos")
+    const nombresCategorias = ["Todos", ...categoriasDB.map(c => c.nombre)];
 
     // 3. Renderizar filtros con la lista actualizada
     this.menuView.renderFilters(nombresCategorias, this.activeCategory, (cat) => {
