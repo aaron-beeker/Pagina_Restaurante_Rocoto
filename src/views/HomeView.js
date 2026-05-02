@@ -6,6 +6,23 @@ export class HomeView {
   renderShell(restaurantInfo, user = null, dailyMenu) {
     const authSection = user 
     ? `<div class="flex items-center gap-4">
+           
+            <!-- Botonoes de admin -->
+            ${user.role === 'admin' ? `
+              <!-- NUEVO: Botón de Actualizar Menú Diario (Solo para Admin) -->
+              <button id="admin-daily-menu-btn" class="hidden sm:flex items-center gap-2 rounded-lg bg-primary px-3 py-2 font-button text-xs text-white shadow-md hover:bg-green-800 transition-all">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                ACTUALIZAR MENÚ DIARIO
+              </button>
+              
+              <!-- Botón 2: NUEVO - Gestionar Carta (Rojo) -->
+              <button id="admin-manage-carta-btn" class="flex items-center gap-1 rounded-lg bg-secondary px-2 py-2 font-button text-[9px] text-white shadow-md hover:opacity-90 transition-all uppercase">
+                <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                Gestionar Carta
+              </button>
+
+            ` : ''}
+
          <div class="flex items-center gap-2">
            <svg class="h-6 w-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
            <div class="flex flex-col leading-tight">
@@ -13,12 +30,15 @@ export class HomeView {
              <span class="text-sm font-bold text-primary uppercase">${user.name}</span>
            </div>          
          </div>
+         
          <!-- Botón de Salir -->
         <button id="logout-btn" class="ml-2 p-2 text-stone-400 hover:text-secondary transition-colors" title="Cerrar Sesión">
           <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
         </button>
-         
+
        </div>`
+
+
     : `<button id="login-btn" class="flex items-center gap-2 font-button text-stone-600 hover:text-primary">
          <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
          Iniciar Sesión
