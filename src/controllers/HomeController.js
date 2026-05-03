@@ -31,7 +31,7 @@ export class HomeController {
       
       if (user) {
         // IMPORTANTE: Pon aquí tu correo real para que aparezca el botón de admin
-        const admins = ["beeker147@gmail.com", "mjeanfranco22@gmail.com"];
+        const admins = ["beeker147@gmail.com", "mjeanfranco22@gmail.com" , "aliciamattoslimaymanta@gmail.com"];
         
         this.currentUser = {
           name: user.displayName.split(' ')[0], // Solo tu primer nombre
@@ -49,154 +49,159 @@ export class HomeController {
 
 
   async abrirPanelGestionCarta() {
+    // 1. Guardar el valor que el usuario tiene escrito actualmente (si existe)
+    const currentSearch = document.getElementById("search-product")?.value || "";
+
     const [platosOriginales, categoriasReales] = await Promise.all([
-      this.menuRepository.getAllFromFirestore(),
-      this.menuRepository.getCategoriesFromFirestore(),
+        this.menuRepository.getAllFromFirestore(),
+        this.menuRepository.getCategoriesFromFirestore(),
     ]);
 
     const manageView = new ManageCartaView(document.getElementById("app"));
+    
     const acciones = {
-      onBack: () => this.initialize(),
-
-      onAdd: async (platoData) => {
-        const editId = document.getElementById("edit-id").value;
-        let exito;
-        if (editId) {
-          exito = await this.menuRepository.updatePlato(editId, platoData);
-        } else {
-          exito = await this.menuRepository.addPlato(platoData);
-        }
-        if (exito) {
-          alert(editId ? "Producto actualizado." : "Producto añadido.");
-          document.getElementById("edit-id").value = "";
-          this.abrirPanelGestionCarta();
-        } else {
-          alert("Error al procesar la solicitud.");
-        }
-      },
-
-      onDelete: async (id) => {
-        if (confirm("¿Eliminar este producto?")) {
-          const exito = await this.menuRepository.deletePlato(id);
-          if (exito) {
-            alert("Eliminado.");
-            this.abrirPanelGestionCarta();
-          }
-        }
-      },
-
-      onSearch: (query) => {
-        const q = query.toLowerCase().trim();
-        const filtrados = platosOriginales.filter((p) => {
-          const coincideNombre = p.name.toLowerCase().includes(q);
-          const coincideCategoria = Array.isArray(p.category)
-            ? p.category.some((cat) => cat.toLowerCase().includes(q))
-            : p.category && String(p.category).toLowerCase().includes(q);
-          return coincideNombre || coincideCategoria;
-        });
-
-        const container = document.getElementById("table-container");
-        if (container) {
-          container.innerHTML = manageView.renderTableBody(filtrados);
-          manageView.attachTableEvents(acciones.onEdit, acciones.onDelete);
-        }
-      },
-
-      onEdit: (id) => {
-        const plato = platosOriginales.find((p) => p.id === id);
-        if (plato) manageView.prepareEdit(plato);
-      },
-
-      onAddCategory: async (nombre) => {
-        const exito = await this.menuRepository.addCategory(nombre);
-        if (exito) this.abrirPanelGestionCarta();
-      },
-
-      onDeleteCategory: async (id) => {
-        const exito = await this.menuRepository.deleteCategory(id);
-        if (exito) this.abrirPanelGestionCarta();
-      },
+        onBack: () => this.initialize(),
+        onAdd: async (platoData) => {
+            const editId = document.getElementById("edit-id").value;
+            let exito = editId 
+                ? await this.menuRepository.updatePlato(editId, platoData)
+                : await this.menuRepository.addPlato(platoData);
+            
+            if (exito) {
+                // Al terminar, reabrimos el panel; la búsqueda se mantendrá por la lógica de arriba
+                this.abrirPanelGestionCarta();
+            }
+        },
+        onDelete: async (id) => {
+            if (confirm("¿Eliminar este producto?")) {
+                const exito = await this.menuRepository.deletePlato(id);
+                if (exito) this.abrirPanelGestionCarta();
+            }
+        },
+        onSearch: (query) => {
+            const q = query.toLowerCase().trim();
+            const filtrados = platosOriginales.filter((p) => {
+                const coincideNombre = p.name.toLowerCase().includes(q);
+                const coincideCategoria = Array.isArray(p.category)
+                    ? p.category.some((cat) => cat.toLowerCase().includes(q))
+                    : p.category && String(p.category).toLowerCase().includes(q);
+                return coincideNombre || coincideCategoria;
+            });
+            const container = document.getElementById("table-container");
+            if (container) {
+                container.innerHTML = manageView.renderTableBody(filtrados);
+                manageView.attachTableEvents(acciones.onEdit, acciones.onDelete);
+            }
+        },
+        onEdit: (id) => {
+            const plato = platosOriginales.find((p) => p.id === id);
+            if (plato) manageView.prepareEdit(plato);
+        },
+        onAddCategory: async (nombre) => {
+            if (await this.menuRepository.addCategory(nombre)) this.abrirPanelGestionCarta();
+        },
+        onDeleteCategory: async (id) => {
+            if (await this.menuRepository.deleteCategory(id)) this.abrirPanelGestionCarta();
+        },
     };
 
+    // Renderizar la vista principal
     manageView.render(platosOriginales, categoriasReales, acciones);
+
+    // 2. RESTAURAR LA BÚSQUEDA Y EL FOCO
+    if (currentSearch) {
+        const searchInput = document.getElementById("search-product");
+        searchInput.value = currentSearch;
+        // Ejecutar el filtrado manualmente para que la tabla coincida con el texto restaurado
+        acciones.onSearch(currentSearch);
+        // Opcional: devolver el foco al input para seguir escribiendo
+        searchInput.focus();
+    }
+}
+
+
+async renderAll() {
+  await this.menuRepository.loadAllPlatos();
+  let dailyMenuFromDB = null;
+  let heroPromo = null;
+
+  try {
+    [dailyMenuFromDB, heroPromo] = await Promise.all([
+      this.menuRepository.getDailyMenuConfig(),
+      this.menuRepository.getHeroPromo(),
+    ]);
+  } catch (e) {
+    console.error("Error al cargar configuración:", e);
   }
 
-  async renderAll() {
-    await this.menuRepository.loadAllPlatos();
-    let dailyMenuFromDB = null;
-    let heroPromo = null;
-    try {
-      [dailyMenuFromDB, heroPromo] = await Promise.all([
-        this.menuRepository.getDailyMenuConfig(),
-        this.menuRepository.getHeroPromo(),
-      ]);
-    } catch (e) {
-      console.error("Error cargando configuración:", e);
-    }
+  if (dailyMenuFromDB) {
+    this.currentDailyMenu = dailyMenuFromDB;
+  }
 
-    if (dailyMenuFromDB) {
-      this.currentDailyMenu = dailyMenuFromDB;
-    }
+  // 1. Crear el DOM
+  this.homeView.renderShell(this.restaurantInfo, this.currentUser, this.currentDailyMenu, heroPromo);
 
-    this.homeView.renderShell(this.restaurantInfo, this.currentUser, this.currentDailyMenu, heroPromo);
+  // 2. Vincular contenedores dinámicos
+  this.menuView.filterContainer = document.getElementById("menu-filters");
+  this.menuView.gridContainer = document.getElementById("menu-grid");
 
-    const mobileNavToggle = document.getElementById("mobile-nav-toggle");
-    const mobileNavPanel = document.getElementById("mobile-nav-panel");
-    if (mobileNavToggle && mobileNavPanel) {
-      const setOpen = (open) => {
-        mobileNavPanel.classList.toggle("hidden", !open);
-        mobileNavToggle.setAttribute("aria-expanded", open ? "true" : "false");
-        mobileNavToggle.setAttribute("aria-label", open ? "Cerrar menú" : "Abrir menú");
-      };
-      mobileNavToggle.onclick = () => setOpen(mobileNavPanel.classList.contains("hidden"));
+  // --- MANEJO DE PANELES (SIDEBARS) ---
+  const mobileNavPanel = document.getElementById("mobile-nav-panel");
+  const userMenuPanel = document.getElementById("user-menu-panel");
+
+  // Abrir/Cerrar Navegación Izquierda (Móvil)
+  const navBtn = document.getElementById("mobile-nav-toggle");
+  if (navBtn && mobileNavPanel) {
+      navBtn.onclick = () => mobileNavPanel.classList.remove("hidden");
+      
+      // Cerrar con el botón X
+      mobileNavPanel.querySelector(".close-nav").onclick = () => mobileNavPanel.classList.add("hidden");
+
+      // NUEVO: Cerrar automáticamente al hacer clic en cualquier link del menú
       mobileNavPanel.querySelectorAll(".mobile-nav-link").forEach((link) => {
-        link.addEventListener("click", () => setOpen(false));
+          link.onclick = () => {
+              mobileNavPanel.classList.add("hidden");
+          };
       });
-    }
-
-    const logoutBtn = document.getElementById("logout-btn");
-    if (logoutBtn) {
-      logoutBtn.onclick = async () => {
-        try {
-          await signOut(auth);
-          console.log("Sesión cerrada correctamente");
-        } catch (error) {
-          console.error("Error al cerrar sesión:", error);
-        }
-      };
-    }
-
-    const adminDailyBtn = document.getElementById("admin-daily-menu-btn");
-    if (adminDailyBtn) {
-      adminDailyBtn.onclick = () => this.abrirSelectorMenuEjecutivo();
-    }
-
-
-    const loginBtn = document.getElementById("login-btn");
-    if (loginBtn) {
-      loginBtn.onclick = async () => {
-        try {
-          await signInWithPopup(auth, googleProvider);
-        } catch (error) {
-          console.error("Error al loguear:", error);
-        }
-      };
-    }
-  
-    const adminManageCartaBtn = document.getElementById("admin-manage-carta-btn");
-    if (adminManageCartaBtn) {
-      adminManageCartaBtn.onclick = () => this.abrirPanelGestionCarta();
-    }
-
-    const adminHeroPromoBtn = document.getElementById("admin-hero-promo-btn");
-    if (adminHeroPromoBtn) {
-      adminHeroPromoBtn.onclick = () => this.abrirPanelHeroPromo();
-    }
-
-    this.menuView.filterContainer = document.getElementById("menu-filters");
-    this.menuView.gridContainer = document.getElementById("menu-grid");
-    await this.renderMenu();
   }
+
+  // Abrir/Cerrar Mi Cuenta (Derecha)
+  const userBtn = document.getElementById("user-menu-toggle");
+  if (userBtn && userMenuPanel) {
+      userBtn.onclick = () => userMenuPanel.classList.remove("hidden");
+      userMenuPanel.querySelector(".close-user-menu").onclick = () => userMenuPanel.classList.add("hidden");
+  }
+
+  // --- ACCIONES DE ADMINISTRADOR ---
+  const setupAdmin = (id, callback) => {
+      const btn = document.getElementById(id);
+      if (btn) {
+          btn.onclick = () => {
+              userMenuPanel.classList.add("hidden"); // Cierra antes de abrir
+              callback();
+          };
+      }
+  };
+
+  setupAdmin("admin-daily-menu-btn", () => this.abrirSelectorMenuEjecutivo());
+  setupAdmin("admin-manage-carta-btn", () => this.abrirPanelGestionCarta());
+  setupAdmin("admin-hero-promo-btn", () => this.abrirPanelHeroPromo());
+
+  // --- AUTH ---
+  const loginBtn = document.getElementById("login-btn-panel");
+  if (loginBtn) {
+      loginBtn.onclick = () => signInWithPopup(auth, googleProvider).catch(console.error);
+  }
+
+  const logoutBtn = document.getElementById("logout-btn");
+  if (logoutBtn) logoutBtn.onclick = () => signOut(auth).catch(console.error);
+
+  // 3. Renderizar Menú
+  if (this.menuView.filterContainer) {
+      await this.renderMenu();
+  }
+}
+
 
   renderAdminControls() {
     const heroActions = document.querySelector("#hero .flex");
