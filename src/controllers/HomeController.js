@@ -1,5 +1,6 @@
-// src/controllers/HomeController.js
+import { CATEGORIAS_SOLO_MENU_DIARIO } from "../constants/menuCategories.js";
 import { AdminMenuView } from "../views/AdminMenuView.js";
+import { HeroPromoAdminView } from "../views/HeroPromoAdminView.js";
 import { menuSeed, recetarioPlatos, opcionesEntradas, opcionesRefrescos } from "../data/seed.js";
 import { ManageCartaView } from "../views/ManageCartaView.js";
 import { auth, googleProvider } from "../services/firebaseConfig.js";
@@ -47,144 +48,130 @@ export class HomeController {
   }
 
 
-  // src/controllers/HomeController.js
-
   async abrirPanelGestionCarta() {
-      // 1. Carga de datos en paralelo (Platos y Categorías reales de Firebase)
-      const [platosOriginales, categoriasReales] = await Promise.all([
-        this.menuRepository.getAllFromFirestore(),
-        this.menuRepository.getCategoriesFromFirestore()
+    const [platosOriginales, categoriasReales] = await Promise.all([
+      this.menuRepository.getAllFromFirestore(),
+      this.menuRepository.getCategoriesFromFirestore(),
     ]);
-      
-      const manageView = new ManageCartaView(document.getElementById('app'));
-      // OBJETO DE ACCIONES
-      const acciones = {
-          onBack: () => this.initialize(),
 
-          // --- ACCIONES DE PLATOS ---
-          onAdd: async (platoData) => {
-              const editId = document.getElementById('edit-id').value;
-              let exito;
-              if (editId) {
-                  // Modo Edición
-                  exito = await this.menuRepository.updatePlato(editId, platoData);
-              }else{
-                  // Modo Nuevo
-                  exito = await this.menuRepository.addPlato(platoData);
-              }
-              if (exito) {
-                  alert(editId ? "¡Plato actualizado!" : "¡Plato añadido!");
-                  // Limpiamos el ID de edición por si acaso
-                  document.getElementById('edit-id').value = "";
-                  // Recargamos el panel para ver los cambios
-                  this.abrirPanelGestionCarta();
-              } else {
-                  alert("Error al procesar la solicitud.");
-              }
-          },
-          onDelete: async (id) => {
-              if (confirm("¿Eliminar plato?")) {
-                  const exito = await this.menuRepository.deletePlato(id);
-                  if (exito) {
-                      alert("Eliminado.");
-                      this.abrirPanelGestionCarta();
-                  }
-              }
-          },
-          onSearch: (query) => {
-            const q = query.toLowerCase().trim();
-            const filtrados = platosOriginales.filter(p => {
-                // Buscamos en el nombre
-                const coincideNombre = p.name.toLowerCase().includes(q);
-                
-                // Buscamos en las categorías (manejando que ahora es un array)
-                const coincideCategoria = Array.isArray(p.category)
-                    ? p.category.some(cat => cat.toLowerCase().includes(q))
-                    : p.category.toLowerCase().includes(q);
-        
-                return coincideNombre || coincideCategoria;
-            });
-        
-            const container = document.getElementById('table-container');
-            if (container) {
-                // Usamos el render de la vista para actualizar la tabla
-                container.innerHTML = manageView.renderTableBody(filtrados);
-                // Volvemos a conectar los eventos de los nuevos botones generados
-                manageView.attachTableEvents(acciones.onEdit, acciones.onDelete);
-            }
-        },
-          
-          onEdit: (id) => {
-            const plato = platosOriginales.find(p => p.id === id);
-            if (plato) {
-                manageView.prepareEdit(plato);
-            }
-        },
+    const manageView = new ManageCartaView(document.getElementById("app"));
+    const acciones = {
+      onBack: () => this.initialize(),
 
-        // --- ACCIONES DE CATEGORÍAS ---
-        onAddCategory: async (nombre) => {
-            const exito = await this.menuRepository.addCategory(nombre);
-            if (exito) {
-                this.abrirPanelGestionCarta(); // Recargamos el panel para ver la nueva categoría
-            }
-        },
-        onDeleteCategory: async (id) => {
-            const exito = await this.menuRepository.deleteCategory(id);
-            if (exito) {
-                this.abrirPanelGestionCarta(); // Recargamos para actualizar la lista y el select
-            }
+      onAdd: async (platoData) => {
+        const editId = document.getElementById("edit-id").value;
+        let exito;
+        if (editId) {
+          exito = await this.menuRepository.updatePlato(editId, platoData);
+        } else {
+          exito = await this.menuRepository.addPlato(platoData);
         }
+        if (exito) {
+          alert(editId ? "Producto actualizado." : "Producto añadido.");
+          document.getElementById("edit-id").value = "";
+          this.abrirPanelGestionCarta();
+        } else {
+          alert("Error al procesar la solicitud.");
+        }
+      },
 
+      onDelete: async (id) => {
+        if (confirm("¿Eliminar este producto?")) {
+          const exito = await this.menuRepository.deletePlato(id);
+          if (exito) {
+            alert("Eliminado.");
+            this.abrirPanelGestionCarta();
+          }
+        }
+      },
 
+      onSearch: (query) => {
+        const q = query.toLowerCase().trim();
+        const filtrados = platosOriginales.filter((p) => {
+          const coincideNombre = p.name.toLowerCase().includes(q);
+          const coincideCategoria = Array.isArray(p.category)
+            ? p.category.some((cat) => cat.toLowerCase().includes(q))
+            : p.category && String(p.category).toLowerCase().includes(q);
+          return coincideNombre || coincideCategoria;
+        });
 
+        const container = document.getElementById("table-container");
+        if (container) {
+          container.innerHTML = manageView.renderTableBody(filtrados);
+          manageView.attachTableEvents(acciones.onEdit, acciones.onDelete);
+        }
+      },
 
-      };
+      onEdit: (id) => {
+        const plato = platosOriginales.find((p) => p.id === id);
+        if (plato) manageView.prepareEdit(plato);
+      },
 
+      onAddCategory: async (nombre) => {
+        const exito = await this.menuRepository.addCategory(nombre);
+        if (exito) this.abrirPanelGestionCarta();
+      },
 
-      
+      onDeleteCategory: async (id) => {
+        const exito = await this.menuRepository.deleteCategory(id);
+        if (exito) this.abrirPanelGestionCarta();
+      },
+    };
 
-
-      manageView.render(platosOriginales, categoriasReales, acciones);
+    manageView.render(platosOriginales, categoriasReales, acciones);
   }
 
   async renderAll() {
     await this.menuRepository.loadAllPlatos();
-    //const dailyMenu = await this.menuRepository.getDailyMenuConfig();
-    const dailyMenuFromDB = await this.menuRepository.getDailyMenuConfig();
-    
-    //this.homeView.renderShell(this.restaurantInfo, this.currentUser, dailyMenu || this.currentDailyMenu);
-    // SOLUCIÓN: Actualizar el estado local con lo que viene de Firebase
-    
+    let dailyMenuFromDB = null;
+    let heroPromo = null;
+    try {
+      [dailyMenuFromDB, heroPromo] = await Promise.all([
+        this.menuRepository.getDailyMenuConfig(),
+        this.menuRepository.getHeroPromo(),
+      ]);
+    } catch (e) {
+      console.error("Error cargando configuración:", e);
+    }
 
     if (dailyMenuFromDB) {
       this.currentDailyMenu = dailyMenuFromDB;
     }
 
-    // Ahora renderShell usará el menú actualizado
-    this.homeView.renderShell(this.restaurantInfo, this.currentUser, this.currentDailyMenu);
+    this.homeView.renderShell(this.restaurantInfo, this.currentUser, this.currentDailyMenu, heroPromo);
 
-      // Lógica para el botón de SALIR
+    const mobileNavToggle = document.getElementById("mobile-nav-toggle");
+    const mobileNavPanel = document.getElementById("mobile-nav-panel");
+    if (mobileNavToggle && mobileNavPanel) {
+      const setOpen = (open) => {
+        mobileNavPanel.classList.toggle("hidden", !open);
+        mobileNavToggle.setAttribute("aria-expanded", open ? "true" : "false");
+        mobileNavToggle.setAttribute("aria-label", open ? "Cerrar menú" : "Abrir menú");
+      };
+      mobileNavToggle.onclick = () => setOpen(mobileNavPanel.classList.contains("hidden"));
+      mobileNavPanel.querySelectorAll(".mobile-nav-link").forEach((link) => {
+        link.addEventListener("click", () => setOpen(false));
+      });
+    }
+
     const logoutBtn = document.getElementById("logout-btn");
     if (logoutBtn) {
       logoutBtn.onclick = async () => {
         try {
           await signOut(auth);
           console.log("Sesión cerrada correctamente");
-          // No necesitas hacer nada más, onAuthStateChanged detectará la salida y refrescará la UI
         } catch (error) {
           console.error("Error al cerrar sesión:", error);
         }
       };
     }
 
-      // Conectar el botón de Actualizar Menú diario
     const adminDailyBtn = document.getElementById("admin-daily-menu-btn");
     if (adminDailyBtn) {
       adminDailyBtn.onclick = () => this.abrirSelectorMenuEjecutivo();
     }
 
 
-    // Conectar botón de login
     const loginBtn = document.getElementById("login-btn");
     if (loginBtn) {
       loginBtn.onclick = async () => {
@@ -196,17 +183,18 @@ export class HomeController {
       };
     }
   
-    // Conectar botón de Gestionar Carta
     const adminManageCartaBtn = document.getElementById("admin-manage-carta-btn");
     if (adminManageCartaBtn) {
-        adminManageCartaBtn.onclick = () => this.abrirPanelGestionCarta(); // Cambiado de alert a la función real
+      adminManageCartaBtn.onclick = () => this.abrirPanelGestionCarta();
     }
 
-    
-  
+    const adminHeroPromoBtn = document.getElementById("admin-hero-promo-btn");
+    if (adminHeroPromoBtn) {
+      adminHeroPromoBtn.onclick = () => this.abrirPanelHeroPromo();
+    }
+
     this.menuView.filterContainer = document.getElementById("menu-filters");
     this.menuView.gridContainer = document.getElementById("menu-grid");
-    //this.renderMenu();
     await this.renderMenu();
   }
 
@@ -219,6 +207,31 @@ export class HomeController {
       adminBtn.onclick = () => this.abrirSelectorMenuEjecutivo();
       heroActions.prepend(adminBtn);
     }
+  }
+
+  async abrirPanelHeroPromo() {
+    let data = null;
+    try {
+      data = await this.menuRepository.getHeroPromo();
+    } catch (e) {
+      console.error(e);
+    }
+    const view = new HeroPromoAdminView(document.getElementById("app"));
+    view.render(
+      data,
+      async (payload) => {
+        const ok = await this.menuRepository.saveHeroPromo(payload);
+        if (ok) {
+          await this.renderAll();
+          alert("Promoción del inicio guardada.");
+        } else {
+          alert("No se pudo guardar. Revisa la consola y los permisos de Firestore.");
+        }
+      },
+      () => {
+        void this.renderAll();
+      },
+    );
   }
 
   async abrirSelectorMenuEjecutivo() {
@@ -244,56 +257,18 @@ export class HomeController {
   
 
   async renderMenu() {
-    // 1. Obtener ítems filtrados (lógica existente)
-    let items = this.menuRepository.getByCategory(this.activeCategory);
-    
-
-    /*
-      if (this.activeCategory === "Todos" || this.activeCategory === "Menú del Día") {
-        const platosElegidosAdmin = this.currentDailyMenu.segundos.map(nombre => {
-          // REPARACIÓN: Buscar en la memoria local de platos cargados de Firebase
-          const datosPlato = this.menuRepository.allPlatos.find(p => p.name === nombre);
-          
-          const finalImageUrl = (datosPlato && datosPlato.imageUrl)
-              ? datosPlato.imageUrl
-              : "https://images.unsplash.com/photo-1512058564366-18510be2db19?q=80&w=1200";
-
-          return {
-              id: `daily-${nombre.toLowerCase().replace(/\s+/g, '-')}`,
-              name: nombre,
-              description: datosPlato ? datosPlato.description : `Menú completo con entrada y bebida.`,
-              category: "Menú del Día",
-              price: 8.00,
-              tags: ["MENÚ DEL DÍA", "RECOMENDADO"],
-              imageUrl: finalImageUrl
-          };
-      });
-    
-      if (this.activeCategory === "Menú del Día") {
-        items = platosElegidosAdmin;
-      } else {
-        items = [...platosElegidosAdmin, ...items];
-      }
-    }
-    */
-
-    // 2. OBTENER CATEGORÍAS REALES DE FIREBASE (Cambio clave)
+    const items = this.menuRepository.getByCategory(this.activeCategory);
     const categoriasDB = await this.menuRepository.getCategoriesFromFirestore();
-    // Después (solo usa lo que viene de Firebase y el botón "Todos")
-    const categoriasOcultas = ["Entrada", "Bebida Menú", "Menú del Día"];
     const nombresCategorias = [
-      "Todos", 
-      ...categoriasDB
-        .map(c => c.nombre)
-        .filter(nombre => !categoriasOcultas.includes(nombre))
+      "Todos",
+      ...categoriasDB.map((c) => c.nombre).filter((nombre) => !CATEGORIAS_SOLO_MENU_DIARIO.includes(nombre)),
     ];
 
-    // 3. Renderizar filtros con la lista actualizada
     this.menuView.renderFilters(nombresCategorias, this.activeCategory, (cat) => {
       this.activeCategory = cat;
-      this.renderMenu(); // Re-ejecuta para filtrar
+      this.renderMenu();
     });
 
     this.menuView.renderItems(items);
-}
+  }
 }

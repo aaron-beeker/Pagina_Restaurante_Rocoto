@@ -1,3 +1,4 @@
+import { esProductoSoloMenuDiario } from "../constants/menuCategories.js";
 import { db } from "./firebaseConfig.js";
 import { 
   collection, 
@@ -26,22 +27,12 @@ export class MenuRepository {
 
   // Re-implementamos getByCategory para que la vista no falle
   getByCategory(category) {
-    // Definimos las categorías que queremos ocultar de la vista general
-    const categoriasPrivadas = ["Entrada", "Bebida Menú", "Menú del Día"];
-  
     if (category === "Todos") {
-      return this.allPlatos.filter(item => {
-        // Si es un array, verificamos que NO contenga ninguna de las privadas
-        if (Array.isArray(item.category)) {
-          return !item.category.some(cat => categoriasPrivadas.includes(cat));
-        }
-        // Si es un string, verificamos que no sea una de las privadas
-        return !categoriasPrivadas.includes(item.category);
-      });
+      return this.allPlatos.filter((item) => !esProductoSoloMenuDiario(item));
     }
-    
-    // Lógica para categorías específicas (se mantiene igual)
-    return this.allPlatos.filter(item => {
+
+    return this.allPlatos.filter((item) => {
+      if (esProductoSoloMenuDiario(item)) return false;
       if (Array.isArray(item.category)) {
         return item.category.includes(category);
       }
@@ -103,6 +94,28 @@ export class MenuRepository {
     }
   }
 
+  async getHeroPromo() {
+    const docRef = doc(db, "configuracion", "hero_promocion");
+    const docSnap = await getDoc(docRef);
+    return docSnap.exists() ? docSnap.data() : null;
+  }
+
+  async saveHeroPromo(payload) {
+    try {
+      const docRef = doc(db, "configuracion", "hero_promocion");
+      await setDoc(docRef, {
+        activo: !!payload.activo,
+        titulo: payload.titulo || "",
+        subtitulo: payload.subtitulo || "",
+        imageUrl: payload.imageUrl || "",
+        ultimaActualizacion: new Date(),
+      });
+      return true;
+    } catch (error) {
+      console.error("Error al guardar promoción del hero:", error);
+      return false;
+    }
+  }
 
   // Método para añadir un plato nuevo
   async addPlato(platoData) {
@@ -110,8 +123,9 @@ export class MenuRepository {
         const platosRef = collection(db, "platos_carta");
         await addDoc(platosRef, {
             ...platoData,
-            // Nos aseguramos de que siempre sea un array antes de subir a Firebase
-            category: Array.isArray(platoData.category) ? platoData.category : [platoData.category]
+            description: platoData.description ?? "",
+            imageUrl: platoData.imageUrl ?? "",
+            category: Array.isArray(platoData.category) ? platoData.category : [platoData.category],
         });
         return true;
     } catch (error) {
@@ -134,14 +148,20 @@ export class MenuRepository {
 
   async updatePlato(id, updatedData) {
     try {
-        const docRef = doc(db, "platos_carta", id);
-        await setDoc(docRef, updatedData, { merge: true }); // merge: true evita borrar campos no incluidos
-        return true;
+      const docRef = doc(db, "platos_carta", id);
+      const payload = {
+        ...updatedData,
+        category: Array.isArray(updatedData.category)
+          ? updatedData.category
+          : [updatedData.category],
+      };
+      await setDoc(docRef, payload, { merge: true });
+      return true;
     } catch (error) {
-        console.error("Error al actualizar plato:", error);
-        return false;
+      console.error("Error al actualizar plato:", error);
+      return false;
     }
-}
+  }
 
 // 1. Obtener categorías desde la nueva colección 'categorias_carta'
 async getCategoriesFromFirestore() {
@@ -216,14 +236,9 @@ async getOpcionesParaAdmin() {
         return Array.isArray(cat) ? cat.includes("Entrada") : cat === "Entrada";
       }),
 
-      // 2. Filtro para Segundos (Platos que cuestan 8 soles)
-      segundos: platos.filter(p => {
+      segundos: platos.filter((p) => {
         const cat = p.category;
-        const esEntrada = Array.isArray(cat) ? cat.includes("Entrada") : cat === "Entrada";
-        const esBebida = Array.isArray(cat) ? cat.includes("Bebida Menú") : cat === "Bebida Menú";
-        
-        // Retorna platos que no son ni entrada ni bebida y cuestan 8
-        return !esEntrada && !esBebida && p.price === 8;
+        return Array.isArray(cat) ? cat.includes("Menú del Día") : cat === "Menú del Día";
       }),
 
       // 3. Filtro para Refrescos usando tu nueva categoría
