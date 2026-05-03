@@ -20,6 +20,15 @@ export class AdminMenuView {
             </button>
           </div>
 
+          <div class="border-t border-stone-200 pt-6 sm:pt-8 flex flex-col gap-4">
+              <button type="button" id="save-menu" class="w-full rounded-xl bg-primary py-4 font-button text-sm font-bold text-white shadow-lg transition-all hover:brightness-110">
+                  Publicar actualización de menú
+              </button>
+              <button type="button" id="download-pdf-a3" class="w-full rounded-xl border-2 border-primary py-4 font-button text-sm font-bold text-primary transition-all hover:bg-stone-50">
+                  Descargar Carta PDF (Tamaño A3)
+              </button>
+          </div>
+
           <div class="space-y-8 sm:space-y-10">
             <div>
               <h3 class="${adminShell.sectionTitle}">1. Entradas disponibles</h3>

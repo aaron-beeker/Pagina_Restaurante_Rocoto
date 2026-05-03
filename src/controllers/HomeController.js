@@ -6,7 +6,7 @@ import { ManageCartaView } from "../views/ManageCartaView.js";
 import { auth, googleProvider } from "../services/firebaseConfig.js";
 import { signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
+import { PdfService } from "../services/PdfService.js";
 
 export class HomeController {
   constructor({ homeView, menuView, menuRepository, restaurantInfo }) {
@@ -235,6 +235,7 @@ export class HomeController {
   }
 
   async abrirSelectorMenuEjecutivo() {
+      const pdfService = new PdfService(this.restaurantInfo);
       const opciones = await this.menuRepository.getOpcionesParaAdmin();
       const adminView = new AdminMenuView(document.getElementById('app'));
       
@@ -252,6 +253,20 @@ export class HomeController {
               }
           }
       );
+
+      document.getElementById("download-pdf-a3").onclick = async () => {
+        const btn = document.getElementById("download-pdf-a3");
+        btn.textContent = "Generando PDF...";
+        btn.disabled = true;
+    
+        const allPlatos = await this.menuRepository.loadAllPlatos();
+        await pdfService.generarMenuA2(this.currentDailyMenu, allPlatos);
+    
+        btn.textContent = "Descargar Carta PDF (Tamaño A2)";
+        btn.disabled = false;
+    };
+
+
   }
 
   

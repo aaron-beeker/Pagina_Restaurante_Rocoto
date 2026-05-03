@@ -1,113 +1,168 @@
 export class PdfService {
     constructor(restaurantInfo) {
         this.info = restaurantInfo;
+        this.primary = [0, 59, 27];   // Verde Rocoto
+        this.secondary = [188, 0, 0]; // Rojo Rocoto
+        this.textMain = [30, 30, 30];
+        this.textMuted = [80, 80, 80];
     }
 
-    async generarMenuA3(dailyMenu, allPlatos) {
+    async generarMenuA2(dailyMenu, allPlatos) {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF({
             orientation: 'portrait',
             unit: 'mm',
-            format: 'a3'
+            format: 'a2'
         });
 
         const width = doc.internal.pageSize.getWidth();
-        const primaryColor = [0, 59, 27]; // Tu color verde #003b1b
+        const height = doc.internal.pageSize.getHeight();
 
         // --- PÁGINA 1: EL MENÚ DIARIO (FRENTE) ---
-        // Logo
+        // Borde Ornamental Doble
+        doc.setDrawColor(...this.primary);
+        doc.setLineWidth(2);
+        doc.rect(20, 20, width - 40, height - 40);
+        doc.setLineWidth(0.5);
+        doc.rect(23, 23, width - 46, height - 46);
+
+        // Logo centrado con mayor presencia
         try {
             const logoImg = await this.getBase64FromUrl(this.info.logoUrl);
-            doc.addImage(logoImg, 'PNG', width / 2 - 40, 20, 80, 25);
-        } catch (e) { console.error("Logo no cargado", e); }
+            doc.addImage(logoImg, 'PNG', width / 2 - 60, 45, 120, 35);
+        } catch (e) { console.error("Error al cargar logo", e); }
 
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(40);
-        doc.setTextColor(...primaryColor);
-        doc.text("MENÚ DEL DÍA", width / 2, 60, { align: 'center' });
+        doc.setFont("times", "bolditalic");
+        doc.setFontSize(70);
+        doc.setTextColor(...this.primary);
+        doc.text("MENÚ EJECUTIVO", width / 2, 105, { align: 'center' });
 
-        doc.setLineWidth(1);
-        doc.line(40, 65, width - 40, 65);
+        // Línea divisoria artesanal
+        this.drawArtisticLine(doc, width / 2, 115, 200);
 
-        // Secciones del Menú Diario
-        let y = 90;
+        // Secciones del día
+        let y = 160;
         const secciones = [
             { t: "ENTRADAS", d: dailyMenu.entradas },
-            { t: "SEGUNDOS", d: dailyMenu.segundos },
-            { t: "BEBIDAS", d: dailyMenu.refrescos }
+            { t: "PLATOS DE FONDO", d: dailyMenu.segundos },
+            { t: "REFRESCOS", d: dailyMenu.refrescos }
         ];
 
         secciones.forEach(sec => {
-            doc.setFontSize(24);
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(35);
+            doc.setTextColor(...this.secondary);
             doc.text(sec.t, width / 2, y, { align: 'center' });
-            y += 15;
-            doc.setFontSize(18);
-            doc.setTextColor(60, 60, 60);
+            
+            y += 20;
+            doc.setFont("times", "normal");
+            doc.setFontSize(28);
+            doc.setTextColor(...this.textMain);
             sec.d.forEach(item => {
-                doc.text(item, width / 2, y, { align: 'center' });
-                y += 10;
+                doc.text(item.toUpperCase(), width / 2, y, { align: 'center' });
+                y += 15;
             });
-            y += 15;
+            y += 35;
         });
 
-        doc.setFontSize(30);
-        doc.setTextColor(188, 0, 0); // Tu color rojo secundario
-        doc.text("PRECIO: S/ 8.00", width / 2, y + 20, { align: 'center' });
+        // Precio destacado en la parte inferior
+        doc.setFontSize(45);
+        doc.setTextColor(...this.primary);
+        doc.text("PRECIO TOTAL: S/ 8.00", width / 2, height - 80, { align: 'center' });
 
-        // --- PÁGINA 2: LA CARTA (POSTERIOR) ---
+        // --- PÁGINA 2: LA CARTA (DORSO) ---
         doc.addPage();
-        doc.setFontSize(35);
-        doc.setTextColor(...primaryColor);
-        doc.text("NUESTRA CARTA", width / 2, 30, { align: 'center' });
+        
+        // Cabecera elegante
+        doc.setFillColor(...this.primary);
+        doc.rect(0, 0, width, 60, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.setFont("times", "bold");
+        doc.setFontSize(50);
+        doc.text("NUESTRA CARTA GENERAL", width / 2, 40, { align: 'center' });
 
-        // Filtrar platos (excluir los que son SOLO menú diario)
+        // Filtrar platos que no son del menú diario
         const cartaPlatos = allPlatos.filter(p => {
             const cats = Array.isArray(p.category) ? p.category : [p.category];
             return !cats.every(c => ["Entrada", "Menú del Día", "Bebida Menú"].includes(c));
         });
 
-        // Organizar por categorías
-        const platosPorCategoria = {};
-        cartaPlatos.forEach(p => {
-            const cat = Array.isArray(p.category) ? p.category[0] : p.category;
-            if (!platosPorCategoria[cat]) platosPorCategoria[cat] = [];
-            platosPorCategoria[cat].push(p);
+        // Renderizar en 3 COLUMNAS para aprovechar el A2
+        doc.autoTable({
+            startY: 85,
+            head: [],
+            body: this.formatPlatosParaTresColumnas(cartaPlatos),
+            theme: 'plain',
+            styles: {
+                font: "times",
+                cellPadding: 8,
+                fontSize: 14
+            },
+            columnStyles: {
+                0: { cellWidth: (width - 60) / 3 },
+                1: { cellWidth: (width - 60) / 3 },
+                2: { cellWidth: (width - 60) / 3 }
+            },
+            margin: { left: 25, right: 25 },
+            didDrawCell: (data) => {
+                // Separadores verticales discretos
+                if (data.column.index < 2) {
+                    doc.setDrawColor(220, 220, 220);
+                    doc.line(data.cell.x + data.cell.width, data.cell.y + 5, data.cell.x + data.cell.width, data.cell.y + data.cell.height - 5);
+                }
+            }
         });
 
-        let currentY = 50;
-        Object.keys(platosPorCategoria).forEach(cat => {
-            doc.autoTable({
-                startY: currentY,
-                head: [[cat.toUpperCase(), "PRECIO"]],
-                body: platosPorCategoria[cat].map(p => [
-                    { content: `${p.name}\n${p.description || ''}`, styles: { fontSize: 12 } },
-                    `S/ ${Number(p.price).toFixed(2)}`
-                ]),
-                theme: 'striped',
-                headStyles: { fillColor: primaryColor, fontSize: 14 },
-                columnStyles: { 1: { halign: 'right', cellWidth: 30 } },
-                margin: { left: 30, right: 30 }
-            });
-            currentY = doc.lastAutoTable.finalY + 15;
-        });
-
-        doc.save(`Carta_Rocoto_${new Date().toLocaleDateString()}.pdf`);
+        doc.save(`Carta_Rocoto_A2.pdf`);
     }
 
-    getBase64FromUrl(url) {
-        return new Promise((resolve, reject) => {
-            const img = new Image();
-            img.setAttribute('crossOrigin', 'anonymous');
-            img.onload = () => {
-                const canvas = document.createElement('canvas');
-                canvas.width = img.width;
-                canvas.height = img.height;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0);
-                resolve(canvas.toDataURL('image/png'));
-            };
-            img.onerror = reject;
-            img.src = url;
+    formatPlatosParaTresColumnas(platos) {
+        const platosPorCat = {};
+        platos.forEach(p => {
+            const cat = Array.isArray(p.category) ? p.category[0] : p.category;
+            if (!platosPorCat[cat]) platosPorCat[cat] = [];
+            platosPorCat[cat].push(p);
+        });
+
+        let rows = [];
+        Object.keys(platosPorCat).forEach(cat => {
+            // Título de categoría a lo ancho
+            rows.push([{ content: cat.toUpperCase(), colSpan: 3, styles: { textColor: this.primary, fontStyle: 'bold', fontSize: 24, halign: 'center', cellPadding: 15 } }]);
+            
+            const items = platosPorCat[cat];
+            for (let i = 0; i < items.length; i += 3) {
+                rows.push([
+                    this.renderItem(items[i]),
+                    items[i + 1] ? this.renderItem(items[i + 1]) : "",
+                    items[i + 2] ? this.renderItem(items[i + 2]) : ""
+                ]);
+            }
+        });
+        return rows;
+    }
+
+    renderItem(p) {
+        if (!p) return "";
+        return {
+            content: `${p.name.toUpperCase()}\n${p.description || ''}\nS/ ${Number(p.price).toFixed(2)}`,
+            styles: { cellPadding: 5 }
+        };
+    }
+
+    drawArtisticLine(doc, x, y, w) {
+        doc.setDrawColor(...this.secondary);
+        doc.setLineWidth(1);
+        doc.line(x - w/2, y, x + w/2, y);
+        doc.circle(x, y, 1.5, 'F');
+    }
+
+    async getBase64FromUrl(url) {
+        const response = await fetch(url);
+        const blob = await response.blob();
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result);
+            reader.readAsDataURL(blob);
         });
     }
 }
