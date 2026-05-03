@@ -247,37 +247,46 @@ export class HomeController {
     // 1. Obtener ítems filtrados (lógica existente)
     let items = this.menuRepository.getByCategory(this.activeCategory);
     
-    if (this.activeCategory === "Todos" || this.activeCategory === "Menú del Día") {
-      const platosElegidosAdmin = this.currentDailyMenu.segundos.map(nombre => {
-        // REPARACIÓN: Buscar en la memoria local de platos cargados de Firebase
-        const datosPlato = this.menuRepository.allPlatos.find(p => p.name === nombre);
-        
-        const finalImageUrl = (datosPlato && datosPlato.imageUrl)
-            ? datosPlato.imageUrl
-            : "https://images.unsplash.com/photo-1512058564366-18510be2db19?q=80&w=1200";
 
-        return {
-            id: `daily-${nombre.toLowerCase().replace(/\s+/g, '-')}`,
-            name: nombre,
-            description: datosPlato ? datosPlato.description : `Menú completo con entrada y bebida.`,
-            category: "Menú del Día",
-            price: 8.00,
-            tags: ["MENÚ DEL DÍA", "RECOMENDADO"],
-            imageUrl: finalImageUrl
-        };
-    });
+    /*
+      if (this.activeCategory === "Todos" || this.activeCategory === "Menú del Día") {
+        const platosElegidosAdmin = this.currentDailyMenu.segundos.map(nombre => {
+          // REPARACIÓN: Buscar en la memoria local de platos cargados de Firebase
+          const datosPlato = this.menuRepository.allPlatos.find(p => p.name === nombre);
+          
+          const finalImageUrl = (datosPlato && datosPlato.imageUrl)
+              ? datosPlato.imageUrl
+              : "https://images.unsplash.com/photo-1512058564366-18510be2db19?q=80&w=1200";
 
+          return {
+              id: `daily-${nombre.toLowerCase().replace(/\s+/g, '-')}`,
+              name: nombre,
+              description: datosPlato ? datosPlato.description : `Menú completo con entrada y bebida.`,
+              category: "Menú del Día",
+              price: 8.00,
+              tags: ["MENÚ DEL DÍA", "RECOMENDADO"],
+              imageUrl: finalImageUrl
+          };
+      });
+    
       if (this.activeCategory === "Menú del Día") {
         items = platosElegidosAdmin;
       } else {
         items = [...platosElegidosAdmin, ...items];
       }
     }
+    */
 
     // 2. OBTENER CATEGORÍAS REALES DE FIREBASE (Cambio clave)
     const categoriasDB = await this.menuRepository.getCategoriesFromFirestore();
     // Después (solo usa lo que viene de Firebase y el botón "Todos")
-    const nombresCategorias = ["Todos", ...categoriasDB.map(c => c.nombre)];
+    const categoriasOcultas = ["Entrada", "Bebida Menú", "Menú del Día"];
+    const nombresCategorias = [
+      "Todos", 
+      ...categoriasDB
+        .map(c => c.nombre)
+        .filter(nombre => !categoriasOcultas.includes(nombre))
+    ];
 
     // 3. Renderizar filtros con la lista actualizada
     this.menuView.renderFilters(nombresCategorias, this.activeCategory, (cat) => {

@@ -3,33 +3,25 @@ export class ManageCartaView {
         this.rootElement = rootElement;
     }
 
-    render(platos, categorias,acciones) {
-        const { onAdd, onEdit, onDelete, onBack, onSearch, onAddCategory, onDeleteCategory } = acciones;
-        this.rootElement.innerHTML = `
-            <div class="min-h-screen bg-stone-100 p-4 pt-20 pb-20">
-                <div class="mx-auto max-w-6xl rounded-2xl bg-white p-6 shadow-xl">
-                    
-                    <div class="mb-8 flex items-center justify-between border-b pb-4">
-                        <div>
-                            <h2 class="font-h1 text-2xl text-secondary uppercase">Gestión de Carta General</h2>
-                            <p class="text-sm text-stone-500">Administra todos los platos disponibles en el restaurante.</p>
-                        </div>
-                        <button id="back-from-manage" class="flex items-center gap-2 text-stone-400 hover:text-primary transition-colors font-button text-sm">
-                            Cerrar Gestión
-                        </button>
-                    </div>
+    // src/views/ManageCartaView.js
 
-                    <!-- Buscador Dinámico -->
-                    <div class="mb-6">
-                        <div class="relative">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-3">
-                                <svg class="h-5 w-5 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                            </span>
-                            <input type="text" id="search-plato" placeholder="Buscar plato por nombre o categoría..." class="w-full rounded-xl border-stone-300 py-3 pl-10 text-sm focus:border-primary focus:ring-primary">
-                        </div>
+render(platos, categorias, acciones) {
+    const { onAdd, onEdit, onDelete, onBack, onSearch, onAddCategory, onDeleteCategory } = acciones;
+    this.rootElement.innerHTML = `
+        <div class="min-h-screen bg-stone-100 p-4 pt-20 pb-20">
+            <div class="mx-auto max-w-6xl rounded-2xl bg-white p-6 shadow-xl">
+                
+                <div class="mb-8 flex items-center justify-between border-b pb-4">
+                    <div>
+                        <h2 class="font-h1 text-2xl text-secondary uppercase text-primary">Gestión de Carta General</h2>
+                        <p class="text-sm text-stone-500">Administra platos y categorías del restaurante.</p>
                     </div>
+                    <button id="back-from-manage" class="flex items-center gap-2 text-stone-400 hover:text-primary transition-colors font-button text-sm">
+                        Cerrar Gestión
+                    </button>
+                </div>
 
-                    <!-- SECCIÓN NUEVA: Gestión de Categorías -->
+                <!-- 1. GESTIÓN DE CATEGORÍAS (RESTAURADO) -->
                 <div class="mb-10 rounded-xl bg-blue-50 p-6 border border-blue-200">
                     <h3 class="mb-4 font-bold text-blue-800 text-sm uppercase">Gestionar Categorías</h3>
                     <div class="flex flex-wrap gap-2 mb-4" id="categories-list">
@@ -48,102 +40,89 @@ export class ManageCartaView {
                     </form>
                 </div>
 
-
-
-                    <!-- Formulario de Platos (Existente) -->
+                <!-- 2. FORMULARIO DE PLATOS (MULTICATEGORÍA) -->
                 <div class="mb-10 rounded-xl bg-stone-50 p-6 border border-stone-200">
                     <h3 class="mb-4 font-bold text-stone-800 text-sm uppercase">Añadir/Editar Plato</h3>
-                    <form id="add-plato-form" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <form id="add-plato-form" class="space-y-4">
                         <input type="hidden" id="edit-id" value="">
-                        <input type="text" id="new-name" placeholder="Nombre del plato" class="rounded-lg border-stone-300 text-sm" required>
-                        <input type="number" id="new-price" placeholder="Precio" class="rounded-lg border-stone-300 text-sm" required>
-                        <select id="new-category" class="rounded-lg border-stone-300 text-sm">
-                            ${categorias.map(cat => `<option value="${cat.nombre}">${cat.nombre}</option>`).join('')}
-                        </select>
-                        <button type="submit" class="rounded-lg bg-primary py-2 text-white font-button text-sm">Guardar en Carta</button>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <input type="text" id="new-name" placeholder="Nombre del plato" class="rounded-lg border-stone-300 text-sm" required>
+                            <input type="number" id="new-price" placeholder="Precio" class="rounded-lg border-stone-300 text-sm" required>
+                        </div>
+
+                        <div class="bg-white p-4 rounded-lg border border-stone-200">
+                            <p class="text-xs font-bold text-stone-500 uppercase mb-3">Selecciona las Categorías:</p>
+                            <div class="flex flex-wrap gap-3">
+                                ${categorias.map(cat => `
+                                    <label class="flex items-center gap-2 cursor-pointer bg-stone-50 px-3 py-2 rounded-md border border-stone-100 hover:border-primary transition-all">
+                                        <input type="checkbox" name="plato-category" value="${cat.nombre}" class="h-4 w-4 rounded border-stone-300 text-primary focus:ring-primary">
+                                        <span class="text-sm text-stone-700 font-medium">${cat.nombre}</span>
+                                    </label>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <button type="submit" class="w-full rounded-lg bg-primary py-3 text-white font-button text-sm font-bold shadow-md hover:brightness-110 transition-all">
+                            Guardar en Carta
+                        </button>
                     </form>
                 </div>
 
+                <!-- 3. BUSCADOR Y TABLA -->
+                <div class="mb-6">
+                    <input type="text" id="search-plato" placeholder="Buscar por nombre o categoría..." class="w-full rounded-xl border-stone-300 py-3 px-4 text-sm focus:ring-primary">
+                </div>
                 
-
-
-                    <!-- Contenedor de la Tabla (Añadimos un ID para actualizar solo el contenido) -->
-                    <div class="overflow-x-auto" id="table-container">
-                        ${this.renderTableBody(platos)}
-                    </div>
-
-                    
+                <div class="overflow-x-auto" id="table-container">
+                    ${this.renderTableBody(platos)}
                 </div>
             </div>
-        `;
-        this.setupEventListeners(acciones);
-    }
+        </div>
+    `;
+    this.setupEventListeners(acciones);
+}
 
-    setupEventListeners(acciones) {
-        const { onAdd, onEdit, onDelete, onBack, onSearch } = acciones;
-        // 1. Cerrar Panel
-        document.getElementById('back-from-manage').onclick = onBack;
-        // 2. Formulario de Añadir
-        document.getElementById('add-plato-form').onsubmit = (e) => {
-            e.preventDefault();
-            // Obtenemos el valor de la categoría seleccionada
-            const categoriaSeleccionada = document.getElementById('new-category').value;
-    
-            const data = {
-                name: document.getElementById('new-name').value,
-                price: parseFloat(document.getElementById('new-price').value),
-                // Convertimos el string a un Array para mantener la consistencia en Firebase
-                category: [categoriaSeleccionada], 
-                imageUrl: "https://images.unsplash.com/photo-1512058564366-18510be2db19?q=80&w=1200",
-                tags: ["NUEVO"]
-            };
-            
-            onAdd(data);
-        };
+setupEventListeners(acciones) {
+    const { onAdd, onEdit, onDelete, onBack, onSearch, onAddCategory, onDeleteCategory } = acciones;
 
-        // 3. BUSCADOR (La clave del éxito)
-        const searchInput = document.getElementById('search-plato');
-        if (searchInput) {
-            searchInput.oninput = (e) => {
-                if (onSearch) onSearch(e.target.value);
-            };
-        }
-        // Botones de la tabla inicial
-        this.attachTableEvents(onEdit, onDelete);
+    // Botón de Volver
+    document.getElementById('back-from-manage').onclick = onBack;
 
-        document.querySelectorAll('.delete-btn').forEach(btn => {
-            btn.onclick = () => onDelete(btn.dataset.id);
-        });
+    // Gestión de Categorías: Añadir
+    document.getElementById('add-category-form').onsubmit = (e) => {
+        e.preventDefault();
+        const nombre = document.getElementById('new-cat-name').value.trim();
+        if (nombre) onAddCategory(nombre);
+    };
+
+    // Gestión de Categorías: Eliminar
+    this.rootElement.querySelectorAll('.delete-cat-btn').forEach(btn => {
+        btn.onclick = () => onDeleteCategory(btn.dataset.id);
+    });
+
+    // Guardar Plato (Multicategoría)
+    document.getElementById('add-plato-form').onsubmit = (e) => {
+        e.preventDefault();
+        const selectedCats = Array.from(document.querySelectorAll('input[name="plato-category"]:checked')).map(cb => cb.value);
         
-        document.querySelectorAll('.edit-btn').forEach(btn => {
-            btn.onclick = () => onEdit(btn.dataset.id);
-        });
+        if (selectedCats.length === 0) return alert("Selecciona al menos una categoría");
 
+        const data = {
+            name: document.getElementById('new-name').value,
+            price: parseFloat(document.getElementById('new-price').value),
+            category: selectedCats,
+            imageUrl: "https://images.unsplash.com/photo-1512058564366-18510be2db19?q=80&w=1200"
+        };
+        onAdd(data);
+    };
 
-        // 4. Formulario para añadir categorías
-        const addCatForm = document.getElementById('add-category-form');
-        if (addCatForm) {
-            addCatForm.onsubmit = (e) => {
-                e.preventDefault();
-                const nombre = document.getElementById('new-cat-name').value.trim();
-                if (nombre) {
-                    acciones.onAddCategory(nombre);
-                    addCatForm.reset();
-                }
-            };
-        }
+    // Buscador
+    document.getElementById('search-plato').oninput = (e) => onSearch(e.target.value);
 
-        // 5. Botones para eliminar categorías
-        this.rootElement.querySelectorAll('.delete-cat-btn').forEach(btn => {
-            btn.onclick = () => {
-                const id = btn.dataset.id;
-                const nombre = btn.dataset.nombre;
-                if (confirm(`¿Estás seguro de eliminar la categoría "${nombre}"? Los platos asociados quedarán sin categoría.`)) {
-                    acciones.onDeleteCategory(id);
-                }
-            };
-        });
-    }
+    // Eventos de Tabla
+    this.attachTableEvents(onEdit, onDelete);
+}
 
 
 
@@ -161,6 +140,8 @@ export class ManageCartaView {
         });
     }
 
+   // src/views/ManageCartaView.js
+
     renderTableBody(platos) {
         return `
             <table class="w-full text-left text-sm">
@@ -174,11 +155,11 @@ export class ManageCartaView {
                 </thead>
                 <tbody class="divide-y">
                     ${platos.length > 0 ? platos.map(plato => {
-                        // REPARACIÓN: Si category es un array, lo unimos con comas para mostrarlo
+                        // Convertimos el array de categorías a texto separado por comas
                         const categoriaTexto = Array.isArray(plato.category) 
                             ? plato.category.join(', ') 
                             : plato.category;
-    
+
                         return `
                         <tr class="hover:bg-stone-50 transition-colors">
                             <td class="py-4 px-2 font-bold text-stone-800">${plato.name}</td>
@@ -201,15 +182,19 @@ export class ManageCartaView {
     prepareEdit(plato) {
         document.getElementById('new-name').value = plato.name;
         document.getElementById('new-price').value = plato.price;
-        document.getElementById('new-category').value = plato.category;
         document.getElementById('edit-id').value = plato.id;
-        
-        // Cambiamos el texto del botón para indicar edición
+    
+        // REPARACIÓN: Desmarcar todos y marcar solo los que pertenecen al plato
+        const checkboxes = document.querySelectorAll('input[name="plato-category"]');
+        checkboxes.forEach(cb => {
+            cb.checked = Array.isArray(plato.category) 
+                ? plato.category.includes(cb.value) 
+                : plato.category === cb.value;
+        });
+    
         const submitBtn = this.rootElement.querySelector('#add-plato-form button[type="submit"]');
         submitBtn.textContent = "Guardar Cambios";
         submitBtn.classList.replace('bg-primary', 'bg-blue-600');
-        
-        // Hacemos scroll hacia arriba para que veas el formulario lleno
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 }

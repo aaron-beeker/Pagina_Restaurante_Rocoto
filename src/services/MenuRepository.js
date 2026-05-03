@@ -26,14 +26,25 @@ export class MenuRepository {
 
   // Re-implementamos getByCategory para que la vista no falle
   getByCategory(category) {
-    if (category === "Todos") return this.allPlatos;
+    // Definimos las categorías que queremos ocultar de la vista general
+    const categoriasPrivadas = ["Entrada", "Bebida Menú", "Menú del Día"];
+  
+    if (category === "Todos") {
+      return this.allPlatos.filter(item => {
+        // Si es un array, verificamos que NO contenga ninguna de las privadas
+        if (Array.isArray(item.category)) {
+          return !item.category.some(cat => categoriasPrivadas.includes(cat));
+        }
+        // Si es un string, verificamos que no sea una de las privadas
+        return !categoriasPrivadas.includes(item.category);
+      });
+    }
     
+    // Lógica para categorías específicas (se mantiene igual)
     return this.allPlatos.filter(item => {
-      // Si la categoría en el objeto es un array, usamos includes
       if (Array.isArray(item.category)) {
         return item.category.includes(category);
       }
-      // Si aún quedan datos viejos como string, comparamos directo
       return item.category === category;
     });
   }
@@ -192,32 +203,37 @@ async updateCategory(id, nuevoNombre, antiguoNombre) {
   }
 }
 
+// src/services/MenuRepository.js
+
 async getOpcionesParaAdmin() {
   try {
     const platos = await this.getAllFromFirestore();
     
-    // Definimos el precio filtro (en tu caso, 8 soles)
-    const PRECIO_MENU = 8;
-
     return {
+      // 1. Filtro para Entradas usando tu nueva categoría
       entradas: platos.filter(p => {
-        const esEntrada = Array.isArray(p.category) ? p.category.includes("Entradas") : p.category === "Entradas";
-        return esEntrada; // Las entradas suelen ser parte del paquete, podrías o no filtrar por precio aquí
+        const cat = p.category;
+        return Array.isArray(cat) ? cat.includes("Entrada") : cat === "Entrada";
       }),
+
+      // 2. Filtro para Segundos (Platos que cuestan 8 soles)
       segundos: platos.filter(p => {
         const cat = p.category;
-        const isEntrada = Array.isArray(cat) ? cat.includes("Entradas") : cat === "Entradas";
-        const isBebida = Array.isArray(cat) ? cat.includes("Bebidas") : cat === "Bebidas";
+        const esEntrada = Array.isArray(cat) ? cat.includes("Entrada") : cat === "Entrada";
+        const esBebida = Array.isArray(cat) ? cat.includes("Bebida Menú") : cat === "Bebida Menú";
         
-        // FILTRO CRÍTICO: No es entrada, no es bebida Y el precio es exactamente 8
-        return !isEntrada && !isBebida && p.price === PRECIO_MENU;
+        // Retorna platos que no son ni entrada ni bebida y cuestan 8
+        return !esEntrada && !esBebida && p.price === 8;
       }),
-      refrescos: platos.filter(p => 
-        Array.isArray(p.category) ? p.category.includes("Bebidas") : p.category === "Bebidas"
-      )
+
+      // 3. Filtro para Refrescos usando tu nueva categoría
+      refrescos: platos.filter(p => {
+        const cat = p.category;
+        return Array.isArray(cat) ? cat.includes("Bebida Menú") : cat === "Bebida Menú";
+      })
     };
   } catch (error) {
-    console.error("Error al filtrar platos por precio:", error);
+    console.error("Error al filtrar por categorías específicas:", error);
     return { entradas: [], segundos: [], refrescos: [] };
   }
 }
