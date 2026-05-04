@@ -1,4 +1,4 @@
-import { adminShell } from "../ui/layout.js";
+﻿import { adminShell, button, form, typography } from "../ui/layout.js";
 
 export class AdminMenuView {
   constructor(rootElement) {
@@ -20,16 +20,16 @@ export class AdminMenuView {
             </button>
           </div>
 
-          <div class="border-t border-stone-200 pt-6 sm:pt-8 flex flex-col gap-4">
-              <button type="button" id="save-menu" class="w-full rounded-xl bg-primary py-4 font-button text-sm font-bold text-white shadow-lg transition-all hover:brightness-110">
+          <div class="mb-10 flex flex-col sm:flex-row gap-4">
+              <button type="button" id="save-menu-top" class="${button.base} ${button.primary} flex-1 py-5">
                   Publicar actualización de menú
               </button>
-              <button type="button" id="download-pdf-a3" class="w-full rounded-xl border-2 border-primary py-4 font-button text-sm font-bold text-primary transition-all hover:bg-stone-50">
-                  Descargar Carta PDF (Tamaño A3)
+              <button type="button" id="download-pdf-a3" class="${button.base} ${button.outlineDark} flex-1 py-5">
+                  Descargar Carta PDF (Tamaño A2)
               </button>
           </div>
 
-          <div class="space-y-8 sm:space-y-10">
+          <div class="space-y-12">
             <div>
               <h3 class="${adminShell.sectionTitle}">1. Entradas disponibles</h3>
               <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -39,7 +39,7 @@ export class AdminMenuView {
 
             <div>
               <h3 class="${adminShell.sectionTitle}">2. Plato del menú del día</h3>
-              <p class="mb-3 text-xs text-stone-500">Productos con categoría <strong>Menú del Día</strong> en la carta.</p>
+              <p class="mb-4 text-xs font-medium text-stone-400">Productos con categoría <strong class="text-primary">Menú del Día</strong> en la carta.</p>
               <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 ${segundos.map((s) => this.createCheckboxCard("segundo-check", s.name || s)).join("")}
               </div>
@@ -52,8 +52,8 @@ export class AdminMenuView {
               </div>
             </div>
 
-            <div class="border-t border-stone-200 pt-6 sm:pt-8">
-              <button type="button" id="save-menu" class="w-full rounded-xl bg-primary py-4 font-button text-sm font-bold text-white shadow-lg transition-all hover:brightness-110 sm:py-5 sm:text-button">
+            <div class="border-t border-stone-100 pt-10">
+              <button type="button" id="save-menu" class="${button.base} ${button.primary} w-full py-5 text-lg">
                 Publicar actualización de menú
               </button>
             </div>
@@ -67,9 +67,9 @@ export class AdminMenuView {
   createCheckboxCard(name, label) {
     const safe = String(label).replace(/"/g, "&quot;");
     return `
-      <label class="group relative flex cursor-pointer items-center gap-3 rounded-xl border border-stone-200 bg-white p-3 transition-colors hover:border-primary/40 hover:bg-surface-container-low sm:p-4">
-        <input type="checkbox" name="${name}" value="${safe}" class="h-5 w-5 shrink-0 rounded border-stone-300 text-primary focus:ring-primary" />
-        <span class="text-sm font-medium text-stone-800">${label}</span>
+      <label class="group relative flex cursor-pointer items-center gap-4 rounded-2xl border border-stone-100 bg-white p-4 transition-all hover:border-primary/30 hover:shadow-md active:scale-[0.98]">
+        <input type="checkbox" name="${name}" value="${safe}" class="${form.checkbox}" />
+        <span class="text-sm font-bold text-stone-700 group-hover:text-primary transition-colors">${label}</span>
       </label>
     `;
   }
@@ -80,7 +80,7 @@ export class AdminMenuView {
       backBtn.onclick = () => window.location.reload();
     }
 
-    document.getElementById("save-menu").onclick = () => {
+    const saveActions = () => {
       const config = {
         entradas: Array.from(document.querySelectorAll('input[name="entrada-check"]:checked')).map((el) => el.value),
         segundos: Array.from(document.querySelectorAll('input[name="segundo-check"]:checked')).map((el) => el.value),
@@ -88,5 +88,8 @@ export class AdminMenuView {
       };
       onSave(config);
     };
+
+    document.getElementById("save-menu").onclick = saveActions;
+    document.getElementById("save-menu-top").onclick = saveActions;
   }
 }

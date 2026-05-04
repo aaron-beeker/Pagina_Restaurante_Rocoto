@@ -1,7 +1,7 @@
-import { CATEGORIAS_SOLO_MENU_DIARIO } from "../constants/menuCategories.js";
+﻿import { CATEGORIAS_SOLO_MENU_DIARIO } from "../constants/menuCategories.js";
 import { AdminMenuView } from "../views/AdminMenuView.js";
 import { HeroPromoAdminView } from "../views/HeroPromoAdminView.js";
-import { menuSeed, recetarioPlatos, opcionesEntradas, opcionesRefrescos } from "../data/seed.js";
+import { menuSeed, recetarioPlatos } from "../data/seed.js";
 import { ManageCartaView } from "../views/ManageCartaView.js";
 import { auth, googleProvider } from "../services/firebaseConfig.js";
 import { signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -14,43 +14,34 @@ export class HomeController {
     this.menuView = menuView;
     this.menuRepository = menuRepository;
     this.restaurantInfo = restaurantInfo;
-    this.activeCategory = "Todos";
+    this.activeCategory = "Inicio";
+    this.currentUser = null;
+    this.currentDailyMenu = { entradas: ["Sopa"], segundos: ["Chifa"], refrescos: ["Chicha"] };
     
-    // Definimos el usuario y el menú inicial
-    this.currentUser = { name: "BEEKER AARÓN", role: "admin" };
-    this.currentDailyMenu = {
-      entradas: ["Sopa del día"],
-      segundos: ["Estofado de pollo"],
-      refrescos: ["Chicha morada"]
-    };
+    // Estado persistente para el buscador de admin
+    this.lastAdminSearch = "";
   }
 
   async initialize() {
-    // Escuchamos si alguien inicia o cierra sesión
     onAuthStateChanged(auth, async (user) => {
-      
       if (user) {
-        // IMPORTANTE: Pon aquí tu correo real para que aparezca el botón de admin
         const admins = ["beeker147@gmail.com", "mjeanfranco22@gmail.com" , "aliciamattoslimaymanta@gmail.com"];
-        
         this.currentUser = {
-          name: user.displayName.split(' ')[0], // Solo tu primer nombre
+          name: user.displayName.split(' ')[0],
           email: user.email.toLowerCase().trim(),
-          // Verificamos si el correo del usuario está en nuestra lista de admins
           role: admins.includes(user.email.toLowerCase().trim()) ? "admin" : "client"
         };
-        console.log("Rol asignado:", this.currentUser.role); // Revisa esto en la consola F12
-      } else {
-        this.currentUser = null;
-      }
-      this.renderAll(); // Método para refrescar toda la web
+      } else { this.currentUser = null; }
+      this.renderAll();
     });
   }
 
-
   async abrirPanelGestionCarta() {
-    // 1. Guardar el valor que el usuario tiene escrito actualmente (si existe)
-    const currentSearch = document.getElementById("search-product")?.value || "";
+    // 1. Guardar el valor actual del buscador antes de recargar
+    const searchInput = document.getElementById("search-product");
+    if (searchInput) {
+        this.lastAdminSearch = searchInput.value;
+    }
 
     const [platosOriginales, categoriasReales] = await Promise.all([
         this.menuRepository.getAllFromFirestore(),
@@ -58,237 +49,116 @@ export class HomeController {
     ]);
 
     const manageView = new ManageCartaView(document.getElementById("app"));
-    
     const acciones = {
-        onBack: () => this.initialize(),
-        onAdd: async (platoData) => {
-            const editId = document.getElementById("edit-id").value;
-            let exito = editId 
-                ? await this.menuRepository.updatePlato(editId, platoData)
-                : await this.menuRepository.addPlato(platoData);
-            
-            if (exito) {
-                // Al terminar, reabrimos el panel; la búsqueda se mantendrá por la lógica de arriba
+        onBack: () => {
+            this.lastAdminSearch = ""; // Limpiar al salir
+            this.initialize();
+        },
+        onAdd: async (data) => {
+            const id = document.getElementById("edit-id").value;
+            if (id ? await this.menuRepository.updatePlato(id, data) : await this.menuRepository.addPlato(data)) {
                 this.abrirPanelGestionCarta();
             }
         },
-        onDelete: async (id) => {
-            if (confirm("¿Eliminar este producto?")) {
-                const exito = await this.menuRepository.deletePlato(id);
-                if (exito) this.abrirPanelGestionCarta();
+        onDelete: async (id) => { 
+            if (await this.menuRepository.deletePlato(id)) {
+                this.abrirPanelGestionCarta();
             }
         },
-        onSearch: (query) => {
-            const q = query.toLowerCase().trim();
-            const filtrados = platosOriginales.filter((p) => {
-                const coincideNombre = p.name.toLowerCase().includes(q);
-                const coincideCategoria = Array.isArray(p.category)
-                    ? p.category.some((cat) => cat.toLowerCase().includes(q))
-                    : p.category && String(p.category).toLowerCase().includes(q);
+        onSearch: (q) => {
+            this.lastAdminSearch = q; // Actualizar estado persistente
+            const query = q.toLowerCase().trim();
+            const filtrados = platosOriginales.filter(p => {
+                const coincideNombre = p.name.toLowerCase().includes(query);
+                const categories = Array.isArray(p.category) ? p.category : [p.category];
+                const coincideCategoria = categories.some(c => String(c).toLowerCase().includes(query));
                 return coincideNombre || coincideCategoria;
             });
+            
             const container = document.getElementById("table-container");
-            if (container) {
-                container.innerHTML = manageView.renderTableBody(filtrados);
-                manageView.attachTableEvents(acciones.onEdit, acciones.onDelete);
+            if (container) { 
+              container.innerHTML = manageView.renderTableBody(filtrados); 
+              manageView.attachTableEvents(acciones.onEdit, acciones.onDelete); 
             }
         },
-        onEdit: (id) => {
-            const plato = platosOriginales.find((p) => p.id === id);
-            if (plato) manageView.prepareEdit(plato);
-        },
-        onAddCategory: async (nombre) => {
-            if (await this.menuRepository.addCategory(nombre)) this.abrirPanelGestionCarta();
-        },
-        onDeleteCategory: async (id) => {
-            if (await this.menuRepository.deleteCategory(id)) this.abrirPanelGestionCarta();
-        },
+        onEdit: (id) => { const p = platosOriginales.find(x => x.id === id); if (p) manageView.prepareEdit(p); },
+        onAddCategory: async (n, u, a) => { if (await this.menuRepository.addCategory(n, u, a)) this.abrirPanelGestionCarta(); },
+        onUpdateCategory: async (id, n, an, u, a) => { if (await this.menuRepository.updateCategory(id, n, an, u, a)) this.abrirPanelGestionCarta(); },
+        onDeleteCategory: async (id) => { if (await this.menuRepository.deleteCategory(id)) this.abrirPanelGestionCarta(); },
+        onReorderCategories: async (list) => { if (await this.menuRepository.saveCategoriesOrder(list)) this.abrirPanelGestionCarta(); }
     };
 
-    // Renderizar la vista principal
     manageView.render(platosOriginales, categoriasReales, acciones);
 
-    // 2. RESTAURAR LA BÚSQUEDA Y EL FOCO
-    if (currentSearch) {
-        const searchInput = document.getElementById("search-product");
-        searchInput.value = currentSearch;
-        // Ejecutar el filtrado manualmente para que la tabla coincida con el texto restaurado
-        acciones.onSearch(currentSearch);
-        // Opcional: devolver el foco al input para seguir escribiendo
-        searchInput.focus();
+    // 2. RESTAURAR EL VALOR Y EL FILTRADO
+    if (this.lastAdminSearch) {
+        const newSearchInput = document.getElementById("search-product");
+        if (newSearchInput) {
+            newSearchInput.value = this.lastAdminSearch;
+            acciones.onSearch(this.lastAdminSearch);
+        }
     }
-}
-
-
-async renderAll() {
-  await this.menuRepository.loadAllPlatos();
-  let dailyMenuFromDB = null;
-  let heroPromo = null;
-
-  try {
-    [dailyMenuFromDB, heroPromo] = await Promise.all([
-      this.menuRepository.getDailyMenuConfig(),
-      this.menuRepository.getHeroPromo(),
-    ]);
-  } catch (e) {
-    console.error("Error al cargar configuración:", e);
   }
 
-  if (dailyMenuFromDB) {
-    this.currentDailyMenu = dailyMenuFromDB;
-  }
+  async renderAll() {
+    await this.menuRepository.loadAllPlatos();
+    let daily = null, hero = null;
+    try { [daily, hero] = await Promise.all([this.menuRepository.getDailyMenuConfig(), this.menuRepository.getHeroPromo()]); } catch (e) {}
+    if (daily) this.currentDailyMenu = daily;
 
-  // 1. Crear el DOM
-  this.homeView.renderShell(this.restaurantInfo, this.currentUser, this.currentDailyMenu, heroPromo);
+    this.homeView.renderShell(this.restaurantInfo, this.currentUser, this.currentDailyMenu, hero);
+    this.homeView.initSwiper();
+    this.menuView.filterContainer = document.getElementById("menu-filters");
+    this.menuView.gridContainer = document.getElementById("menu-grid");
 
-  // 2. Vincular contenedores dinámicos
-  this.menuView.filterContainer = document.getElementById("menu-filters");
-  this.menuView.gridContainer = document.getElementById("menu-grid");
-
-  // --- MANEJO DE PANELES (SIDEBARS) ---
-  const mobileNavPanel = document.getElementById("mobile-nav-panel");
-  const userMenuPanel = document.getElementById("user-menu-panel");
-
-  // Abrir/Cerrar Navegación Izquierda (Móvil)
-  const navBtn = document.getElementById("mobile-nav-toggle");
-  if (navBtn && mobileNavPanel) {
-      navBtn.onclick = () => mobileNavPanel.classList.remove("hidden");
-      
-      // Cerrar con el botón X
-      mobileNavPanel.querySelector(".close-nav").onclick = () => mobileNavPanel.classList.add("hidden");
-
-      // NUEVO: Cerrar automáticamente al hacer clic en cualquier link del menú
-      mobileNavPanel.querySelectorAll(".mobile-nav-link").forEach((link) => {
-          link.onclick = () => {
-              mobileNavPanel.classList.add("hidden");
-          };
-      });
-  }
-
-  // Abrir/Cerrar Mi Cuenta (Derecha)
-  const userBtn = document.getElementById("user-menu-toggle");
-  if (userBtn && userMenuPanel) {
-      userBtn.onclick = () => userMenuPanel.classList.remove("hidden");
-      userMenuPanel.querySelector(".close-user-menu").onclick = () => userMenuPanel.classList.add("hidden");
-  }
-
-  // --- ACCIONES DE ADMINISTRADOR ---
-  const setupAdmin = (id, callback) => {
-      const btn = document.getElementById(id);
-      if (btn) {
-          btn.onclick = () => {
-              userMenuPanel.classList.add("hidden"); // Cierra antes de abrir
-              callback();
-          };
-      }
-  };
-
-  setupAdmin("admin-daily-menu-btn", () => this.abrirSelectorMenuEjecutivo());
-  setupAdmin("admin-manage-carta-btn", () => this.abrirPanelGestionCarta());
-  setupAdmin("admin-hero-promo-btn", () => this.abrirPanelHeroPromo());
-
-  // --- AUTH ---
-  const loginBtn = document.getElementById("login-btn-panel");
-  if (loginBtn) {
-      loginBtn.onclick = () => signInWithPopup(auth, googleProvider).catch(console.error);
-  }
-
-  const logoutBtn = document.getElementById("logout-btn");
-  if (logoutBtn) logoutBtn.onclick = () => signOut(auth).catch(console.error);
-
-  // 3. Renderizar Menú
-  if (this.menuView.filterContainer) {
-      await this.renderMenu();
-  }
-}
-
-
-  renderAdminControls() {
-    const heroActions = document.querySelector("#hero .flex");
-    if (heroActions) {
-      const adminBtn = document.createElement("button");
-      adminBtn.className = "rounded-full bg-primary px-8 py-4 text-center font-button text-white shadow-lg transition-all hover:bg-green-800 active:scale-95 flex items-center gap-2";
-      adminBtn.innerHTML = `Actualizar Menú Ejecutivo`;
-      adminBtn.onclick = () => this.abrirSelectorMenuEjecutivo();
-      heroActions.prepend(adminBtn);
+    const mNav = document.getElementById("mobile-nav-panel"), uMenu = document.getElementById("user-menu-panel");
+    const navBtn = document.getElementById("mobile-nav-toggle");
+    if (navBtn) {
+        navBtn.onclick = () => mNav.classList.remove("hidden");
+        mNav.querySelector(".close-nav").onclick = () => mNav.classList.add("hidden");
     }
+    const uBtn = document.getElementById("user-menu-toggle");
+    if (uBtn) { uBtn.onclick = () => uMenu.classList.remove("hidden"); uMenu.querySelector(".close-user-menu").onclick = () => uMenu.classList.add("hidden"); }
+
+    const setup = (id, cb) => { const b = document.getElementById(id); if (b) b.onclick = () => { uMenu.classList.add("hidden"); cb(); }};
+    setup("admin-daily-menu-btn", () => this.abrirSelectorMenuEjecutivo());
+    setup("admin-manage-carta-btn", () => this.abrirPanelGestionCarta());
+    setup("admin-hero-promo-btn", () => this.abrirPanelHeroPromo());
+
+    const lBtn = document.getElementById("login-btn-panel"); if (lBtn) lBtn.onclick = () => signInWithPopup(auth, googleProvider);
+    const loBtn = document.getElementById("logout-btn"); if (loBtn) loBtn.onclick = () => signOut(auth);
+
+    if (this.menuView.filterContainer) await this.renderMenu();
   }
 
   async abrirPanelHeroPromo() {
-    let data = null;
-    try {
-      data = await this.menuRepository.getHeroPromo();
-    } catch (e) {
-      console.error(e);
-    }
-    const view = new HeroPromoAdminView(document.getElementById("app"));
-    view.render(
-      data,
-      async (payload) => {
-        const ok = await this.menuRepository.saveHeroPromo(payload);
-        if (ok) {
-          await this.renderAll();
-          alert("Promoción del inicio guardada.");
-        } else {
-          alert("No se pudo guardar. Revisa la consola y los permisos de Firestore.");
-        }
-      },
-      () => {
-        void this.renderAll();
-      },
-    );
+    let d = null; try { d = await this.menuRepository.getHeroPromo(); } catch (e) {}
+    const v = new HeroPromoAdminView(document.getElementById("app"));
+    v.render(d, async (p) => { if (await this.menuRepository.saveHeroPromo(p)) { await this.renderAll(); alert("Banners guardados"); }}, () => this.renderAll());
   }
 
   async abrirSelectorMenuEjecutivo() {
-      const pdfService = new PdfService(this.restaurantInfo);
-      const opciones = await this.menuRepository.getOpcionesParaAdmin();
-      const adminView = new AdminMenuView(document.getElementById('app'));
-      
-      // Le pasamos las listas completas de objetos (entradas, segundos, refrescos)
-      adminView.render(
-          opciones.segundos, 
-          opciones.entradas, 
-          opciones.refrescos, 
-          async (nuevaConfig) => {
-              const exito = await this.menuRepository.saveDailyMenu(nuevaConfig);
-              if (exito) {
-                  this.currentDailyMenu = nuevaConfig;
-                  await this.renderAll();
-                  alert("Menú actualizado");
-              }
-          }
-      );
-
-      document.getElementById("download-pdf-a3").onclick = async () => {
-        const btn = document.getElementById("download-pdf-a3");
-        btn.textContent = "Generando PDF...";
-        btn.disabled = true;
-    
-        const allPlatos = await this.menuRepository.loadAllPlatos();
-        await pdfService.generarMenuA2(this.currentDailyMenu, allPlatos);
-    
-        btn.textContent = "Descargar Carta PDF (Tamaño A2)";
-        btn.disabled = false;
-    };
-
-
+    const pdf = new PdfService(this.restaurantInfo), opc = await this.menuRepository.getOpcionesParaAdmin(), av = new AdminMenuView(document.getElementById('app'));
+    av.render(opc.segundos, opc.entradas, opc.refrescos, async (n) => { if (await this.menuRepository.saveDailyMenu(n)) { this.currentDailyMenu = n; await this.renderAll(); alert("Actualizado"); }});
+    document.getElementById("download-pdf-a3").onclick = async () => await pdf.generarMenuA2(this.currentDailyMenu, await this.menuRepository.loadAllPlatos());
   }
 
-  
-
   async renderMenu() {
-    const items = this.menuRepository.getByCategory(this.activeCategory);
-    const categoriasDB = await this.menuRepository.getCategoriesFromFirestore();
-    const nombresCategorias = [
-      "Todos",
-      ...categoriasDB.map((c) => c.nombre).filter((nombre) => !CATEGORIAS_SOLO_MENU_DIARIO.includes(nombre)),
-    ];
+    const dbCats = await this.menuRepository.getCategoriesFromFirestore();
+    const activeCats = dbCats.filter(c => !CATEGORIAS_SOLO_MENU_DIARIO.includes(c.nombre) && c.activo !== false);
 
-    this.menuView.renderFilters(nombresCategorias, this.activeCategory, (cat) => {
-      this.activeCategory = cat;
-      this.renderMenu();
-    });
-
-    this.menuView.renderItems(items);
+    if (this.activeCategory === "Inicio") {
+        this.menuView.renderCategoryGrid(activeCats, (cat) => {
+            this.activeCategory = cat;
+            this.renderMenu();
+            document.getElementById("menu")?.scrollIntoView({ behavior: 'smooth' });
+        });
+    } else {
+        const items = this.menuRepository.getByCategory(this.activeCategory);
+        this.menuView.renderCategoryDetail(this.activeCategory, items, () => {
+            this.activeCategory = "Inicio";
+            this.renderMenu();
+        });
+    }
   }
 }

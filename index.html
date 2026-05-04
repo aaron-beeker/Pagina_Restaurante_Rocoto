@@ -50,6 +50,20 @@
             spacing: {
               xl: "80px",
             },
+            animation: {
+              'slow-zoom': 'slow-zoom 20s infinite alternate',
+              'bounce-slow': 'bounce-slow 3s infinite',
+            },
+            keyframes: {
+              'slow-zoom': {
+                '0%': { transform: 'scale(1)' },
+                '100%': { transform: 'scale(1.1)' },
+              },
+              'bounce-slow': {
+                '0%, 100%': { transform: 'translateY(-5%)', animationTimingFunction: 'cubic-bezier(0.8, 0, 1, 1)' },
+                '50%': { transform: 'translateY(0)', animationTimingFunction: 'cubic-bezier(0, 0, 0.2, 1)' },
+              }
+            }
           },
         },
       };
@@ -59,6 +73,8 @@
       
     <div id="app"></div>
     <!-- Añadir antes de app.js -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <script src="/src/app.js" type="module"></script>
