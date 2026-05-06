@@ -11,14 +11,14 @@ export class ManageCartaView {
 
   renderCategoryCheckboxes(categorias) {
     if (!categorias || !categorias.length) {
-      return `<p class="text-sm italic text-stone-400">No hay categorías disponibles.</p>`;
+      return `<p class="text-sm italic text-on-surface-variant opacity-60">No hay categorías disponibles.</p>`;
     }
     return categorias
       .map(
         (cat) => `
-      <label class="flex cursor-pointer items-center gap-3 rounded-xl border border-stone-100 bg-stone-50/50 px-4 py-2.5 transition-all hover:border-primary hover:bg-white hover:shadow-sm">
+      <label class="flex cursor-pointer items-center gap-3 rounded-xl border border-surface-variant bg-surface-container-low px-4 py-2.5 transition-all hover:border-primary hover:bg-surface hover:shadow-sm">
         <input type="checkbox" name="product-category" value="${escapeHtml(cat.nombre)}" class="${form.checkbox}" />
-        <span class="text-sm font-bold text-stone-600">${escapeHtml(cat.nombre)}</span>
+        <span class="text-sm font-bold text-on-surface-variant">${escapeHtml(cat.nombre)}</span>
       </label>
     `,
       )
@@ -42,12 +42,12 @@ export class ManageCartaView {
                     <h3 class="${adminShell.sectionTitle} text-blue-900">Orden de Categorías</h3>
                     <div class="mb-8 grid grid-cols-1 gap-2" id="categories-grid">
                         ${categorias.map((cat, index) => `
-                            <div class="flex items-center gap-4 p-3 rounded-2xl border ${cat.activo !== false ? 'border-blue-100 bg-white' : 'border-stone-200 bg-stone-50 grayscale'} shadow-sm group">
+                            <div class="flex items-center gap-4 p-3 rounded-2xl border ${cat.activo !== false ? 'border-blue-100 bg-surface' : 'border-surface-variant bg-surface-container-low grayscale'} shadow-sm group">
                                 <div class="flex flex-col gap-1">
-                                    <button class="move-up-btn p-1 text-stone-400 hover:text-primary disabled:opacity-20" data-index="${index}" ${index === 0 ? 'disabled' : ''}>
+                                    <button class="move-up-btn p-1 text-on-surface-variant opacity-40 hover:text-primary disabled:opacity-20" data-index="${index}" ${index === 0 ? 'disabled' : ''}>
                                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="3" d="M5 15l7-7 7 7"></path></svg>
                                     </button>
-                                    <button class="move-down-btn p-1 text-stone-400 hover:text-primary disabled:opacity-20" data-index="${index}" ${index === categorias.length - 1 ? 'disabled' : ''}>
+                                    <button class="move-down-btn p-1 text-on-surface-variant opacity-40 hover:text-primary disabled:opacity-20" data-index="${index}" ${index === categorias.length - 1 ? 'disabled' : ''}>
                                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="3" d="M19 9l-7 7-7-7"></path></svg>
                                     </button>
                                 </div>
@@ -56,7 +56,7 @@ export class ManageCartaView {
                                 </div>
                                 <div class="flex-1 min-w-0">
                                     <p class="text-sm font-bold text-blue-900 truncate">${escapeHtml(cat.nombre)}</p>
-                                    <p class="text-[9px] ${cat.activo !== false ? 'text-green-600' : 'text-stone-400'} font-bold uppercase tracking-tighter">
+                                    <p class="text-[9px] ${cat.activo !== false ? 'text-green-600' : 'text-on-surface-variant opacity-60'} font-bold uppercase tracking-tighter">
                                         ${cat.activo !== false ? 'Visible en Web' : 'Solo Gestión'}
                                     </p>
                                 </div>
@@ -78,9 +78,9 @@ export class ManageCartaView {
                         <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
                             <input type="text" id="new-cat-name" placeholder="Nombre (ej. Bebidas)" class="${form.input}" required />
                             <input type="url" id="new-cat-url" placeholder="URL Foto de Categoría" class="${form.input}" />
-                            <label class="flex h-[42px] cursor-pointer items-center gap-3 rounded-xl border border-stone-200 bg-white px-4">
+                            <label class="flex h-[42px] cursor-pointer items-center gap-3 rounded-xl border border-surface-variant bg-surface px-4">
                                 <input type="checkbox" id="new-cat-activo" checked class="${form.checkbox}" />
-                                <span class="text-sm font-bold text-stone-700">Mostrar en Web</span>
+                                <span class="text-sm font-bold text-on-background">Mostrar en Web</span>
                             </label>
                         </div>
                         <div class="flex justify-end gap-3">
@@ -113,7 +113,7 @@ export class ManageCartaView {
                             <label class="${form.label}">URL de la foto del producto</label>
                             <input type="url" id="new-image-url" placeholder="https://..." class="${form.input}" />
                         </div>
-                        <div class="p-4 bg-white rounded-2xl border border-stone-200">
+                        <div class="p-4 bg-surface rounded-2xl border border-surface-variant">
                             <p class="mb-3 text-[10px] font-bold uppercase text-primary tracking-widest">Asignar a Categorías</p>
                             <div class="flex flex-wrap gap-2">
                                 ${this.renderCategoryCheckboxes(categorias)}
@@ -127,7 +127,7 @@ export class ManageCartaView {
                 <!-- BUSCADOR -->
                 <div class="mb-6 relative">
                     <input type="search" id="search-product" placeholder="Buscar productos por nombre o categoría..." class="${form.input} py-4 pl-12 rounded-2xl shadow-sm" autocomplete="off" />
-                    <svg class="absolute left-4 top-4 h-5 w-5 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    <svg class="absolute left-4 top-4 h-5 w-5 text-on-surface-variant opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                 </div>
                 <div id="table-container">${this.renderProductList(platos)}</div>
             </div>
@@ -227,17 +227,17 @@ export class ManageCartaView {
   }
 
   renderProductList(platos) {
-    if (platos.length === 0) return `<div class="py-10 text-center text-stone-400">No se encontraron productos que coincidan.</div>`;
+    if (platos.length === 0) return `<div class="py-10 text-center text-on-surface-variant opacity-60">No se encontraron productos que coincidan.</div>`;
     return `
       <div class="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
         ${platos.map(p => {
           const cats = Array.isArray(p.category) ? p.category : [p.category];
           return `
-          <div class="p-4 rounded-2xl border border-stone-100 bg-white flex flex-col gap-3 shadow-sm hover:shadow-md transition-shadow">
+          <div class="p-4 rounded-2xl border border-surface-variant bg-surface flex flex-col gap-3 shadow-sm hover:shadow-md transition-shadow">
             <div class="flex gap-4 items-center">
-                <img src="${p.imageUrl || PLACEHOLDER_ICON}" class="h-14 w-14 rounded-xl object-cover border border-stone-50 shadow-sm" onerror="this.src='${PLACEHOLDER_ICON}'" />
+                <img src="${p.imageUrl || PLACEHOLDER_ICON}" class="h-14 w-14 rounded-xl object-cover border border-surface-variant shadow-sm" onerror="this.src='${PLACEHOLDER_ICON}'" />
                 <div class="flex-1 min-w-0">
-                    <p class="text-sm font-bold text-stone-800 truncate">${escapeHtml(p.name)}</p>
+                    <p class="text-sm font-bold text-on-background truncate">${escapeHtml(p.name)}</p>
                     <p class="text-xs text-primary font-bold">S/ ${Number(p.price).toFixed(2)}</p>
                 </div>
                 <div class="flex gap-1">
@@ -249,8 +249,8 @@ export class ManageCartaView {
                     </button>
                 </div>
             </div>
-            <div class="flex flex-wrap gap-1.5 border-t border-stone-50 pt-3">
-                ${cats.map(c => `<span class="px-2 py-0.5 rounded-md bg-stone-100 border border-stone-200 text-[9px] font-bold text-stone-500 uppercase tracking-tighter">${escapeHtml(c)}</span>`).join('')}
+            <div class="flex flex-wrap gap-1.5 border-t border-surface-variant pt-3">
+                ${cats.map(c => `<span class="px-2 py-0.5 rounded-md bg-surface-container-low border border-surface-variant text-[9px] font-bold text-on-surface-variant opacity-60 uppercase tracking-tighter">${escapeHtml(c)}</span>`).join('')}
             </div>
           </div>
           `;

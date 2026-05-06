@@ -39,7 +39,7 @@ export class AdminMenuView {
 
             <div>
               <h3 class="${adminShell.sectionTitle}">2. Plato del menú del día</h3>
-              <p class="mb-4 text-xs font-medium text-stone-400">Productos con categoría <strong class="text-primary">Menú del Día</strong> en la carta.</p>
+              <p class="mb-4 text-[10px] font-bold uppercase tracking-wider text-on-surface-variant opacity-60">Productos con categoría <strong class="text-primary">Menú del Día</strong> en la carta.</p>
               <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 ${segundos.map((s) => this.createCheckboxCard("segundo-check", s.name || s)).join("")}
               </div>
@@ -52,7 +52,7 @@ export class AdminMenuView {
               </div>
             </div>
 
-            <div class="border-t border-stone-100 pt-10">
+            <div class="border-t border-surface-variant pt-10">
               <button type="button" id="save-menu" class="${button.base} ${button.primary} w-full py-5 text-lg">
                 Publicar actualización de menú
               </button>
@@ -67,9 +67,9 @@ export class AdminMenuView {
   createCheckboxCard(name, label) {
     const safe = String(label).replace(/"/g, "&quot;");
     return `
-      <label class="group relative flex cursor-pointer items-center gap-4 rounded-2xl border border-stone-100 bg-white p-4 transition-all hover:border-primary/30 hover:shadow-md active:scale-[0.98]">
+      <label class="group relative flex cursor-pointer items-center gap-4 rounded-2xl border border-surface-variant bg-surface p-4 transition-all hover:border-primary/30 hover:shadow-md active:scale-[0.98]">
         <input type="checkbox" name="${name}" value="${safe}" class="${form.checkbox}" />
-        <span class="text-sm font-bold text-stone-700 group-hover:text-primary transition-colors">${label}</span>
+        <span class="text-sm font-bold text-on-surface-variant group-hover:text-primary transition-colors">${label}</span>
       </label>
     `;
   }

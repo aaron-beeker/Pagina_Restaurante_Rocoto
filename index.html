@@ -6,7 +6,7 @@
     <title>Rocoto Restaurante Chifa</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link
-      href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;600;700&family=Be+Vietnam+Pro:wght@400;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Open+Sans:wght@300;400;500;600;700&display=swap"
       rel="stylesheet"
     />
     <script id="tailwind-config">
@@ -15,37 +15,32 @@
         theme: {
           extend: {
             colors: {
-              "on-background": "#1c1b1b",
-              background: "#fcf9f8",
-              surface: "#fcf9f8",
+              "on-background": "#18181b",
+              background: "#fafafa",
+              surface: "#ffffff",
               primary: "#003b1b",
               secondary: "#bc0000",
-              "primary-container": "#14532d",
-              "surface-container": "#f0eded",
-              "surface-container-low": "#f6f3f2",
+              "primary-container": "#003b1b",
+              "surface-container": "#f4f4f5",
+              "surface-container-low": "#fafafa",
               "surface-container-lowest": "#ffffff",
-              "surface-variant": "#e5e2e1",
-              "on-surface-variant": "#404941",
+              "surface-variant": "#f1f1f1",
+              "on-surface-variant": "#52525b",
             },
             fontFamily: {
-              h1: ["Noto Serif"],
-              h3: ["Noto Serif"],
-              display: ["Noto Serif"],
-              "body-lg": ["Be Vietnam Pro"],
-              "body-md": ["Be Vietnam Pro"],
-              "body-sm": ["Be Vietnam Pro"],
-              button: ["Be Vietnam Pro"],
-              "label-caps": ["Be Vietnam Pro"],
+              display: ["Nunito", "sans-serif"],
+              sans: ["Open Sans", "sans-serif"],
             },
             fontSize: {
-              h3: ["22px", { lineHeight: "1.4", fontWeight: "600" }],
-              display: ["48px", { lineHeight: "1.1", letterSpacing: "-0.02em", fontWeight: "700" }],
-              "body-lg": ["18px", { lineHeight: "1.6", fontWeight: "400" }],
-              "body-md": ["16px", { lineHeight: "1.6", fontWeight: "400" }],
-              h1: ["36px", { lineHeight: "1.2", fontWeight: "700" }],
-              "label-caps": ["12px", { lineHeight: "1", letterSpacing: "0.1em", fontWeight: "700" }],
-              "body-sm": ["14px", { lineHeight: "1.5", fontWeight: "400" }],
-              button: ["14px", { lineHeight: "1", letterSpacing: "0.02em", fontWeight: "600" }],
+              xs: ["12px", { lineHeight: "1.2", letterSpacing: "0.01em" }],
+              sm: ["14px", { lineHeight: "1.5" }],
+              base: ["16px", { lineHeight: "1.6" }],
+              lg: ["18px", { lineHeight: "1.6" }],
+              xl: ["20px", { lineHeight: "1.4", fontWeight: "600" }],
+              "2xl": ["24px", { lineHeight: "1.3", fontWeight: "600" }],
+              "3xl": ["30px", { lineHeight: "1.2", fontWeight: "700" }],
+              "4xl": ["36px", { lineHeight: "1.1", fontWeight: "700" }],
+              "5xl": ["48px", { lineHeight: "1.1", letterSpacing: "-0.01em", fontWeight: "800" }],
             },
             spacing: {
               xl: "80px",
@@ -53,6 +48,8 @@
             animation: {
               'slow-zoom': 'slow-zoom 20s infinite alternate',
               'bounce-slow': 'bounce-slow 3s infinite',
+              'slide-in-left': 'slide-in-left 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+              'slide-in-right': 'slide-in-right 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
             },
             keyframes: {
               'slow-zoom': {
@@ -62,6 +59,14 @@
               'bounce-slow': {
                 '0%, 100%': { transform: 'translateY(-5%)', animationTimingFunction: 'cubic-bezier(0.8, 0, 1, 1)' },
                 '50%': { transform: 'translateY(0)', animationTimingFunction: 'cubic-bezier(0, 0, 0.2, 1)' },
+              },
+              'slide-in-left': {
+                '0%': { transform: 'translateX(-100%)' },
+                '100%': { transform: 'translateX(0)' },
+              },
+              'slide-in-right': {
+                '0%': { transform: 'translateX(100%)' },
+                '100%': { transform: 'translateX(0)' },
               }
             }
           },
@@ -69,7 +74,7 @@
       };
     </script>
   </head>
-  <body class="bg-background font-body-md text-stone-900 antialiased">
+  <body class="bg-background font-sans text-on-background antialiased">
       
     <div id="app"></div>
     <!-- Añadir antes de app.js -->

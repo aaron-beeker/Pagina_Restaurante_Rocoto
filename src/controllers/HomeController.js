@@ -1,4 +1,4 @@
-﻿import { CATEGORIAS_SOLO_MENU_DIARIO } from "../constants/menuCategories.js";
+import { CATEGORIAS_SOLO_MENU_DIARIO } from "../constants/menuCategories.js";
 import { AdminMenuView } from "../views/AdminMenuView.js";
 import { HeroPromoAdminView } from "../views/HeroPromoAdminView.js";
 import { menuSeed, recetarioPlatos } from "../data/seed.js";
@@ -115,7 +115,12 @@ export class HomeController {
     const navBtn = document.getElementById("mobile-nav-toggle");
     if (navBtn) {
         navBtn.onclick = () => mNav.classList.remove("hidden");
-        mNav.querySelector(".close-nav").onclick = () => mNav.classList.add("hidden");
+        // Asegurar que al hacer clic en cualquier enlace del menú móvil, este se cierre
+        mNav.querySelectorAll(".mobile-nav-link").forEach(link => {
+            link.onclick = () => mNav.classList.add("hidden");
+        });
+        const closeBtn = mNav.querySelector(".close-nav");
+        if (closeBtn) closeBtn.onclick = () => mNav.classList.add("hidden");
     }
     const uBtn = document.getElementById("user-menu-toggle");
     if (uBtn) { uBtn.onclick = () => uMenu.classList.remove("hidden"); uMenu.querySelector(".close-user-menu").onclick = () => uMenu.classList.add("hidden"); }
@@ -134,7 +139,12 @@ export class HomeController {
   async abrirPanelHeroPromo() {
     let d = null; try { d = await this.menuRepository.getHeroPromo(); } catch (e) {}
     const v = new HeroPromoAdminView(document.getElementById("app"));
-    v.render(d, async (p) => { if (await this.menuRepository.saveHeroPromo(p)) { await this.renderAll(); alert("Banners guardados"); }}, () => this.renderAll());
+    v.render(d, async (p) => { 
+        if (await this.menuRepository.saveHeroPromo(p)) { 
+            // Eliminamos renderAll() para quedarnos en la misma vista
+            alert("Banners guardados correctamente"); 
+        }
+    }, () => this.renderAll());
   }
 
   async abrirSelectorMenuEjecutivo() {
