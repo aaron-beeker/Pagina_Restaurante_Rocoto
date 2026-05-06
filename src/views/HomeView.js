@@ -180,7 +180,11 @@ export class HomeView {
 
                    <div class="space-y-6 sm:space-y-8 mb-12">
                      <div class="flex items-start gap-5 group">
-                       <span class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 font-bold text-primary text-sm transition-all group-hover:bg-primary group-hover:text-white group-hover:scale-110">1</span>
+
+                     <!-- Icono de Entradas -->
+                       <span class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 transition-all group-hover:bg-primary group-hover:scale-110">
+                          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLWNha2Utc2xpY2UtaWNvbiBsdWNpZGUtY2FrZS1zbGljZSI+PHBhdGggZD0iTTE2IDEzSDMiLz48cGF0aCBkPSJNMTYgMTdIMyIvPjxwYXRoIGQ9Im03LjIgNy45LTMuMzg4IDIuNUEyIDIgMCAwIDAgMyAxMi4wMVYyMGExIDEgMCAwIDAgMSAxaDE2YTEgMSAwIDAgMCAxLTF2LTguNjU0YzAtMi0yLjQ0LTYuMDI2LTYuNDQtOC4wMjZhMSAxIDAgMCAwLTEuMDgyLjA1N0wxMC40IDUuNiIvPjxjaXJjbGUgY3g9IjkiIGN5PSI3IiByPSIyIi8+PC9zdmc+" class="h-6 w-6 object-contain transition-all group-hover:brightness-0 group-hover:invert" alt="Icono" />
+                      </span>
                        <div>
                          <h3 class="${typography.h3} mb-3 text-primary/80">Entradas</h3>
                          <ul class="space-y-2 text-on-surface-variant font-medium">
@@ -193,7 +197,12 @@ export class HomeView {
                        </div>
                      </div>
                      <div class="flex items-start gap-5 group">
-                       <span class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 font-bold text-primary text-sm transition-all group-hover:bg-primary group-hover:text-white group-hover:scale-110">2</span>
+                       
+                       <!-- Icono de Segundos -->
+                       <span class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 transition-all group-hover:bg-primary group-hover:scale-110">
+                          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLWJlZWYtaWNvbiBsdWNpZGUtYmVlZiI+PHBhdGggZD0iTTE2LjQgMTMuN0E2LjUgNi41IDAgMSAwIDYuMjggNi42Yy0xLjEgMy4xMy0uNzggMy45LTMuMTggNi4wOEEzIDMgMCAwIDAgNSAxOGM0IDAgOC40LTEuOCAxMS40LTQuMyIvPjxwYXRoIGQ9Im0xOC41IDYgMi4xOSA0LjVhNi40OCA2LjQ4IDAgMCAxLTIuMjkgNy4yQzE1LjQgMjAuMiAxMSAyMiA3IDIyYTMgMyAwIDAgMS0yLjY4LTEuNjZMMi40IDE2LjUiLz48Y2lyY2xlIGN4PSIxMi41IiBjeT0iOC41IiByPSIyLjUiLz48L3N2Zz4=" class="h-6 w-6 object-contain transition-all group-hover:brightness-0 group-hover:invert" alt="Icono" />
+                      </span>
+
                        <div>
                          <h3 class="${typography.h3} mb-3 text-primary/80">Segundos</h3>
                          <ul class="space-y-2 text-on-surface-variant font-medium">
@@ -206,8 +215,13 @@ export class HomeView {
                        </div>
                      </div>
                      <div class="flex items-start gap-5 group">
-                       <span class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 font-bold text-primary text-sm transition-all group-hover:bg-primary group-hover:text-white group-hover:scale-110">3</span>
+
+                     <!-- Icono de Bebidas -->
+                       <span class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 transition-all group-hover:bg-primary group-hover:scale-110">
+                          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLWN1cC1zb2RhLWljb24gbHVjaWRlLWN1cC1zb2RhIj48cGF0aCBkPSJtNiA4IDEuNzUgMTIuMjhhMiAyIDAgMCAwIDIgMS43Mmg0LjU0YTIgMiAwIDAgMCAyLTEuNzJMMTggOCIvPjxwYXRoIGQ9Ik01IDhoMTQiLz48cGF0aCBkPSJNNyAxNWE2LjQ3IDYuNDcgMCAwIDEgNSAwIDYuNDcgNi40NyAwIDAgMCA1IDAiLz48cGF0aCBkPSJtMTIgOCAxLTZoMiIvPjwvc3ZnPg==" class="h-6 w-6 object-contain transition-all group-hover:brightness-0 group-hover:invert" alt="Icono" />
+                      </span>
                        <div>
+
                          <h3 class="${typography.h3} mb-3 text-primary/80">Bebidas</h3>
                          <ul class="space-y-2 text-on-surface-variant font-medium">
                            ${dailyMenu.refrescos.map(r => `
@@ -228,7 +242,7 @@ export class HomeView {
 
                  <div class="relative lg:pl-10 order-1 lg:order-2 mb-12 lg:mb-0">
                    <div class="relative z-10 overflow-hidden rounded-[2.5rem] sm:rounded-[3.5rem] shadow-2xl transform lg:rotate-2 hover:rotate-0 transition-transform duration-700">
-                     <img alt="Menú diario" class="h-72 w-full object-cover sm:h-[500px] lg:h-[600px]" src="https://images.unsplash.com/photo-1512058564366-18510be2db19?q=80&w=1600&auto=format&fit=crop" />
+                     <img alt="Menú diario" class="h-72 w-full object-cover sm:h-[500px] lg:h-[600px]" src="https://lh3.googleusercontent.com/p/AF1QipOX8DWrfF3cdq5kgcHL-HxXdlpZLZZ7KAe9CrQn=s1360-w1360-h1020-rw" />
                    </div>
                    <!-- Decoración -->
                    <div class="absolute -bottom-6 -left-6 z-20 rounded-3xl bg-white px-6 py-5 sm:px-8 sm:py-6 shadow-2xl border border-stone-100 animate-bounce-slow">
@@ -403,7 +417,8 @@ export class HomeView {
                             ${restaurantInfo.phone}
                         </a>
                      </li>
-                   </ul>
+                   </ul
+                   >
                  </div>
                </div>
                <div class="mt-12 border-t border-stone-100 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-[10px] font-bold uppercase tracking-widest text-stone-400">
@@ -425,7 +440,6 @@ export class HomeView {
 
         this.swiper = new Swiper('.hero-swiper', {
             loop: true,
-            autoHeight: true,
             speed: 1000,
             autoplay: {
                 delay: 6000,

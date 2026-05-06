@@ -19,7 +19,7 @@ export class MenuView {
         <div class="col-span-full py-4 sm:py-8 mb-4 animate-fade-in">
             <!-- VISTA PC: Grid Estático y Centrado -->
             <div class="hidden lg:flex flex-wrap justify-center gap-10 lg:gap-14 mb-12">
-                ${categories.map(cat => this.renderCategoryItem(cat, "w-36 lg:w-44")).join('')}
+                ${categories.map(cat => this.renderCategoryItem(cat, "w-48 lg:w-60")).join('')}
             </div>
 
             <!-- VISTA MÓVIL/TABLET: Carrusel Swiper -->
@@ -28,7 +28,7 @@ export class MenuView {
                     <div class="swiper-wrapper flex items-start">
                         ${categories.map(cat => `
                             <div class="swiper-slide !w-auto flex flex-col items-center px-3">
-                                ${this.renderCategoryItem(cat, "w-24 sm:w-32")}
+                                ${this.renderCategoryItem(cat, "w-32 sm:w-40")}
                             </div>
                         `).join('')}
                     </div>
@@ -52,7 +52,7 @@ export class MenuView {
         <button type="button" 
             class="group flex flex-col items-center gap-4 transition-all active:scale-95" 
             data-category="${escapeHtml(cat.nombre)}">
-            <div class="relative ${sizeClass} aspect-[4/3] rounded-2xl overflow-hidden transition-all duration-500 group-hover:shadow-[0_0_30px_rgba(0,59,27,0.2)] group-hover:ring-2 group-hover:ring-primary/20">
+            <div class="relative ${sizeClass} aspect-video rounded-2xl overflow-hidden transition-all duration-500 group-hover:shadow-[0_0_30px_rgba(0,59,27,0.2)] group-hover:ring-2 group-hover:ring-primary/20">
                 <img src="${cat.imageUrl || CAT_IMG_FALLBACK}" 
                      class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" 
                      onerror="this.src='${CAT_IMG_FALLBACK}'" />
@@ -105,7 +105,7 @@ export class MenuView {
                 ${items.map(item => `
                     <div class="group flex flex-col gap-3 sm:gap-6">
                         <!-- Foto del Plato (Más pequeña en móvil) -->
-                        <div class="relative w-full aspect-square rounded-2xl sm:rounded-3xl overflow-hidden shadow-sm shrink-0 ring-1 ring-stone-100">
+                        <div class="relative w-full aspect-video rounded-2xl sm:rounded-3xl overflow-hidden shadow-sm shrink-0 ring-1 ring-stone-100">
                             <img src="${item.imageUrl || CAT_IMG_FALLBACK}" 
                                  class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" />
                         </div>
