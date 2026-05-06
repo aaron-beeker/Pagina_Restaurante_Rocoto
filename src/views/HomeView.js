@@ -57,30 +57,40 @@ export class HomeView {
                   <img src="${restaurantInfo.logoUrl}" class="h-12 w-auto">
                 </div>
                 <div class="flex-1 flex flex-col gap-2 p-6 bg-surface overflow-y-auto">
+                <!-- Icono de Menú del día -->
                   <a class="mobile-nav-link flex items-center gap-5 p-5 rounded-3xl text-xl font-extrabold text-on-background hover:bg-background active:bg-primary/5 transition-colors" href="#daily-menu">
-                      <div class="p-3 rounded-2xl bg-primary/5 text-primary">
-                        <svg class="h-7 w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                      <div class="p-3 rounded-2xl bg-transparent text-primary">
+                          <!-- Reemplaza el <svg> por esto -->
+                          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLWNsb2NrOS1pY29uIGx1Y2lkZS1jbG9jay05Ij48Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSIxMCIvPjxwYXRoIGQ9Ik0xMiA2djZIOCIvPjwvc3ZnPg==" class="h-7 w-7 object-contain" alt="Menú" />
                       </div>
                       Menú del día
                   </a>
+
+                <!-- Icono de La carta -->        
                   <a class="mobile-nav-link flex items-center gap-5 p-5 rounded-3xl text-xl font-extrabold text-on-background hover:bg-background active:bg-primary/5 transition-colors" href="#menu">
-                      <div class="p-3 rounded-2xl bg-secondary/5 text-secondary">
-                        <svg class="h-7 w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                      <div class="p-3 rounded-2xl bg-transparent text-secondary">
+                          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLWZpbGUtaWNvbiBsdWNpZGUtZmlsZSI+PHBhdGggZD0iTTYgMjJhMiAyIDAgMCAxLTItMlY0YTIgMiAwIDAgMSAyLTJoOGEyLjQgMi40IDAgMCAxIDEuNzA0LjcwNmwzLjU4OCAzLjU4OEEyLjQgMi40IDAgMCAxIDIwIDh2MTJhMiAyIDAgMCAxLTIgMnoiLz48cGF0aCBkPSJNMTQgMnY1YTEgMSAwIDAgMCAxIDFoNSIvPjwvc3ZnPg==" class="h-7 w-7 object-contain" alt="Carta" />
                       </div>
                       La carta
                   </a>
+
+                  <!-- 3. SERVICIO PENSIÓN -->
                   <a class="mobile-nav-link flex items-center gap-5 p-5 rounded-3xl text-xl font-extrabold text-on-background hover:bg-background active:bg-primary/5 transition-colors" href="#pension">
-                      <div class="p-3 rounded-2xl bg-primary/5 text-primary">
-                        <svg class="h-7 w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                      <div class="p-3 rounded-2xl bg-transparent text-primary">
+                          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLXVzZXJzLXJvdW5kLWljb24gbHVjaWRlLXVzZXJzLXJvdW5kIj48cGF0aCBkPSJNMTggMjFhOCA4IDAgMCAwLTE2IDAiLz48Y2lyY2xlIGN4PSIxMCIgY3k9IjgiIHI9IjUiLz48cGF0aCBkPSJNMjIgMjBjMC0zLjM3LTItNi41LTQtOGE1IDUgMCAwIDAtLjQ1LTguMyIvPjwvc3ZnPg==" class="h-7 w-7 object-contain" alt="Pensión" />
                       </div>
                       Servicio Pensión
                   </a>
+
+                  <!-- 4. CONTACTO -->
                   <a class="mobile-nav-link flex items-center gap-5 p-5 rounded-3xl text-xl font-extrabold text-on-background hover:bg-background active:bg-primary/5 transition-colors" href="#location">
-                      <div class="p-3 rounded-2xl bg-amber-50 text-amber-600">
-                        <svg class="h-7 w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                      <div class="p-3 rounded-2xl bg-transparent text-amber-600">
+                          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLW1hcC1waW4taWNvbiBsdWNpZGUtbWFwLXBpbiI+PHBhdGggZD0iTTIwIDEwYzAgNC45OTMtNS41MzkgMTAuMTkzLTcuMzk5IDExLjc5OWExIDEgMCAwIDEtMS4yMDIgMEM5LjUzOSAyMC4xOTMgNCAxNC45OTMgNCAxMGE4IDggMCAwIDEgMTYgMCIvPjxjaXJjbGUgY3g9IjEyIiBjeT0iMTAiIHI9IjMiLz48L3N2Zz4=" class="h-7 w-7 object-contain" alt="Contacto" />
                       </div>
                       Contacto
                   </a>
+                </div>
+
                 </div>
                 <div class="p-10 border-t border-surface-variant bg-surface-container-low">
                    <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant/40 text-center">Rocoto Restaurante &copy; 2026</p>
@@ -107,11 +117,27 @@ export class HomeView {
                   </div>
                 </div>
                 <div class="flex-1 p-6 flex flex-col gap-3 bg-surface overflow-y-auto">
-                  ${!user ? `
-                      <button id="login-btn-panel" class="${button.base} ${button.primary} w-full rounded-[2rem] py-6 shadow-xl">
-                        <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12.48 10.92v3.28h7.84c-.24 1.84-2.21 5.42-7.84 5.42-4.86 0-8.83-4.02-8.83-8.98s3.97-8.98 8.83-8.98c2.76 0 4.61 1.17 5.67 2.18l2.59-2.5c-1.66-1.55-3.82-2.5-8.26-2.5C5.49 1.18 0 6.67 0 13.38s5.49 12.2 12.48 12.2c7.31 0 12.16-5.14 12.16-12.38 0-.83-.09-1.46-.2-2.08h-11.96z"/></svg>
-                        Acceder con Google
-                      </button>` : ''}
+                ${!user ? `
+                  <div class="flex flex-col gap-3 w-full">
+                      <button id="login-btn-panel" class="flex items-center justify-center gap-3 w-full bg-white text-on-background border border-surface-variant rounded-[2rem] py-4 px-6 shadow-sm hover:bg-background transition-all active:scale-95 font-bold text-sm">
+                          <svg class="h-5 w-5" viewBox="0 0 24 24">
+                              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+                              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                          </svg>
+                          Acceder con Google
+                      </button>
+              
+                      <!-- NUEVO BOTÓN MOZO -->
+                      <button id="mozo-login-btn" class="flex items-center justify-center gap-3 w-full bg-primary text-white rounded-[2rem] py-4 px-6 shadow-lg shadow-primary/20 hover:brightness-110 transition-all active:scale-95 font-bold text-sm">
+                          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+                          </svg>
+                          Ingresar como Mozo
+                      </button>
+                  </div>
+              ` : ''}
 
                   ${user?.role === 'admin' ? `
                       <span class="${layout.label} border-b border-surface-variant pb-3 mb-4 mt-2">Administración</span>
@@ -121,18 +147,21 @@ export class HomeView {
                         </div>
                         Actualizar Menú Diario
                       </button>
+
                       <button id="admin-manage-carta-btn" class="flex items-center gap-5 rounded-[2rem] px-5 py-5 text-base font-bold text-on-surface-variant hover:bg-background hover:text-primary transition-all text-left">
                         <div class="p-3 rounded-2xl bg-secondary/5 text-secondary">
                           <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                         </div>
                         Gestionar Carta
                       </button>
+
                       <button id="admin-hero-promo-btn" class="flex items-center gap-5 rounded-[2rem] px-5 py-5 text-base font-bold text-on-surface-variant hover:bg-background hover:text-primary transition-all text-left">
                         <div class="p-3 rounded-2xl bg-amber-50 text-amber-600">
                           <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
                         </div>
                         Banner Destacado
                       </button>
+
                       <div class="my-6 border-t border-surface-variant"></div>
                   ` : ''}
 

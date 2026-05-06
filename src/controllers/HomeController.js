@@ -123,7 +123,11 @@ export class HomeController {
         if (closeBtn) closeBtn.onclick = () => mNav.classList.add("hidden");
     }
     const uBtn = document.getElementById("user-menu-toggle");
-    if (uBtn) { uBtn.onclick = () => uMenu.classList.remove("hidden"); uMenu.querySelector(".close-user-menu").onclick = () => uMenu.classList.add("hidden"); }
+    if (uBtn) { 
+        uBtn.onclick = () => uMenu.classList.remove("hidden"); 
+        const closeUserBtn = uMenu.querySelector(".close-user-menu");
+        if (closeUserBtn) closeUserBtn.onclick = () => uMenu.classList.add("hidden"); 
+    }
 
     const setup = (id, cb) => { const b = document.getElementById(id); if (b) b.onclick = () => { uMenu.classList.add("hidden"); cb(); }};
     setup("admin-daily-menu-btn", () => this.abrirSelectorMenuEjecutivo());
