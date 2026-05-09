@@ -141,6 +141,7 @@ export class HomeView {
 
                   ${user?.role === 'admin' ? `
                       <span class="${layout.label} border-b border-surface-variant pb-3 mb-4 mt-2">Administración</span>
+                      
                       <button id="admin-daily-menu-btn" class="flex items-center gap-5 rounded-[2rem] px-5 py-5 text-base font-bold text-on-surface-variant hover:bg-background hover:text-primary transition-all text-left">
                         <div class="p-3 rounded-2xl bg-primary/5 text-primary">
                           <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>

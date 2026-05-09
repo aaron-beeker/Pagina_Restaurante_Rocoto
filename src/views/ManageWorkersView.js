@@ -74,7 +74,17 @@ export class ManageWorkersView {
                             </div>
                             <input type="hidden" id="worker-huellas" value="" />
                             <button type="button" id="capture-fingerprint-btn" class="${button.base} ${button.outlineDark} py-2 px-6 flex items-center gap-2">
-                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A10.003 10.003 0 0012 3m0 0c.887 0 1.741.099 2.56.287M12 3v18m0-18a10.005 10.005 0 018.574 14.821m-5.965-12.727L12 3m0 0l-5.609 5.094M12 3L6.391 8.094M12 3l5.609 5.094" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4"/>
+                                    <path d="M14 13.12c0 2.38 0 6.38-1 8.88"/>
+                                    <path d="M17.29 21.02c.12-.6.43-2.3.5-3.02"/>
+                                    <path d="M2 12a10 10 0 0 1 18-6"/>
+                                    <path d="M2 16h.01"/>
+                                    <path d="M21.8 16c.2-2 .131-5.354 0-6"/>
+                                    <path d="M5 19.5C5.5 18 6 15 6 12a6 6 0 0 1 .34-2"/>
+                                    <path d="M8.65 22c.21-.66.45-1.32.57-2"/>
+                                    <path d="M9 6.8a6 6 0 0 1 9 5.2v2"/>
+                                </svg>
                                 <span id="btn-capture-text">Iniciar Captura (3 tomas)</span>
                             </button>
                         </div>
@@ -166,7 +176,7 @@ export class ManageWorkersView {
                         st.textContent = `Procesando...`; dot.className = "h-3 w-3 rounded-full bg-green-500";
                     }
                 });
-                if (result) { this.capturedTemplates.push(result); this.updateStepDots(i); if (i < 3) await new Promise(r => setTimeout(r, 2000)); }
+                if (result) { this.capturedTemplates.push(result); this.updateStepDots(i); if (i < 3) await new Promise(resolve => setTimeout(resolve, 2000)); }
             }
             document.getElementById("worker-huellas").value = JSON.stringify(this.capturedTemplates);
             this.updateFingerprintStatus(true);
@@ -236,7 +246,13 @@ export class ManageWorkersView {
                         <svg class="h-6 w-6 text-on-surface-variant opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                     </div>
                     <div>
-                        <p class="text-sm font-bold text-on-background">${escapeHtml(w.apellidos)}, ${escapeHtml(w.nombre)}</p>
+                        <div class="flex items-center gap-2">
+                            <p class="text-sm font-bold text-on-background truncate">${escapeHtml(w.apellidos)}, ${escapeHtml(w.nombre)}</p>
+                            ${w.esEncargadoCampo 
+                                ? `<span class="text-[8px] font-black text-primary uppercase bg-primary/10 px-1.5 py-0.5 rounded shrink-0">Encargado de Campo</span>` 
+                                : `<span class="text-[8px] font-black text-stone-400 uppercase bg-stone-100 px-1.5 py-0.5 rounded shrink-0">Personal</span>`
+                            }
+                        </div>
                         <p class="text-[10px] text-primary font-bold uppercase tracking-tighter">${escapeHtml(w.empresa || 'Sin empresa')}</p>
                         <p class="text-xs text-on-surface-variant opacity-60">DNI: ${escapeHtml(w.dni)}</p>
                     </div>
@@ -285,8 +301,14 @@ export class ManageWorkersView {
                 </div>
                 <div class="text-center sm:text-left flex-1">
                     <h3 class="text-xl font-black text-on-background uppercase">${escapeHtml(worker.apellidos)}, ${escapeHtml(worker.nombre)}</h3>
-                    <p class="text-sm font-bold text-primary uppercase tracking-wider">${escapeHtml(worker.empresa || 'Particular')}</p>
-                    <p class="text-xs text-on-surface-variant font-bold opacity-60 mt-1">DNI: ${worker.dni}</p>
+                    <div class="flex flex-wrap justify-center sm:justify-start gap-2 mt-1">
+                        <p class="text-sm font-bold text-primary uppercase tracking-wider">${escapeHtml(worker.empresa || 'Particular')}</p>
+                        ${worker.esEncargadoCampo 
+                            ? `<span class="text-[9px] font-black text-primary uppercase bg-primary/10 px-2 py-0.5 rounded-full">Encargado de Campo</span>` 
+                            : `<span class="text-[9px] font-black text-stone-400 uppercase bg-stone-100 px-2 py-0.5 rounded-full">Personal</span>`
+                        }
+                    </div>
+                    <p class="text-xs text-on-surface-variant font-bold opacity-60 mt-2">DNI: ${worker.dni}</p>
                 </div>
             </div>
             <div class="bg-surface p-6 rounded-[2rem] border-2 border-primary/10 shadow-sm space-y-6">

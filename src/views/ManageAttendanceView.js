@@ -27,7 +27,7 @@ export class ManageAttendanceView {
             <div class="${adminShell.card}">
                 <div class="${adminShell.header}">
                     <div>
-                        <h2 class="${adminShell.title}">Gestión de Asistencias - FASAL S.A.C.</h2>
+                        <h2 class="${adminShell.title}">Gestión de Asistencias</h2>
                         <p class="${adminShell.subtitle}">Administra, corrige y reporta las asistencias de los trabajadores.</p>
                     </div>
                     <button type="button" id="back-from-attendance" class="${adminShell.backBtn}">
@@ -40,6 +40,7 @@ export class ManageAttendanceView {
                     ${this.renderDashboard(this.allAttendances, this.monthAttendances)}
                 </div>
 
+                <!-- REGISTRO MANUAL / EDICIÓN -->
                 <div class="${adminShell.mutedBox} mb-12 scroll-mt-24" id="attendance-form-section">
                     <h3 class="${adminShell.sectionTitle}" id="form-title">Registro Manual de Asistencia</h3>
                     <form id="attendance-form" class="space-y-6">
@@ -76,7 +77,7 @@ export class ManageAttendanceView {
                             <div class="flex items-center gap-3 pt-6">
                                 <input type="checkbox" id="attendance-also-eats" class="w-6 h-6 rounded-lg border-2 border-primary text-primary focus:ring-primary cursor-pointer" checked />
                                 <label for="attendance-also-eats" class="text-xs font-black uppercase text-primary cursor-pointer">
-                                    ¿Consumirá su ración individual?
+                                    ¿Consumirá su ración en el local?
                                 </label>
                             </div>
                         </div>
@@ -86,6 +87,62 @@ export class ManageAttendanceView {
                             <button type="button" id="cancel-attendance-edit" class="hidden ${button.base} ${button.outlineDark} px-8">Cancelar</button>
                         </div>
                     </form>
+                </div>
+
+                <!-- PANEL DE REPORTES GRUPALES (PDF Y EXCEL) -->
+                <div class="bg-surface p-8 rounded-[2.5rem] border-2 border-primary/10 shadow-sm mb-12">
+                    <div class="flex items-center gap-4 mb-8">
+                        <div class="h-12 w-12 rounded-2xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/20">
+                            <svg class="h-7 w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-width="2"/></svg>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-black text-primary uppercase tracking-tight">Reportes Mensuales / Por Empresa</h3>
+                            <p class="text-xs font-bold text-on-surface-variant opacity-60 uppercase">Exportación masiva de datos</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+                         <div class="lg:col-span-2">
+                            <label class="${form.label}">Empresa</label>
+                            <select id="report-company" class="${form.input}">
+                                <option value="">Todas las empresas</option>
+                                ${this.companies.map(c => `<option value="${c.nombre}">${escapeHtml(c.nombre)}</option>`).join('')}
+                            </select>
+                        </div>
+                        <div>
+                            <label class="${form.label}">Fecha Inicio</label>
+                            <input type="date" id="report-start-date" class="${form.input}" />
+                        </div>
+                        <div>
+                            <label class="${form.label}">Fecha Fin</label>
+                            <input type="date" id="report-end-date" class="${form.input}" />
+                        </div>
+                        <div class="lg:col-span-2 grid grid-cols-3 gap-2">
+                            <div>
+                                <label class="${form.label}">Precio D</label>
+                                <input type="number" id="price-d" class="${form.input}" value="10.00" step="0.50" />
+                            </div>
+                            <div>
+                                <label class="${form.label}">Precio A</label>
+                                <input type="number" id="price-a" class="${form.input}" value="10.00" step="0.50" />
+                            </div>
+                            <div>
+                                <label class="${form.label}">Precio C</label>
+                                <input type="number" id="price-c" class="${form.input}" value="10.00" step="0.50" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-wrap gap-4">
+                        <button id="btn-group-pdf" class="${button.base} ${button.primary} flex-1 py-4 gap-3 uppercase text-xs font-black tracking-widest shadow-xl shadow-primary/20">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" stroke-width="2.5"/></svg>
+                            Reporte Grupal PDF
+                        </button>
+                        <button id="btn-group-excel" class="${button.base} border-2 border-green-600 text-green-700 hover:bg-green-50 flex-1 py-4 gap-3 uppercase text-xs font-black tracking-widest shadow-xl shadow-green-600/10">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-width="2.5"/></svg>
+                            Reporte Grupal EXCEL
+                        </button>
+                    </div>
                 </div>
 
                 <div class="flex flex-col md:flex-row gap-4 mb-6 items-end">
@@ -133,7 +190,7 @@ export class ManageAttendanceView {
     return `
         <option value="">Seleccione un trabajador</option>
         ${workers.sort((a,b) => a.apellidos.localeCompare(b.apellidos)).map(w => `
-            <option value="${w.dni}">${escapeHtml(w.apellidos)}, ${escapeHtml(w.nombre)} (${w.dni})</option>
+            <option value="${w.dni}">${escapeHtml(w.apellidos)}, ${escapeHtml(w.nombre)} (${w.dni}) ${w.esEncargadoCampo ? '[ENCARGADO]' : ''}</option>
         `).join('')}
     `;
   }
@@ -183,7 +240,7 @@ export class ManageAttendanceView {
   }
 
   setupEventListeners(acciones) {
-    const { onBack, onSave, onDelete, onEdit, onRefresh } = acciones;
+    const { onBack, onSave, onDelete, onEdit, onRefresh, onDownloadGroupPdf, onDownloadGroupExcel } = acciones;
     document.getElementById("back-from-attendance").onclick = onBack;
     const workerSelect = document.getElementById("attendance-worker-dni");
     const workerSearch = document.getElementById("worker-search");
@@ -219,6 +276,34 @@ export class ManageAttendanceView {
         const filtered = company ? this.allAttendances.filter(a => a.empresa === company) : this.allAttendances;
         this.updateListUI(filtered);
     };
+
+    // Eventos de Reporte Grupal
+    document.getElementById("btn-group-pdf").onclick = () => {
+        const company = document.getElementById("report-company").value;
+        const start = document.getElementById("report-start-date").value;
+        const end = document.getElementById("report-end-date").value;
+        const prices = {
+            d: parseFloat(document.getElementById("price-d").value) || 10,
+            a: parseFloat(document.getElementById("price-a").value) || 10,
+            c: parseFloat(document.getElementById("price-c").value) || 10
+        };
+        if (!start || !end) { toast.info("Por favor seleccione un rango de fechas."); return; }
+        onDownloadGroupPdf(company, start, end, prices);
+    };
+
+    document.getElementById("btn-group-excel").onclick = () => {
+        const company = document.getElementById("report-company").value;
+        const start = document.getElementById("report-start-date").value;
+        const end = document.getElementById("report-end-date").value;
+        const prices = {
+            d: parseFloat(document.getElementById("price-d").value) || 10,
+            a: parseFloat(document.getElementById("price-a").value) || 10,
+            c: parseFloat(document.getElementById("price-c").value) || 10
+        };
+        if (!start || !end) { toast.info("Por favor seleccione un rango de fechas."); return; }
+        onDownloadGroupExcel(company, start, end, prices);
+    };
+
     this.attachTableEvents(onEdit, onDelete);
   }
 
@@ -236,7 +321,17 @@ export class ManageAttendanceView {
     if (attendances.length === 0) return `<tr><td colspan="7" class="px-6 py-10 text-center text-xs font-bold text-on-surface-variant opacity-40">No hay registros</td></tr>`;
     return attendances.map(a => `
         <tr class="hover:bg-background transition-colors text-xs font-bold text-on-background">
-            <td class="px-6 py-4"><div class="flex flex-col"><p class="uppercase font-black tracking-tight">${escapeHtml(a.nombreCompleto)}</p>${a.esEncargadoCampo ? `<span class="text-[8px] font-black text-primary uppercase bg-primary/10 px-1.5 py-0.5 rounded w-fit mt-1">Encargado de Campo</span>` : ''}</div></td>
+            <td class="px-6 py-4">
+                <div class="flex flex-col">
+                    <div class="flex items-center gap-2">
+                        <p class="uppercase font-black tracking-tight">${escapeHtml(a.nombreCompleto)}</p>
+                        ${a.esEncargadoCampo 
+                            ? `<span class="text-[8px] font-black text-primary uppercase bg-primary/10 px-1.5 py-0.5 rounded shrink-0">Encargado de Campo</span>` 
+                            : `<span class="text-[8px] font-black text-stone-400 uppercase bg-stone-100 px-1.5 py-0.5 rounded shrink-0">Personal</span>`
+                        }
+                    </div>
+                </div>
+            </td>
             <td class="px-6 py-4 text-center opacity-60 font-mono">${a.dni}</td>
             <td class="px-6 py-4 text-center"><span class="text-[10px] text-primary uppercase tracking-tighter">${escapeHtml(a.empresa || 'Particular')}</span></td>
             <td class="px-6 py-4 text-center"><div class="flex flex-col items-center gap-1"><span class="px-2 py-0.5 rounded-md bg-surface-container-low border border-surface-variant text-[9px] uppercase">${a.tipo}</span>${a.soloCampo ? `<span class="text-[7px] font-black text-amber-600 uppercase">Solo Campo</span>` : ''}</div></td>

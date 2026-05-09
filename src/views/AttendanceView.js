@@ -14,17 +14,12 @@ export class AttendanceView {
         <div class="min-h-screen bg-background flex flex-col items-center justify-center p-6">
             <div class="w-full max-w-md bg-surface rounded-[3rem] shadow-2xl border border-surface-variant p-10 flex flex-col items-center gap-6">
                 <div class="text-center">
-                    <h2 class="text-3xl font-black text-primary uppercase tracking-tight mb-1">Asistencia FASAL</h2>
-                    <p class="text-xs font-bold text-on-surface-variant opacity-60 uppercase">Ingrese su DNI y use el lector</p>
+                    <h2 class="text-3xl font-black text-primary uppercase tracking-tight mb-1">Asistencia</h2>         
                 </div>
-
-                <!-- Input de DNI para Verificación 1:1 -->
-                <div class="w-full">
-                    <label class="text-[10px] font-bold uppercase tracking-widest text-primary mb-2 block ml-2">DNI del Trabajador</label>
-                    <input type="text" id="attendance-dni" maxlength="8" placeholder="8 dígitos" 
-                        class="w-full bg-surface-container-low border-2 border-surface-variant rounded-2xl py-4 px-6 text-2xl font-black text-center tracking-[0.3em] focus:border-primary transition-all outline-none"
-                    />
-                </div>
+                
+                <div class="text">
+                    <p class="text-xs font-bold text-on-surface-variant opacity-50 ">Seleccione que va a consumir</p>        
+                </div>                
 
                 <div class="flex flex-col gap-3 w-full">
                     <div class="grid grid-cols-3 gap-2">
@@ -36,10 +31,34 @@ export class AttendanceView {
                     </div>
                 </div>
 
+                <div class="text-center">
+                    <p class="text-xs font-bold text-on-surface-variant opacity-60 uppercase">Ingrese su DNI y presione ENTER o use el lector</p>
+                </div>
+
+                <!-- Input de DNI para Verificación 1:1 -->
+                <div class="w-full">
+                    <label class="text-[10px] font-bold uppercase tracking-widest text-primary mb-2 block ml-2">DNI del Trabajador</label>
+                    <input type="text" id="attendance-dni" maxlength="8" placeholder="8 dígitos" 
+                        class="w-full bg-surface-container-low border-2 border-surface-variant rounded-2xl py-4 px-6 text-2xl font-black text-center tracking-[0.3em] focus:border-primary transition-all outline-none"
+                    />
+                </div>
+
+                
+
                 <div class="relative group mt-2">
                     <div id="scan-feedback" class="absolute inset-0 bg-primary/10 rounded-full scale-0 transition-transform duration-500"></div>
                     <button id="main-scan-btn" class="relative h-40 w-48 rounded-[2.5rem] bg-primary text-white shadow-xl shadow-primary/30 flex flex-col items-center justify-center gap-2 hover:scale-105 active:scale-95 transition-all disabled:grayscale disabled:opacity-50">
-                        <svg class="h-14 w-14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A10.003 10.003 0 0012 3m0 0c.887 0 1.741.099 2.56.287M12 3v18m0-18a10.005 10.005 0 018.574 14.821m-5.965-12.727L12 3m0 0l-5.609 5.094M12 3L6.391 8.094M12 3l5.609 5.094" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <svg class="h-14 w-14" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4"/>
+                            <path d="M14 13.12c0 2.38 0 6.38-1 8.88"/>
+                            <path d="M17.29 21.02c.12-.6.43-2.3.5-3.02"/>
+                            <path d="M2 12a10 10 0 0 1 18-6"/>
+                            <path d="M2 16h.01"/>
+                            <path d="M21.8 16c.2-2 .131-5.354 0-6"/>
+                            <path d="M5 19.5C5.5 18 6 15 6 12a6 6 0 0 1 .34-2"/>
+                            <path d="M8.65 22c.21-.66.45-1.32.57-2"/>
+                            <path d="M9 6.8a6 6 0 0 1 9 5.2v2"/>
+                        </svg>
                         <span class="text-[10px] font-black uppercase tracking-widest">Validar Huella</span>
                     </button>
                 </div>
@@ -183,8 +202,15 @@ export class AttendanceView {
                     </div>
                     <div>
                         <p class="text-xs font-black text-on-background uppercase">${reg.nombreCompleto}</p>
-                        <p class="text-[10px] font-bold text-primary uppercase tracking-tighter mb-0.5">${escapeHtml(reg.empresa || 'Particular')} ${reg.cantidadCampo ? `• <span class="bg-primary text-white px-1.5 rounded-full">CAMPO: ${reg.cantidadCampo}</span>` : ''}</p>
-                        <p class="text-[10px] font-bold text-on-surface-variant opacity-60">${reg.tipo} • ${reg.timestamp?.seconds ? new Date(reg.timestamp.seconds * 1000).toLocaleTimeString() : 'Recién'}</p>
+                        <div class="flex items-center gap-1.5 mt-0.5">
+                            <p class="text-[9px] font-bold text-primary uppercase tracking-tighter">${escapeHtml(reg.empresa || 'Particular')}</p>
+                            ${reg.esEncargadoCampo 
+                                ? `<span class="text-[7px] font-black text-primary uppercase bg-primary/10 px-1.5 py-0.5 rounded">Encargado</span>` 
+                                : `<span class="text-[7px] font-black text-stone-400 uppercase bg-stone-100 px-1.5 py-0.5 rounded">Personal</span>`
+                            }
+                            ${reg.cantidadCampo ? `<span class="bg-primary text-white text-[7px] font-black px-1.5 py-0.5 rounded-full uppercase">Campo: ${reg.cantidadCampo}</span>` : ''}
+                        </div>
+                        <p class="text-[9px] font-bold text-on-surface-variant opacity-60 mt-0.5">${reg.tipo} • ${reg.timestamp?.seconds ? new Date(reg.timestamp.seconds * 1000).toLocaleTimeString() : 'Recién'}</p>
                     </div>
                 </div>
             </div>

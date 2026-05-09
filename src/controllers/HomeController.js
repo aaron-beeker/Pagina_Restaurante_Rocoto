@@ -200,7 +200,7 @@ export class HomeController {
     
     const refreshLastRegistrations = async () => {
         const list = await this.attendanceRepository.getAttendanceByDate(today);
-        attendanceView.renderLastRegistrations(list);
+        attendanceView.renderLastRegistrations(list.filter(a => !a.soloCampo));
     };
 
     const acciones = {
@@ -261,7 +261,8 @@ export class HomeController {
             const cant = parseInt(input);
             if (!isNaN(cant) && cant > 0) cantidadCampo = cant;
             if (cantidadCampo > 0) {
-                const tambienCome = await dialog.confirm("Consumo Individual", "¿Usted también consumirá su ración ahora?");
+                const tambienCome = await dialog.confirm("Consumo Individual", "¿Usted también consumirá su ración en el local?");
+
                 if (!tambienCome) return await this.registrarAsistencia(worker, tipo, today, refreshCb, cantidadCampo, false);
             }
         }
@@ -356,7 +357,7 @@ export class HomeController {
         onViewDetails: async (id) => {
             const w = workers.find(x => x.id === id);
             if (!w) return;
-            const attendance = await this.attendanceRepository.getAttendanceByDni(w.dni);
+            const attendance = (await this.attendanceRepository.getAttendanceByDni(w.dni)).filter(a => !a.soloCampo);
             manageView.showWorkerDetails(w, attendance, {
                 onDownloadPdf: async (worker, list) => await this.pdfService.generarReporteAsistencia(worker, list),
                 onDownloadExcel: async (worker, list) => await this.excelService.generarReporteAsistencia(worker, list)
