@@ -50,8 +50,28 @@
               'bounce-slow': 'bounce-slow 3s infinite',
               'slide-in-left': 'slide-in-left 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
               'slide-in-right': 'slide-in-right 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+              'fade-in': 'fade-in 0.3s ease-out',
+              'fade-out': 'fade-out 0.3s ease-in forwards',
+              'scale-in': 'scale-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
+              'scale-out': 'scale-out 0.3s ease-in forwards',
             },
             keyframes: {
+              'fade-in': {
+                '0%': { opacity: '0' },
+                '100%': { opacity: '1' },
+              },
+              'fade-out': {
+                '0%': { opacity: '1' },
+                '100%': { opacity: '0' },
+              },
+              'scale-in': {
+                '0%': { transform: 'scale(0.9) translateY(10px)', opacity: '0' },
+                '100%': { transform: 'scale(1) translateY(0)', opacity: '1' },
+              },
+              'scale-out': {
+                '0%': { transform: 'scale(1)', opacity: '1' },
+                '100%': { transform: 'scale(0.9)', opacity: '0' },
+              },
               'slow-zoom': {
                 '0%': { transform: 'scale(1)' },
                 '100%': { transform: 'scale(1.1)' },
@@ -82,6 +102,7 @@
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
     <script src="/src/app.js" type="module"></script>
   </body>
 </html>

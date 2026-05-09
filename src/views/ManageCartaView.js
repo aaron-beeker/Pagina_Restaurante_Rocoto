@@ -1,6 +1,7 @@
-﻿import { CATEGORIAS_SOLO_MENU_DIARIO, seleccionSoloMenuDiario } from "../constants/menuCategories.js";
+import { CATEGORIAS_SOLO_MENU_DIARIO, seleccionSoloMenuDiario } from "../constants/menuCategories.js";
 import { adminShell, button, form, typography } from "../ui/layout.js";
 import { escapeHtml } from "../utils/html.js";
+import { toast, dialog } from "../utils/notifications.js";
 
 const PLACEHOLDER_ICON = "https://cdn-icons-png.flaticon.com/512/662/662244.png";
 
@@ -13,16 +14,12 @@ export class ManageCartaView {
     if (!categorias || !categorias.length) {
       return `<p class="text-sm italic text-on-surface-variant opacity-60">No hay categorías disponibles.</p>`;
     }
-    return categorias
-      .map(
-        (cat) => `
+    return categorias.map(cat => `
       <label class="flex cursor-pointer items-center gap-3 rounded-xl border border-surface-variant bg-surface-container-low px-4 py-2.5 transition-all hover:border-primary hover:bg-surface hover:shadow-sm">
         <input type="checkbox" name="product-category" value="${escapeHtml(cat.nombre)}" class="${form.checkbox}" />
         <span class="text-sm font-bold text-on-surface-variant">${escapeHtml(cat.nombre)}</span>
       </label>
-    `,
-      )
-      .join("");
+    `).join("");
   }
 
   render(platos, categorias, acciones) {
@@ -34,7 +31,10 @@ export class ManageCartaView {
                         <h2 class="${adminShell.title}">Gestión de carta general</h2>
                         <p class="${adminShell.subtitle}">Administra productos e intercambia el orden de tus categorías.</p>
                     </div>
-                    <button type="button" id="back-from-manage" class="${adminShell.backBtn}">Cerrar gestión</button>
+                    <button type="button" id="back-from-manage" class="${adminShell.backBtn}">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        Cerrar gestión
+                    </button>
                 </div>
 
                 <!-- GESTIÓN DE CATEGORÍAS -->
@@ -179,7 +179,6 @@ export class ManageCartaView {
             catForm.dataset.antiguoNombre = nombre;
             document.getElementById("submit-cat-btn").textContent = "Actualizar Categoría";
             document.getElementById("cancel-cat-edit").classList.remove("hidden");
-            
             document.getElementById("add-category-form").scrollIntoView({ behavior: "smooth", block: "center" });
         };
     });
@@ -195,7 +194,7 @@ export class ManageCartaView {
     prodForm.onsubmit = (e) => {
       e.preventDefault();
       const selectedCats = Array.from(document.querySelectorAll('input[name="product-category"]:checked')).map((cb) => cb.value);
-      if (selectedCats.length === 0) return alert("Selecciona al menos una categoría.");
+      if (selectedCats.length === 0) return toast.info("Selecciona al menos una categoría.");
       const data = {
         name: document.getElementById("new-name").value.trim(),
         price: parseFloat(document.getElementById("new-price").value) || 0,
@@ -219,7 +218,7 @@ export class ManageCartaView {
 
   attachTableEvents(onEdit, onDelete) {
     this.rootElement.querySelectorAll(".delete-btn").forEach((btn) => {
-      btn.onclick = () => { if(confirm("¿Eliminar este producto?")) onDelete(btn.dataset.id); };
+      btn.onclick = async () => { if(await dialog.confirm("Eliminar Producto", "¿Está seguro?")) onDelete(btn.dataset.id); };
     });
     this.rootElement.querySelectorAll(".edit-btn").forEach((btn) => {
       btn.onclick = () => onEdit(btn.dataset.id);
@@ -227,7 +226,7 @@ export class ManageCartaView {
   }
 
   renderProductList(platos) {
-    if (platos.length === 0) return `<div class="py-10 text-center text-on-surface-variant opacity-60">No se encontraron productos que coincidan.</div>`;
+    if (platos.length === 0) return `<div class="py-10 text-center text-on-surface-variant opacity-60">No se encontraron productos.</div>`;
     return `
       <div class="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
         ${platos.map(p => {
@@ -269,10 +268,8 @@ export class ManageCartaView {
     checkboxes.forEach((cb) => {
       cb.checked = Array.isArray(plato.category) ? plato.category.includes(cb.value) : plato.category === cb.value;
     });
-
     document.getElementById("submit-product-btn").textContent = "Actualizar Producto";
     document.getElementById("cancel-product-edit").classList.remove("hidden");
-
     document.getElementById("add-product-form").scrollIntoView({ behavior: "smooth", block: "center" });
   }
 

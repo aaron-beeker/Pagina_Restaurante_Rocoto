@@ -1,7 +1,6 @@
-﻿/**
+/**
  * Sistema de Diseño para Rocoto Restaurante Chifa
  * Define tokens de Tailwind compartidos para mantener la armonía visual.
- * Optimizado para Nunito (títulos) y Open Sans (cuerpo/subtítulos).
  */
 
 // --- Contenedores y Secciones ---
@@ -55,12 +54,12 @@ export const form = {
 
 // --- Administración (Estructura de Paneles) ---
 export const adminShell = {
-  page: "min-h-screen bg-background px-4 py-8 pt-24 pb-20 sm:px-6 sm:pt-28",
+  page: "min-h-screen bg-background px-4 py-8 pb-20 sm:px-6 sm:pt-0",
   card: "mx-auto w-full max-w-6xl rounded-3xl border border-surface-variant bg-surface p-6 shadow-xl shadow-on-background/5 sm:p-10",
-  header: "mb-10 flex flex-col gap-6 border-b border-surface-variant pb-10 sm:flex-row sm:items-center sm:justify-between",
+  header: "z-40 -mx-6 -mt-6 mb-10 flex flex-col gap-6 border-b border-surface-variant bg-surface/95 pb-10 pt-6 backdrop-blur-md sm:sticky sm:top-0 sm:-mx-10 sm:-mt-10 sm:flex-row sm:items-center sm:justify-between sm:px-10 sm:pt-10",
   title: "font-display text-2xl font-black tracking-tight text-primary sm:text-3xl",
   subtitle: "mt-2 max-w-xl text-sm text-on-surface-variant/60 font-medium",
-  backBtn: "inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-bold text-on-surface-variant/40 hover:bg-background hover:text-secondary transition-all",
+  backBtn: "inline-flex items-center gap-2 rounded-xl bg-background sm:bg-transparent px-4 py-3 sm:py-2 text-sm font-bold text-secondary sm:text-on-surface-variant/40 hover:bg-background hover:text-secondary transition-all shadow-sm sm:shadow-none border border-surface-variant sm:border-transparent",
   sectionTitle: "mb-6 font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant/40",
   mutedBox: "rounded-2xl border border-surface-variant bg-background p-6 sm:p-8",
   accentBox: "rounded-2xl border border-blue-100 bg-blue-50/50 p-6 sm:p-8",

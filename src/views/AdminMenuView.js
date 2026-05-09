@@ -1,95 +1,91 @@
-﻿import { adminShell, button, form, typography } from "../ui/layout.js";
+import { adminShell, button, form } from "../ui/layout.js";
+import { escapeHtml } from "../utils/html.js";
+import { dialog } from "../utils/notifications.js";
 
 export class AdminMenuView {
   constructor(rootElement) {
     this.rootElement = rootElement;
   }
 
-  render(segundos, entradas, refrescos, onSave) {
+  render(segundos, entradas, refrescos, acciones) {
+    const { onSave, onBack } = acciones;
     this.rootElement.innerHTML = `
       <div class="${adminShell.page}">
         <div class="${adminShell.card}">
           <div class="${adminShell.header}">
             <div>
-              <h2 class="${adminShell.title}">Menú ejecutivo del día</h2>
-              <p class="${adminShell.subtitle}">Marca las opciones disponibles para hoy y publica los cambios.</p>
+              <h2 class="${adminShell.title}">Configuración de Menú Ejecutivo</h2>
+              <p class="${adminShell.subtitle}">Seleccione los platos disponibles para el menú del día.</p>
             </div>
-            <button type="button" id="back-to-home" class="${adminShell.backBtn}" aria-label="Cerrar panel">
-              <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-              Cerrar panel
-            </button>
-          </div>
-
-          <div class="mb-10 flex flex-col sm:flex-row gap-4">
-              <button type="button" id="save-menu-top" class="${button.base} ${button.primary} flex-1 py-5">
-                  Publicar actualización de menú
+            <div class="flex flex-wrap gap-2">
+              <button id="download-pdf-a3" class="${button.base} ${button.outlineDark} ${button.small}">
+                  <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" stroke-width="2.5"/></svg>
+                  Menú PDF (A2)
               </button>
-              <button type="button" id="download-pdf-a3" class="${button.base} ${button.outlineDark} flex-1 py-5">
-                  Descargar Carta PDF (Tamaño A2)
-              </button>
-          </div>
-
-          <div class="space-y-12">
-            <div>
-              <h3 class="${adminShell.sectionTitle}">1. Entradas disponibles</h3>
-              <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                ${entradas.map((e) => this.createCheckboxCard("entrada-check", e.name || e)).join("")}
-              </div>
-            </div>
-
-            <div>
-              <h3 class="${adminShell.sectionTitle}">2. Plato del menú del día</h3>
-              <p class="mb-4 text-[10px] font-bold uppercase tracking-wider text-on-surface-variant opacity-60">Productos con categoría <strong class="text-primary">Menú del Día</strong> en la carta.</p>
-              <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                ${segundos.map((s) => this.createCheckboxCard("segundo-check", s.name || s)).join("")}
-              </div>
-            </div>
-
-            <div>
-              <h3 class="${adminShell.sectionTitle}">3. Bebidas del día</h3>
-              <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                ${refrescos.map((r) => this.createCheckboxCard("refresco-check", r.name || r)).join("")}
-              </div>
-            </div>
-
-            <div class="border-t border-surface-variant pt-10">
-              <button type="button" id="save-menu" class="${button.base} ${button.primary} w-full py-5 text-lg">
-                Publicar actualización de menú
+              <button type="button" id="admin-menu-back" class="${adminShell.backBtn}">
+                  <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                  Cerrar panel
               </button>
             </div>
           </div>
+
+          <form id="admin-menu-form" class="space-y-12">
+            <section>
+              <h3 class="${adminShell.sectionTitle}">Paso 1: Entradas del Día</h3>
+              <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                ${entradas.map(plato => this.renderCheckbox(plato, "entradas")).join('')}
+              </div>
+            </section>
+
+            <section>
+              <h3 class="${adminShell.sectionTitle}">Paso 2: Segundos del Día</h3>
+              <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                ${segundos.map(plato => this.renderCheckbox(plato, "segundos")).join('')}
+              </div>
+            </section>
+
+            <section>
+              <h3 class="${adminShell.sectionTitle}">Paso 3: Refrescos del Día</h3>
+              <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                ${refrescos.map(plato => this.renderCheckbox(plato, "refrescos")).join('')}
+              </div>
+            </section>
+
+            <div class="pt-6 border-t border-stone-100">
+              <button type="submit" class="${button.base} ${button.primary} w-full py-5 text-lg shadow-xl shadow-primary/20">
+                Actualizar Menú Público
+              </button>
+            </div>
+          </form>
         </div>
       </div>
     `;
-    this.setupEventListeners(onSave);
+
+    document.getElementById("admin-menu-back").onclick = onBack;
+    document.getElementById("admin-menu-form").onsubmit = (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      onSave({
+        entradas: formData.getAll("entradas"),
+        segundos: formData.getAll("segundos"),
+        refrescos: formData.getAll("refrescos"),
+        ultimaActualizacion: new Date().toISOString()
+      });
+    };
   }
 
-  createCheckboxCard(name, label) {
-    const safe = String(label).replace(/"/g, "&quot;");
+  renderCheckbox(plato, name) {
     return `
-      <label class="group relative flex cursor-pointer items-center gap-4 rounded-2xl border border-surface-variant bg-surface p-4 transition-all hover:border-primary/30 hover:shadow-md active:scale-[0.98]">
-        <input type="checkbox" name="${name}" value="${safe}" class="${form.checkbox}" />
-        <span class="text-sm font-bold text-on-surface-variant group-hover:text-primary transition-colors">${label}</span>
+      <label class="group relative flex cursor-pointer flex-col rounded-2xl border-2 border-stone-100 bg-stone-50/30 p-3 transition-all hover:border-primary/30 has-[:checked]:border-primary has-[:checked]:bg-primary/5">
+        <input type="checkbox" name="${name}" value="${escapeHtml(plato.name)}" class="peer sr-only" ${plato.selected ? 'checked' : ''} />
+        <div class="mb-2 aspect-square overflow-hidden rounded-xl bg-stone-200">
+            <img src="${escapeHtml(plato.image)}" alt="${escapeHtml(plato.name)}" class="h-full w-full object-cover grayscale group-hover:grayscale-0 peer-checked:grayscale-0" onerror="this.src='https://placehold.co/400x400?text=No+Image'"/>
+        </div>
+        <p class="text-center text-[10px] font-black uppercase leading-tight text-stone-500 peer-checked:text-primary">${escapeHtml(plato.name)}</p>
+        <div class="absolute right-2 top-2 hidden h-5 w-5 items-center justify-center rounded-full bg-primary text-white shadow-sm peer-checked:flex">
+          <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-width="3"/></svg>
+        </div>
       </label>
     `;
-  }
-
-  setupEventListeners(onSave) {
-    const backBtn = document.getElementById("back-to-home");
-    if (backBtn) {
-      backBtn.onclick = () => window.location.reload();
-    }
-
-    const saveActions = () => {
-      const config = {
-        entradas: Array.from(document.querySelectorAll('input[name="entrada-check"]:checked')).map((el) => el.value),
-        segundos: Array.from(document.querySelectorAll('input[name="segundo-check"]:checked')).map((el) => el.value),
-        refrescos: Array.from(document.querySelectorAll('input[name="refresco-check"]:checked')).map((el) => el.value),
-      };
-      onSave(config);
-    };
-
-    document.getElementById("save-menu").onclick = saveActions;
-    document.getElementById("save-menu-top").onclick = saveActions;
   }
 }

@@ -116,6 +116,220 @@ export class PdfService {
         doc.save(`Carta_Rocoto_A2.pdf`);
     }
 
+    async generarReporteAsistencia(worker, attendanceList) {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({
+            orientation: 'portrait',
+            unit: 'mm',
+            format: 'a4'
+        });
+
+        const width = doc.internal.pageSize.getWidth();
+        
+        // --- CABECERA ---
+        // Fondo verde superior
+        doc.setFillColor(...this.primary);
+        doc.rect(0, 0, width, 40, 'F');
+        
+        // Logo
+        try {
+            const logoImg = await this.getBase64FromUrl(this.info.logoUrl);
+            doc.addImage(logoImg, 'PNG', 15, 10, 45, 15);
+        } catch (e) {}
+
+        // Título del Reporte
+        doc.setTextColor(255, 255, 255);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(22);
+        doc.text("REPORTE DE ASISTENCIA", width - 15, 20, { align: 'right' });
+        
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "normal");
+        doc.text(`Fecha de emisión: ${new Date().toLocaleDateString()}`, width - 15, 28, { align: 'right' });
+
+        // --- INFORMACIÓN DEL TRABAJADOR ---
+        let y = 55;
+        doc.setTextColor(...this.textMain);
+        doc.setFontSize(14);
+        doc.setFont("helvetica", "bold");
+        doc.text("DATOS DEL TRABAJADOR", 15, y);
+        
+        y += 10;
+        doc.setDrawColor(230, 230, 230);
+        doc.line(15, y - 5, width - 15, y - 5);
+
+        const data = [
+            ["NOMBRE COMPLETO:", `${worker.apellidos}, ${worker.nombre}`],
+            ["DNI:", worker.dni],
+            ["EMPRESA:", worker.empresa || "Particular"],
+            ["TOTAL REGISTROS:", attendanceList.length.toString()]
+        ];
+
+        doc.setFontSize(10);
+        data.forEach(([label, value]) => {
+            doc.setFont("helvetica", "bold");
+            doc.text(label, 15, y);
+            doc.setFont("helvetica", "normal");
+            doc.text(value, 60, y);
+            y += 7;
+        });
+
+        // --- TABLA DE ASISTENCIA ---
+        y += 10;
+        
+        // Ordenar por fecha y hora (descendente)
+        const sortedList = [...attendanceList].sort((a, b) => {
+            const dateA = a.timestamp?.seconds ? a.timestamp.seconds : 0;
+            const dateB = b.timestamp?.seconds ? b.timestamp.seconds : 0;
+            return dateB - dateA;
+        });
+
+        doc.autoTable({
+            startY: y,
+            head: [['FECHA', 'HORA', 'TIPO DE CONSUMO', 'EMPRESA']],
+            body: sortedList.map(reg => [
+                reg.fecha,
+                reg.timestamp?.seconds ? new Date(reg.timestamp.seconds * 1000).toLocaleTimeString() : '---',
+                reg.tipo.toUpperCase(),
+                reg.empresa || 'PARTICULAR'
+            ]),
+            theme: 'striped',
+            headStyles: {
+                fillColor: this.primary,
+                textColor: [255, 255, 255],
+                fontStyle: 'bold',
+                halign: 'center'
+            },
+            styles: {
+                font: "helvetica",
+                fontSize: 9,
+                cellPadding: 4
+            },
+            columnStyles: {
+                0: { halign: 'center', cellWidth: 35 },
+                1: { halign: 'center', cellWidth: 35 },
+                2: { halign: 'center' },
+                3: { halign: 'center' }
+            },
+            margin: { left: 15, right: 15 }
+        });
+
+        // Pie de página
+        doc.setFontSize(8);
+        doc.setTextColor(...this.textMuted);
+        const footerText = `${this.info.name} - ${this.info.address} - WhatsApp: ${this.info.phone}`;
+        doc.text(footerText, width / 2, 285, { align: 'center' });
+
+        doc.save(`Asistencia_${worker.dni}_${worker.apellidos}.pdf`);
+    }
+
+    async generarReporteAsistenciaGrupal(companyName, startDate, endDate, attendanceList, prices = {d:10, a:10, c:10}) {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({
+            orientation: 'portrait',
+            unit: 'mm',
+            format: 'a4'
+        });
+
+        const width = doc.internal.pageSize.getWidth();
+        
+        // --- CABECERA ---
+        doc.setFillColor(...this.primary);
+        doc.rect(0, 0, width, 40, 'F');
+        
+        try {
+            const logoImg = await this.getBase64FromUrl(this.info.logoUrl);
+            doc.addImage(logoImg, 'PNG', 15, 10, 45, 15);
+        } catch (e) {}
+
+        doc.setTextColor(255, 255, 255);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(18);
+        doc.text("REPORTE GRUPAL DE ASISTENCIA", width - 15, 20, { align: 'right' });
+        
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "normal");
+        const rangeText = `Desde: ${startDate}  Hasta: ${endDate}`;
+        doc.text(rangeText, width - 15, 28, { align: 'right' });
+
+        // --- INFORMACIÓN DEL REPORTE ---
+        let y = 55;
+        doc.setTextColor(...this.textMain);
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+        doc.text(`EMPRESA: ${companyName || 'TODAS LAS EMPRESAS'}`, 15, y);
+        
+        y += 7;
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "normal");
+        doc.text(`Total de consumos registrados: ${attendanceList.length}`, 15, y);
+        
+        y += 5;
+        let totalAmount = 0;
+        attendanceList.forEach(reg => {
+            const type = reg.tipo.toLowerCase();
+            if (type.includes('desayuno')) totalAmount += (prices.d || 0);
+            else if (type.includes('almuerzo')) totalAmount += (prices.a || 0);
+            else if (type.includes('cena')) totalAmount += (prices.c || 0);
+        });
+
+        doc.text(`Precios: D: S/ ${prices.d.toFixed(2)} | A: S/ ${prices.a.toFixed(2)} | C: S/ ${prices.c.toFixed(2)}`, 15, y);
+        doc.setFont("helvetica", "bold");
+        doc.text(`MONTO TOTAL A PAGAR: S/ ${totalAmount.toFixed(2)}`, 15, y + 5);
+
+        // --- TABLA DE ASISTENCIA ---
+        y += 15;
+        
+        doc.autoTable({
+            startY: y,
+            head: [['FECHA', 'TRABAJADOR', 'DNI', 'TIPO', 'PRECIO']],
+            body: attendanceList.map(reg => {
+                const type = reg.tipo.toLowerCase();
+                let price = 0;
+                if (type.includes('desayuno')) price = prices.d;
+                else if (type.includes('almuerzo')) price = prices.a;
+                else if (type.includes('cena')) price = prices.c;
+
+                return [
+                    reg.fecha,
+                    reg.nombreCompleto.toUpperCase(),
+                    reg.dni,
+                    reg.tipo.toUpperCase(),
+                    `S/ ${price.toFixed(2)}`
+                ];
+            }),
+            theme: 'striped',
+            headStyles: {
+                fillColor: this.primary,
+                textColor: [255, 255, 255],
+                fontStyle: 'bold',
+                halign: 'center'
+            },
+            styles: {
+                font: "helvetica",
+                fontSize: 8,
+                cellPadding: 3
+            },
+            columnStyles: {
+                0: { halign: 'center', cellWidth: 25 },
+                1: { halign: 'left', cellWidth: 70 },
+                2: { halign: 'center', cellWidth: 25 },
+                3: { halign: 'center', cellWidth: 25 },
+                4: { halign: 'right' }
+            },
+            margin: { left: 15, right: 15 }
+        });
+
+        // Pie de página
+        doc.setFontSize(8);
+        doc.setTextColor(...this.textMuted);
+        const footerText = `${this.info.name} - ${this.info.address} - WhatsApp: ${this.info.phone}`;
+        doc.text(footerText, width / 2, 285, { align: 'center' });
+
+        const fileName = `Reporte_Grupal_${companyName || 'General'}_${startDate}_${endDate}.pdf`;
+        doc.save(fileName);
+    }
+
     formatPlatosParaTresColumnas(platos) {
         const platosPorCat = {};
         platos.forEach(p => {
