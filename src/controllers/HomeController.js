@@ -78,42 +78,48 @@ export class HomeController {
     });
 
     onAuthStateChanged(auth, async (user) => {
+      console.log("Auth state changed. User:", user ? user.email : "none");
       let userData = null;
-      if (user) {
-        const role = await this.userRepository.getUserRole(user.email);
-        userData = {
-          name: user.displayName.split(' ')[0],
-          email: user.email.toLowerCase().trim(),
-          role: role
-        };
-      }
       
-      await this.menuRepository.loadAllPlatos();
-      
-      // Cargar Menú y Hero (Datos Públicos)
-      const [daily, hero] = await Promise.all([
-          this.menuRepository.getDailyMenuConfig().catch(() => null),
-          this.menuRepository.getHeroPromo().catch(() => null)
-      ]);
-
-      // Solo cargar empresas si hay usuario o si son necesarias (Evita FirebaseError: Missing or insufficient permissions)
-      let companies = [];
       try {
-          // Si necesitas que las empresas sean públicas para el carrusel, 
-          // asegúrate de que las reglas de Firestore permitan lectura a 'empresas_fasal'
-          companies = await this.attendanceController.companyRepository.getAllCompanies();
-      } catch (error) {
-          console.warn("No se pudieron cargar las empresas (posible falta de permisos):", error);
-          companies = [];
-      }
+          if (user) {
+            const role = await this.userRepository.getUserRole(user.email);
+            userData = {
+              name: user.displayName?.split(' ')[0] || "Usuario",
+              email: user.email.toLowerCase().trim(),
+              role: role
+            };
+          }
+          
+          console.log("Loading initial data...");
+          // Cargar datos con un catch para evitar bloqueos totales
+          await this.menuRepository.loadAllPlatos().catch(e => console.error("Error platos:", e));
+          
+          const [daily, hero] = await Promise.all([
+              this.menuRepository.getDailyMenuConfig().catch(() => null),
+              this.menuRepository.getHeroPromo().catch(() => null)
+          ]);
 
-      appStore.setState({ 
-          user: userData,
-          dailyMenu: daily || { entradas: [], segundos: [], refrescos: [] },
-          heroPromo: hero,
-          companies: companies,
-          authInitialized: true 
-      });
+          let companies = [];
+          try {
+              companies = await this.attendanceController.companyRepository.getAllCompanies();
+          } catch (error) {
+              console.warn("Error empresas:", error);
+          }
+
+          console.log("Data loaded. Updating state...");
+          appStore.setState({ 
+              user: userData,
+              dailyMenu: daily || { entradas: [], segundos: [], refrescos: [] },
+              heroPromo: hero,
+              companies: companies,
+              authInitialized: true 
+          });
+      } catch (criticalError) {
+          console.error("Critical error in initialize:", criticalError);
+          // Forzar inicialización aunque haya error crítico
+          appStore.setState({ authInitialized: true });
+      }
     });
   }
 
@@ -122,37 +128,38 @@ export class HomeController {
    */
   async updateUI(state) {
     const hash = window.location.hash || '#/';
-    // Consideramos Home si es la raíz, o si el hash es una sección interna (no empieza con #/admin)
     const isHome = hash === '#/' || hash === '' || (!hash.startsWith('#/admin') && !hash.startsWith('#/'));
     
-    // Si no estamos en el home (es una ruta de admin), delegamos el renderizado al router
     if (!isHome) {
         if (state.authInitialized) {
+            this.homeView.hide(); // Ocultar Home
             await this.handleRouting(true);
+            this.homeView.dismissPreloader();
         }
         return;
     }
 
-    // 1. Asegurar que el Shell estático existe
+    // 1. Mostrar restaurante y limpiar Admin
+    this.homeView.show();
     this.homeView.renderStaticShell(state.restaurantInfo);
     
-    // 2. Actualizaciones quirúrgicas en cascada para suavizar la carga (Top -> Bottom)
+    // 2. Actualizar datos dinámicos
     this.homeView.updateUserUI(state.restaurantInfo, state.user);
     
-    // Prioridad 1: Hero (Lo primero que ve el usuario)
     requestAnimationFrame(() => {
         this.homeView.updateHeroUI(state.heroPromo);
         
-        // Prioridad 2: Menú del Día (Justo debajo del Hero)
         requestAnimationFrame(async () => {
             this.homeView.updateDailyMenuUI(state.dailyMenu);
             this.homeView.updateCompaniesUI(state.companies);
             this.homeView.updateMobileNavUI(state.restaurantInfo);
 
-            // 3. Re-vincular eventos
+            if (state.authInitialized) {
+                this.homeView.dismissPreloader();
+            }
+
             this._bindEvents();
             
-            // 4. Conectar y renderizar el menú dinámico (La Carta)
             this.menuView.filterContainer = document.getElementById("menu-filters");
             this.gridContainer = document.getElementById("menu-grid");
             this.menuView.gridContainer = this.gridContainer;
@@ -253,7 +260,11 @@ export class HomeController {
   async abrirGestionUsuarios() {
     this.navigateTo("#/admin/users");
     const users = await this.userRepository.getAllUsers();
-    const manageView = new ManageUsersView(document.getElementById("app"));
+    
+    this.homeView.hide(); // Ocultar el Home
+    const adminLayer = document.getElementById("admin-layer");
+    const manageView = new ManageUsersView(adminLayer);
+    
     manageView.render(users, {
       onBack: () => this.navigateTo("#/"),
       onUpdateRole: async (email, role) => {
@@ -292,9 +303,13 @@ export class HomeController {
     const isHome = hash === '#/' || hash === '' || (!hash.startsWith('#/admin') && !hash.startsWith('#/'));
 
     if (isHome) {
+      this.homeView.show(); // Asegurar que el restaurante sea visible
       await this.updateUI(appStore.getState());
       return;
     }
+
+    // --- RUTA DE ADMINISTRACIÓN ---
+    this.homeView.hide(); // Ocultar restaurante y mostrar capa admin
 
     if (hash === '#/admin/menu-diario') {
       const state = appStore.getState();
@@ -316,6 +331,9 @@ export class HomeController {
     } else if (hash === '#/admin/users') {
       await this.abrirGestionUsuarios();
     }
+    
+    // Una vez abierta la vista de admin, quitar el preloader si estaba activo
+    this.homeView.dismissPreloader();
   }
 
   async renderMenu() {

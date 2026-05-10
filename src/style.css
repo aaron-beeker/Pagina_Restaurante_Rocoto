@@ -9,3 +9,36 @@
 body {
   @apply bg-background font-sans text-on-background antialiased;
 }
+
+/* --- Estabilidad de Layout --- */
+#hero-container {
+  min-height: 400px; /* Evita que el contenido salte al cargar el Swiper */
+}
+
+@media (min-width: 640px) {
+  #hero-container {
+    min-height: 600px;
+  }
+}
+
+#daily-menu-container {
+  min-height: 300px;
+}
+
+#companies-carousel-container {
+  min-height: 150px;
+}
+
+/* --- Animaciones de Carga (Skeleton) --- */
+.skeleton {
+  @apply bg-stone-100 animate-pulse rounded-2xl;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .5; }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}

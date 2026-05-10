@@ -32,7 +32,7 @@ export class AttendanceController {
             this.companyRepository.getAllCompanies()
         ]);
 
-        const manageView = new ManageAttendanceView(document.getElementById("app"));
+        const manageView = new ManageAttendanceView(document.getElementById("admin-layer"));
         
         const acciones = {
           onBack: () => {
@@ -106,7 +106,7 @@ export class AttendanceController {
     }
 
     async abrirRegistroAsistencia() {
-        const attendanceView = new AttendanceView(document.getElementById("app"));
+        const attendanceView = new AttendanceView(document.getElementById("admin-layer"));
         const workers = await this.workerRepository.getAllWorkers();
         const today = getLocalDateString();
         
@@ -199,7 +199,7 @@ export class AttendanceController {
 
     async abrirGestionEmpresas() {
         const companies = await this.companyRepository.getAllCompanies();
-        const manageView = new ManageCompaniesView(document.getElementById("app"));
+        const manageView = new ManageCompaniesView(document.getElementById("admin-layer"));
         const acciones = {
           onBack: () => {
             this.navigateTo("#/");
@@ -226,7 +226,7 @@ export class AttendanceController {
 
     async abrirGestionTrabajadores() {
         const [workers, companies] = await Promise.all([this.workerRepository.getAllWorkers(), this.companyRepository.getAllCompanies()]);
-        const manageView = new ManageWorkersView(document.getElementById("app"));
+        const manageView = new ManageWorkersView(document.getElementById("admin-layer"));
         const acciones = {
           onBack: () => {
             this.navigateTo("#/");

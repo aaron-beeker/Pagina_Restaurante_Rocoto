@@ -22,7 +22,7 @@ export class AdminMenuController {
             this.menuRepository.getCategoriesFromFirestore()
         ]);
 
-        const manageView = new ManageCartaView(document.getElementById("app"));
+        const manageView = new ManageCartaView(document.getElementById("admin-layer"));
         const acciones = {
             onBack: () => { 
                 this.lastAdminSearch = ""; 
@@ -111,7 +111,7 @@ export class AdminMenuController {
     async abrirGestionHero() {
         let d = null; 
         try { d = await this.menuRepository.getHeroPromo(); } catch (e) {}
-        const v = new HeroPromoAdminView(document.getElementById("app"));
+        const v = new HeroPromoAdminView(document.getElementById("admin-layer"));
         v.render(d, {
             onSave: async (p) => { 
                 if (await this.menuRepository.saveHeroPromo(p)) { 
@@ -128,7 +128,7 @@ export class AdminMenuController {
     async abrirGestionMenuDiario(currentDailyMenu, onUpdateDailyMenu) {
         // Si no se pasan argumentos, intentamos obtener el estado actual (opcional pero recomendado)
         const opc = await this.menuRepository.getOpcionesParaAdmin();
-        const av = new AdminMenuView(document.getElementById('app'));
+        const av = new AdminMenuView(document.getElementById("admin-layer"));
         
         av.render(opc.segundos, opc.entradas, opc.refrescos, {
           onSave: async (n) => { 
