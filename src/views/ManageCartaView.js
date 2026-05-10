@@ -26,15 +26,14 @@ export class ManageCartaView {
 
   _renderHeader() {
     return `
-        <div class="z-40 -mx-4 -mt-4 mb-8 border-b border-surface-variant bg-surface/95 p-4 backdrop-blur-md sm:sticky sm:top-0 sm:-mx-10 sm:-mt-10 sm:px-10 sm:pt-10 sm:pb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div class="z-40 -mx-4 -mt-4 mb-8 border-b border-surface-variant bg-surface/95 p-4 backdrop-blur-md sm:sticky sm:top-0 sm:-mx-10 sm:-mt-10 sm:px-10 sm:pt-10 sm:pb-8 flex flex-col sm:flex-row sm:items-center justify-start gap-4 sm:gap-6">
+            <button type="button" id="back-from-carta" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-stone-100 text-stone-600 border border-stone-200 shadow-sm transition-all hover:bg-stone-200 active:scale-95">
+                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7"></path></svg>
+            </button>
             <div>
                 <h2 class="text-xl sm:text-3xl font-black tracking-tight text-primary leading-tight">Gestión de Carta</h2>
                 <p class="hidden sm:block text-sm text-on-surface-variant/60 font-medium">Administra productos y el orden de categorías.</p>
             </div>
-            <button type="button" id="admin-shell-back" class="${adminShell.backBtn} hidden sm:inline-flex h-11 px-6 shrink-0 bg-stone-100 sm:bg-stone-50 border-stone-200 shadow-sm transition-all hover:bg-stone-200">
-                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                Cerrar gestión
-            </button>
         </div>
     `;
   }
@@ -191,7 +190,7 @@ export class ManageCartaView {
         <div class="mb-8 space-y-4">
             <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant/40 ml-1">Listado General (${platos.length})</h3>
             <div class="relative">
-                <input type="search" id="search-product" placeholder="Buscar por nombre o categoría..." class="${form.input} py-4.5 pl-12 rounded-2xl shadow-sm focus:ring-primary/20" autocomplete="off" />
+                <input type="search" id="search-product" placeholder="Buscar por nombre o categoría..." class="${form.input} py-4 pl-12 rounded-2xl shadow-sm focus:ring-primary/20" autocomplete="off" />
                 <svg class="absolute left-4 top-4 h-5 w-5 text-on-surface-variant opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
             </div>
         </div>
@@ -220,12 +219,14 @@ export class ManageCartaView {
                 <p class="text-[13px] font-black text-on-background uppercase tracking-tight truncate leading-tight mb-1">${escapeHtml(p.name)}</p>
                 <p class="text-sm font-black text-primary italic font-display">S/ ${Number(p.price).toFixed(2)}</p>
             </div>
-            <div class="flex flex-col gap-1 shrink-0">
-                <button class="edit-btn p-2 text-blue-600 hover:bg-blue-50 rounded-xl transition-all border border-transparent hover:border-blue-100" data-id="${p.id}">
-                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+            <div class="flex flex-col gap-1.5 shrink-0">
+                <button class="edit-btn flex items-center gap-1 px-2.5 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-[9px] font-black uppercase tracking-tight hover:bg-blue-600 hover:text-white transition-all border border-blue-100 shadow-sm" data-id="${p.id}">
+                    <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                    Editar
                 </button>
-                <button class="delete-btn p-2 text-red-400 hover:bg-red-50 rounded-xl transition-all border border-transparent hover:border-red-100" data-id="${p.id}">
-                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                <button class="delete-btn flex items-center gap-1 px-2.5 py-1.5 bg-red-50 text-red-600 rounded-lg text-[9px] font-black uppercase tracking-tight hover:bg-red-600 hover:text-white transition-all border border-red-100 shadow-sm" data-id="${p.id}">
+                    <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                    Borrar
                 </button>
             </div>
         </div>
@@ -238,7 +239,8 @@ export class ManageCartaView {
 
   setupEventListeners(acciones, categorias) {
     const { onAdd, onEdit, onDelete, onBack, onSearch, onAddCategory, onDeleteCategory, onUpdateCategory, onReorderCategories } = acciones;
-    const backBtn = document.getElementById("admin-shell-back");
+    
+    const backBtn = this.rootElement.querySelector("#back-from-carta");
     if (backBtn) backBtn.onclick = onBack;
 
     this.rootElement.querySelectorAll(".move-up-btn").forEach(btn => {

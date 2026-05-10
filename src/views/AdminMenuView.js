@@ -23,36 +23,32 @@ export class AdminMenuView {
       <div class="min-h-screen bg-background px-2 py-4 sm:px-6 sm:py-8 pb-24">
         <div class="mx-auto w-full max-w-6xl rounded-3xl border border-surface-variant bg-surface p-4 sm:p-10 shadow-xl">
           <!-- Header Optimizado -->
-          <div class="z-40 -mx-4 -mt-4 mb-8 border-b border-surface-variant bg-surface/95 p-4 backdrop-blur-md sm:sticky sm:top-0 sm:-mx-10 sm:-mt-10 sm:px-10 sm:pt-10 sm:pb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
-            <div class="flex items-center justify-between w-full sm:w-auto">
-              <div class="flex flex-col sm:flex-row sm:items-center gap-4 w-full">
-                <div class="flex-1 min-w-0">
+          <div class="z-40 -mx-4 -mt-4 mb-8 border-b border-surface-variant bg-surface/95 p-4 backdrop-blur-md sm:sticky sm:top-0 sm:-mx-10 sm:-mt-10 sm:px-10 sm:pt-10 sm:pb-8 flex flex-col sm:flex-row sm:items-center justify-start gap-4 sm:gap-6">
+            <button type="button" id="admin-menu-back" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-stone-100 text-stone-600 border border-stone-200 shadow-sm transition-all hover:bg-stone-200 active:scale-95">
+                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7"></path></svg>
+            </button>
+
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between flex-1 gap-4">
+              <div class="flex-1 min-w-0">
                   <h2 class="text-xl sm:text-3xl font-black tracking-tight text-primary leading-tight">Configuración Menú</h2>
                   <p class="hidden sm:block text-sm text-on-surface-variant/60 font-medium">Seleccione los platos del día.</p>
+              </div>
+              
+              <div class="flex items-center gap-3 w-full sm:w-auto">
+                <div class="relative flex-1 sm:w-64">
+                    <input type="text" id="menu-search" placeholder="Buscar plato..." class="${form.input} pl-10 h-12 sm:h-11 shadow-sm" />
+                    <svg class="absolute left-3 top-3.5 sm:top-3.5 h-5 w-5 text-on-surface-variant opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-width="2.5"/></svg>
                 </div>
-                
-                <!-- Botón PDF Móvil Mejorado -->
+                <button id="download-pdf-carta" class="${button.base} ${button.outlineDark} hidden sm:flex h-11 px-4 shrink-0 bg-stone-50 border-stone-200">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" stroke-width="2.5"/></svg>
+                    <span class="ml-2">PDF Menú</span>
+                </button>
+                <!-- Botón PDF Móvil -->
                 <button id="download-pdf-carta-mobile" class="flex sm:hidden items-center gap-2 bg-emerald-50 text-emerald-700 px-4 py-2.5 rounded-xl border border-emerald-100 shadow-sm active:scale-95 transition-all w-fit">
                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                    <span class="text-[10px] font-black uppercase tracking-widest">Descargar PDF</span>
+                    <span class="text-[10px] font-black uppercase tracking-widest">PDF</span>
                 </button>
               </div>
-            </div>
-            
-            <div class="flex items-center gap-3 w-full sm:w-auto">
-              <div class="relative flex-1 sm:w-64">
-                <input type="text" id="menu-search" placeholder="Buscar plato..." class="${form.input} pl-10 h-12 sm:h-11 shadow-sm" />
-                <svg class="absolute left-3 top-3.5 sm:top-3.5 h-5 w-5 text-on-surface-variant opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-width="2.5"/></svg>
-              </div>
-              <!-- PDF Escritorio -->
-              <button id="download-pdf-carta" class="${button.base} ${button.outlineDark} hidden sm:flex h-11 px-4 shrink-0 bg-stone-50 border-stone-200">
-                  <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" stroke-width="2.5"/></svg>
-                  <span class="ml-2">PDF Menú</span>
-              </button>
-              <button type="button" id="admin-menu-back" class="${adminShell.backBtn} hidden sm:inline-flex h-11 px-6 shrink-0 bg-stone-100 sm:bg-stone-50 border-stone-200 shadow-sm transition-all hover:bg-stone-200">
-                  <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                  Cerrar
-              </button>
             </div>
           </div>
 
@@ -76,7 +72,7 @@ export class AdminMenuView {
   }
 
   _setupEvents(onBack, onSave) {
-    const backBtn = document.getElementById("admin-menu-back");
+    const backBtn = this.rootElement.querySelector("#admin-menu-back");
     if (backBtn) backBtn.onclick = onBack;
     
     const searchInput = document.getElementById("menu-search");

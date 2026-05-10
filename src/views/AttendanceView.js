@@ -35,9 +35,9 @@ export class AttendanceView {
             <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-emerald-50 rounded-full blur-[120px] opacity-60 pointer-events-none"></div>
             <div class="absolute bottom-[-10%] right-[-10%] w-[30%] h-[30%] bg-blue-50 rounded-full blur-[100px] opacity-50 pointer-events-none"></div>
 
-            <!-- Botón Volver (Solo Móvil) -->
-            <button id="back-to-home-mobile" class="sm:hidden fixed top-6 left-6 z-50 h-10 w-10 bg-white/90 backdrop-blur-xl rounded-2xl shadow-sm border border-stone-200 flex items-center justify-center text-stone-400 active:scale-90 transition-all">
-                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="3" d="M15 19l-7-7 7-7"/></svg>
+            <!-- Botón Volver (Estilo Estándar Pequeño - SOLO MÓVIL) -->
+            <button id="back-to-home-mobile" class="sm:hidden fixed top-6 left-6 z-50 h-10 w-10 bg-white/90 backdrop-blur-xl rounded-2xl shadow-sm border border-stone-200 flex items-center justify-center text-stone-600 active:scale-90 transition-all hover:bg-stone-50">
+                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="3" d="M15 19l-7-7 7-7"/></svg>
             </button>
 
             <div class="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center relative z-10 animate-fade-in">

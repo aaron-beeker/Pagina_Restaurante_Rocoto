@@ -11,15 +11,14 @@ export class ManageUsersView {
         this.rootElement.innerHTML = `
             <div class="${adminShell.page}">
                 <div class="${adminShell.card}">
-                    <div class="${adminShell.header}">
+                    <div class="${adminShell.header} flex flex-col sm:flex-row sm:items-center justify-start gap-4 sm:gap-6">
+                        <button type="button" id="back-from-users" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-stone-100 text-stone-600 border border-stone-200 shadow-sm transition-all hover:bg-stone-200 active:scale-95">
+                            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7"></path></svg>
+                        </button>
                         <div>
                             <h2 class="${adminShell.title}">Gestión de Roles</h2>
                             <p class="${adminShell.subtitle}">Control de acceso y seguridad para administradores.</p>
                         </div>
-                        <button type="button" id="admin-shell-back" class="${adminShell.backBtn} hidden sm:inline-flex">
-                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                            Cerrar gestión
-                        </button>
                     </div>
 
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-12">
@@ -51,11 +50,13 @@ export class ManageUsersView {
                                         </td>
                                         <td class="px-8 py-6 text-right">
                                             <div class="flex justify-end gap-2">
-                                                <button class="edit-user-btn p-3 rounded-full text-on-surface-variant hover:bg-blue-50 hover:text-blue-600 transition-all" data-email="${escapeHtml(u.email)}" data-role="${u.role}">
-                                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" stroke-width="2.5"/></svg>
+                                                <button class="edit-user-btn flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-[10px] font-black uppercase tracking-tight hover:bg-blue-600 hover:text-white transition-all border border-blue-100 shadow-sm" data-email="${escapeHtml(u.email)}" data-role="${u.role}">
+                                                    <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                                                    Editar
                                                 </button>
-                                                <button class="delete-user-btn p-3 rounded-full text-on-surface-variant hover:bg-red-50 hover:text-red-500 transition-all" data-email="${escapeHtml(u.email)}">
-                                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke-width="2.5"/></svg>
+                                                <button class="delete-user-btn flex items-center gap-1.5 px-3 py-1.5 bg-red-50 text-red-600 rounded-lg text-[10px] font-black uppercase tracking-tight hover:bg-red-600 hover:text-white transition-all border border-red-100 shadow-sm" data-email="${escapeHtml(u.email)}">
+                                                    <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                                    Borrar
                                                 </button>
                                             </div>
                                         </td>
@@ -73,8 +74,9 @@ export class ManageUsersView {
     }
 
     setupEventListeners(actions) {
-        const backBtn = document.getElementById("admin-shell-back");
-        if (backBtn) backBtn.onclick = () => window.location.hash = '#/';
+        const { onBack } = actions;
+        const backBtn = this.rootElement.querySelector("#back-from-users");
+        if (backBtn) backBtn.onclick = onBack || (() => window.location.hash = '#/');
 
         document.getElementById("add-user-btn").onclick = async () => {
             const email = await dialog.prompt("Nuevo Administrador", "Ingrese el correo de Google del nuevo administrador:");

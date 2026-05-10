@@ -19,7 +19,7 @@ export class AttendanceController {
         this.lastWorkerSearch = "";
     }
 
-    async abrirGestionAsistencias() {
+    async abrirGestionAsistencia() {
         const today = getLocalDateString();
         const now = new Date();
         const startOfMonth = getLocalDateString(new Date(now.getFullYear(), now.getMonth(), 1));

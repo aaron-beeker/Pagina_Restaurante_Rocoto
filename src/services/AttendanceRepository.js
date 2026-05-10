@@ -68,19 +68,29 @@ export class AttendanceRepository {
 
   async getAttendanceByDate(fecha) {
     try {
-      const q = query(
-        collection(db, this.collectionName), 
-        where("fecha", "==", fecha)
-      );
+      const collRef = collection(db, this.collectionName);
+      let q;
+      
+      if (fecha) {
+        q = query(collRef, where("fecha", "==", fecha));
+      } else {
+        // Si no hay fecha, traemos los últimos 1000 registros
+        q = query(collRef, orderBy("timestamp", "desc"), limit(1000));
+      }
+
       const querySnapshot = await getDocs(q);
       const docs = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       
-      // Sort by timestamp desc in JS
-      return docs.sort((a, b) => {
-        const timeA = a.timestamp?.seconds || 0;
-        const timeB = b.timestamp?.seconds || 0;
-        return timeB - timeA;
-      });
+      if (fecha) {
+        // Sort by timestamp desc in JS for consistency
+        return docs.sort((a, b) => {
+          const timeA = a.timestamp?.seconds || 0;
+          const timeB = b.timestamp?.seconds || 0;
+          return timeB - timeA;
+        });
+      }
+      
+      return docs;
     } catch (error) {
       console.error("Error getting attendance by date:", error);
       return [];

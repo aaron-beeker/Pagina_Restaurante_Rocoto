@@ -57,15 +57,14 @@ export class ManageAttendanceView {
 
   _renderHeader() {
     return `
-        <div class="z-40 -mx-4 -mt-4 mb-10 border-b border-surface-variant bg-surface/95 p-4 backdrop-blur-md sm:sticky sm:top-0 sm:-mx-10 sm:-mt-10 sm:px-10 sm:pt-10 sm:pb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div class="z-40 -mx-4 -mt-4 mb-10 border-b border-surface-variant bg-surface/95 p-4 backdrop-blur-md sm:sticky sm:top-0 sm:-mx-10 sm:-mt-10 sm:px-10 sm:pt-10 sm:pb-8 flex flex-col sm:flex-row sm:items-center justify-start gap-4 sm:gap-6">
+            <button type="button" id="back-from-attendance" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-stone-100 text-stone-600 border border-stone-200 shadow-sm transition-all hover:bg-stone-200 active:scale-95">
+                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7"></path></svg>
+            </button>
             <div>
                 <h2 class="text-xl sm:text-3xl font-black tracking-tight text-primary leading-tight">Gestión de Asistencias</h2>
                 <p class="hidden sm:block text-sm text-on-surface-variant/60 font-medium">Control de alimentación Fasal.</p>
             </div>
-            <button type="button" id="back-from-attendance" class="${adminShell.backBtn} hidden sm:inline-flex h-11 px-6 shrink-0 bg-stone-100 sm:bg-stone-50 border-stone-200 shadow-sm transition-all hover:bg-stone-200">
-                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                Cerrar gestión
-            </button>
         </div>
     `;
   }
@@ -109,7 +108,7 @@ export class ManageAttendanceView {
         <div class="bg-stone-50/50 rounded-[2rem] border border-stone-100 p-6 sm:p-8" id="attendance-form-section">
             <div class="flex items-center gap-3 mb-6">
                 <div class="h-8 w-8 rounded-xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/20">
-                    <svg class="h-4.5 w-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M12 4v16m8-8H4"/></svg>
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M12 4v16m8-8H4"/></svg>
                 </div>
                 <h3 class="text-xs font-black uppercase tracking-widest text-primary" id="form-title">Registro Manual</h3>
             </div>
@@ -167,7 +166,7 @@ export class ManageAttendanceView {
         <div class="bg-white rounded-[2rem] border border-stone-100 p-6 sm:p-8 shadow-sm">
             <div class="flex items-center gap-3 mb-8">
                 <div class="h-8 w-8 rounded-xl bg-stone-800 text-white flex items-center justify-center">
-                    <svg class="h-4.5 w-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                 </div>
                 <h3 class="text-xs font-black uppercase tracking-widest text-stone-800">Exportar Reportes</h3>
             </div>
@@ -192,6 +191,24 @@ export class ManageAttendanceView {
                     </div>
                 </div>
 
+                <div class="p-4 bg-stone-50 rounded-2xl border border-stone-100 space-y-3">
+                    <p class="text-[9px] font-black uppercase text-stone-400 tracking-widest mb-2">Precios por Ración (S/)</p>
+                    <div class="grid grid-cols-3 gap-2">
+                        <div>
+                            <label class="text-[8px] font-bold text-stone-400 uppercase block mb-1 ml-1">Desayuno</label>
+                            <input type="number" id="price-d" class="${form.input} h-9 text-xs border-stone-200" value="10.00" step="0.10" />
+                        </div>
+                        <div>
+                            <label class="text-[8px] font-bold text-stone-400 uppercase block mb-1 ml-1">Almuerzo</label>
+                            <input type="number" id="price-a" class="${form.input} h-9 text-xs border-stone-200" value="10.00" step="0.10" />
+                        </div>
+                        <div>
+                            <label class="text-[8px] font-bold text-stone-400 uppercase block mb-1 ml-1">Cena</label>
+                            <input type="number" id="price-c" class="${form.input} h-9 text-xs border-stone-200" value="10.00" step="0.10" />
+                        </div>
+                    </div>
+                </div>
+
                 <div class="grid grid-cols-2 gap-3 pt-2">
                     <button id="btn-group-pdf" class="${button.base} ${button.primary} py-3.5 gap-2 uppercase text-[9px] font-black tracking-widest shadow-lg shadow-primary/20">
                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" stroke-width="2.5"/></svg> PDF
@@ -209,12 +226,12 @@ export class ManageAttendanceView {
     return `
         <div class="flex flex-col gap-4">
             <div class="relative group">
-                <input type="text" id="search-attendance-list" placeholder="Buscar por nombre o DNI..." class="${form.input} py-4 pl-12 rounded-2xl shadow-sm border-stone-200 focus:border-primary/30" />
+                <input type="text" id="search-attendance-list" placeholder="Buscar por nombre, DNI o empresa..." class="${form.input} py-4 pl-12 rounded-2xl shadow-sm border-stone-200 focus:border-primary/30" />
                 <svg class="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-on-surface-variant opacity-30 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
             </div>
             <div class="flex flex-col sm:flex-row gap-3">
                 <div class="flex-1 relative">
-                    <span class="absolute left-4 -top-2 px-1 bg-white text-[8px] font-black uppercase text-primary/40 tracking-widest z-10">Fecha</span>
+                    <span class="absolute left-4 -top-2 px-1 bg-white text-[8px] font-black uppercase text-primary/40 tracking-widest z-10">Fecha (Opcional)</span>
                     <input type="date" id="filter-date" class="${form.input} h-12 shadow-sm rounded-xl border-stone-200" value="${today}" />
                 </div>
                 <div class="flex-1 relative">
@@ -232,7 +249,6 @@ export class ManageAttendanceView {
   _renderAttendanceTable() {
     return `
         <div class="relative overflow-hidden rounded-[2.5rem] border border-stone-100 bg-white shadow-sm">
-            <!-- Contenedor con Scroll Y y altura fija de 600px -->
             <div id="attendance-list-container" class="overflow-auto max-h-[600px] scrollbar-thin">
                 <table class="w-full text-left min-w-[800px] relative border-separate border-spacing-0">
                     <thead class="sticky top-0 z-20 bg-stone-50 border-b border-stone-100 text-[9px] font-black uppercase tracking-[0.2em] text-stone-400">
@@ -240,8 +256,9 @@ export class ManageAttendanceView {
                             <th class="px-8 py-5 border-b border-stone-100">Trabajador</th>
                             <th class="px-4 py-5 text-center border-b border-stone-100">DNI</th>
                             <th class="px-4 py-5 text-center border-b border-stone-100">Empresa</th>
+                            <th class="px-4 py-5 text-center border-b border-stone-100">Fecha</th>
                             <th class="px-4 py-5 text-center border-b border-stone-100">Tipo</th>
-                            <th class="px-4 py-5 text-center border-b border-stone-100">Campo</th>
+                            <th class="px-4 py-5 text-center border-b border-stone-100">Raciones / Consumo</th>
                             <th class="px-4 py-5 text-right pr-8 border-b border-stone-100">Acciones</th>
                         </tr>
                     </thead>
@@ -266,31 +283,48 @@ export class ManageAttendanceView {
   }
 
   _renderTableRows(attendances) {
-    if (attendances.length === 0) return `<tr><td colspan="6" class="px-8 py-20 text-center text-[10px] font-black text-stone-200 uppercase tracking-[0.3em]">No hay registros para este día</td></tr>`;
-    return attendances.map(a => `
-        <tr class="hover:bg-primary/[0.02] transition-colors group">
-            <td class="px-8 py-5">
-                <div class="flex items-center gap-3">
-                    <div class="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]"></div>
-                    <span class="text-xs font-black text-on-background uppercase truncate max-w-[200px] tracking-tight">${escapeHtml(a.nombreCompleto)}</span>
-                </div>
-            </td>
-            <td class="px-4 py-5 text-center font-mono text-[10px] text-stone-400">${a.dni}</td>
-            <td class="px-4 py-5 text-center"><span class="text-[9px] font-black text-primary/40 uppercase tracking-tighter">${escapeHtml(a.empresa || 'Particular')}</span></td>
-            <td class="px-4 py-5 text-center">
-                <span class="px-2.5 py-1 rounded-lg bg-stone-50 border border-stone-100 text-[8px] font-black uppercase text-stone-500">${a.tipo}</span>
-            </td>
-            <td class="px-4 py-5 text-center">
-                ${a.cantidadCampo ? `<span class="text-xs font-black text-primary bg-primary/5 px-3 py-1 rounded-full border border-primary/10">${a.cantidadCampo}</span>` : '<span class="opacity-10">---</span>'}
-            </td>
-            <td class="px-4 py-5 text-right pr-8">
-                <div class="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button class="edit-attendance-btn p-2 text-blue-500 hover:bg-blue-50 rounded-xl transition-all" data-id="${a.id}"><svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg></button>
-                    <button class="delete-attendance-btn p-2 text-red-400 hover:bg-red-50 rounded-xl transition-all" data-id="${a.id}"><svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
-                </div>
-            </td>
-        </tr>
-    `).join('');
+    if (attendances.length === 0) return `<tr><td colspan="7" class="px-8 py-20 text-center text-[10px] font-black text-stone-200 uppercase tracking-[0.3em]">No hay registros para este día</td></tr>`;
+    return attendances.map(a => {
+        const hasLocal = !a.soloCampo;
+        const hasField = (a.cantidadCampo || 0) > 0;
+        
+        return `
+            <tr class="hover:bg-primary/[0.02] transition-colors group">
+                <td class="px-8 py-5">
+                    <div class="flex items-center gap-3">
+                        <div class="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]"></div>
+                        <span class="text-xs font-black text-on-background uppercase truncate max-w-[200px] tracking-tight">${escapeHtml(a.nombreCompleto)}</span>
+                    </div>
+                </td>
+                <td class="px-4 py-5 text-center font-mono text-[10px] text-stone-400">${a.dni}</td>
+                <td class="px-4 py-5 text-center"><span class="text-[9px] font-black text-primary/40 uppercase tracking-tighter">${escapeHtml(a.empresa || 'Particular')}</span></td>
+                <td class="px-4 py-5 text-center font-mono text-[10px] text-stone-600">${a.fecha || '---'}</td>
+                <td class="px-4 py-5 text-center">
+                    <span class="px-2.5 py-1 rounded-lg bg-stone-50 border border-stone-100 text-[8px] font-black uppercase text-stone-500">${a.tipo}</span>
+                </td>
+                <td class="px-4 py-5 text-center">
+                    <div class="flex flex-col items-center gap-1">
+                        <div class="flex gap-1">
+                            ${hasLocal ? '<span class="px-2 py-0.5 rounded-md bg-emerald-50 text-[7px] font-black text-emerald-600 border border-emerald-100 uppercase tracking-tighter">Local</span>' : ''}
+                            ${hasField ? `<span class="px-2 py-0.5 rounded-md bg-amber-50 text-[7px] font-black text-amber-600 border border-amber-100 uppercase tracking-tighter">Campo (${a.cantidadCampo})</span>` : ''}
+                        </div>
+                    </div>
+                </td>
+                <td class="px-4 py-5 text-right pr-8">
+                    <div class="flex justify-end gap-2">
+                        <button class="edit-attendance-btn flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-[10px] font-black uppercase tracking-tight hover:bg-blue-600 hover:text-white transition-all border border-blue-100" data-id="${a.id}">
+                            <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                            Editar
+                        </button>
+                        <button class="delete-attendance-btn flex items-center gap-1.5 px-3 py-1.5 bg-red-50 text-red-600 rounded-lg text-[10px] font-black uppercase tracking-tight hover:bg-red-600 hover:text-white transition-all border border-red-100" data-id="${a.id}">
+                            <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            Borrar
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }).join('');
   }
 
   _renderWorkerOptions(workers) {
@@ -314,7 +348,7 @@ export class ManageAttendanceView {
 
   setupEventListeners(acciones) {
     const { onBack, onSave, onDelete, onEdit, onRefresh, onDownloadGroupPdf, onDownloadGroupExcel } = acciones;
-    const backBtn = document.getElementById("back-from-attendance");
+    const backBtn = this.rootElement.querySelector("#back-from-attendance");
     if (backBtn) backBtn.onclick = onBack;
 
     const workerSelect = document.getElementById("attendance-worker-dni");
@@ -355,6 +389,14 @@ export class ManageAttendanceView {
 
     const handleRefresh = () => onRefresh(document.getElementById("filter-date").value);
     document.getElementById("filter-date").onchange = handleRefresh;
+    
+    const clearDateBtn = document.getElementById("clear-date-filter");
+    if (clearDateBtn) {
+        clearDateBtn.onclick = () => {
+            document.getElementById("filter-date").value = "";
+            handleRefresh();
+        };
+    }
 
     const filterList = () => {
         const company = document.getElementById("filter-company-list").value;
@@ -364,7 +406,11 @@ export class ManageAttendanceView {
             const matchesSearch = !query || a.nombreCompleto.toLowerCase().includes(query) || a.dni.includes(query);
             return matchesCompany && matchesSearch;
         });
-        this.updateListUI(filtered);
+        
+        // Renderizar solo la tabla para el filtro cliente
+        const tb = document.getElementById("attendance-table-body");
+        if (tb) tb.innerHTML = this._renderTableRows(filtered);
+        this.attachTableEvents();
     };
 
     document.getElementById("filter-company-list").onchange = filterList;
@@ -374,16 +420,26 @@ export class ManageAttendanceView {
         const company = document.getElementById("report-company").value;
         const start = document.getElementById("report-start-date").value;
         const end = document.getElementById("report-end-date").value;
+        const prices = {
+            d: parseFloat(document.getElementById("price-d").value) || 0,
+            a: parseFloat(document.getElementById("price-a").value) || 0,
+            c: parseFloat(document.getElementById("price-c").value) || 0
+        };
         if (!start || !end) return toast.info("Seleccione fechas.");
-        onDownloadGroupPdf(company, start, end);
+        onDownloadGroupPdf(company, start, end, prices);
     };
 
     document.getElementById("btn-group-excel").onclick = () => {
         const company = document.getElementById("report-company").value;
         const start = document.getElementById("report-start-date").value;
         const end = document.getElementById("report-end-date").value;
+        const prices = {
+            d: parseFloat(document.getElementById("price-d").value) || 0,
+            a: parseFloat(document.getElementById("price-a").value) || 0,
+            c: parseFloat(document.getElementById("price-c").value) || 0
+        };
         if (!start || !end) return toast.info("Seleccione fechas.");
-        onDownloadGroupExcel(company, start, end);
+        onDownloadGroupExcel(company, start, end, prices);
     };
 
     this.attachTableEvents(onEdit, onDelete);
@@ -399,11 +455,14 @@ export class ManageAttendanceView {
     });
   }
 
-  updateListUI(dayAttendances, monthList) {
+  updateList(dayAttendances, monthList) {
+    this.allAttendances = dayAttendances;
+    if (monthList) this.monthAttendances = monthList;
+    
     const tb = document.getElementById("attendance-table-body");
     if (tb) tb.innerHTML = this._renderTableRows(dayAttendances);
     const db = document.getElementById("attendance-dashboard");
-    if (db) db.innerHTML = this._renderDashboard(dayAttendances, monthList || this.monthAttendances);
+    if (db) db.innerHTML = this._renderDashboard(dayAttendances, this.monthAttendances);
     this.attachTableEvents();
   }
 

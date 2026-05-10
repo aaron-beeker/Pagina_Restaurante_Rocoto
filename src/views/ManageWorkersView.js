@@ -33,15 +33,14 @@ export class ManageWorkersView {
 
   _renderHeader() {
     return `
-        <div class="${adminShell.header}">
-            <div>
-                <h2 class="${adminShell.title}">Gestión de Trabajadores</h2>
-                <p class="${adminShell.subtitle}">Registra, modifica y elimina trabajadores, incluyendo su huella digital.</p>
-            </div>
-            <button type="button" id="back-from-workers" class="${adminShell.backBtn} hidden sm:inline-flex">
-                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                Cerrar gestión
+        <div class="z-40 -mx-6 -mt-6 mb-10 border-b border-surface-variant bg-surface/95 p-6 backdrop-blur-md sm:sticky sm:top-0 sm:-mx-10 sm:-mt-10 sm:px-10 sm:pt-10 sm:pb-8 flex flex-col sm:flex-row sm:items-start justify-start gap-4 sm:gap-6">
+            <button type="button" id="back-from-workers" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-stone-100 text-stone-600 border border-stone-200 shadow-sm transition-all hover:bg-stone-200 active:scale-95 mt-1">
+                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7"></path></svg>
             </button>
+            <div class="min-w-0">
+                <h2 class="text-xl sm:text-3xl font-black tracking-tight text-primary leading-tight uppercase">Gestión de Trabajadores</h2>
+                <p class="mt-1 text-xs sm:text-sm text-on-surface-variant/60 font-medium max-w-2xl">Administra el personal, sus datos básicos y el registro de huellas digitales para el control de asistencia.</p>
+            </div>
         </div>
     `;
   }
@@ -100,7 +99,7 @@ export class ManageWorkersView {
                 </div>
 
                 <div class="flex flex-col gap-3">
-                    <button type="submit" id="submit-worker-btn" class="${button.base} ${button.primary} w-full py-4.5 text-base sm:text-lg shadow-xl shadow-primary/20 uppercase tracking-widest font-black">Guardar Trabajador</button>
+                    <button type="submit" id="submit-worker-btn" class="${button.base} ${button.primary} w-full py-4 text-base sm:text-lg shadow-xl shadow-primary/20 uppercase tracking-widest font-black">Guardar Trabajador</button>
                     <button type="button" id="cancel-worker-edit" class="hidden ${button.base} ${button.outlineDark} w-full py-3.5 uppercase text-xs font-black tracking-widest">Cancelar Edición</button>
                 </div>
             </form>
@@ -144,7 +143,8 @@ export class ManageWorkersView {
 
   setupEventListeners(acciones) {
     const { onBack, onSave, onDelete, onEdit, onCapture, onSearch, onViewDetails } = acciones;
-    document.getElementById("back-from-workers").onclick = onBack;
+    const backBtn = this.rootElement.querySelector("#back-from-workers");
+    if (backBtn) backBtn.onclick = onBack;
 
     const formElement = document.getElementById("worker-form");
     formElement.onsubmit = async (e) => {
@@ -232,13 +232,23 @@ export class ManageWorkersView {
 
   attachListEvents(onEdit, onDelete, onViewDetails) {
     this.rootElement.querySelectorAll(".delete-worker-btn").forEach((btn) => {
-      btn.onclick = async (e) => { e.stopPropagation(); if(await dialog.confirm("Eliminar", "¿Eliminar a este trabajador?")) onDelete(btn.dataset.id); };
+      btn.onclick = async (e) => { 
+        e.preventDefault();
+        e.stopPropagation(); 
+        if(await dialog.confirm("Eliminar", "¿Eliminar a este trabajador?")) onDelete(btn.dataset.id); 
+      };
     });
     this.rootElement.querySelectorAll(".edit-worker-btn").forEach((btn) => {
-      btn.onclick = (e) => { e.stopPropagation(); onEdit(btn.dataset.id); };
+      btn.onclick = (e) => { 
+        e.preventDefault();
+        e.stopPropagation(); 
+        onEdit(btn.dataset.id); 
+      };
     });
     this.rootElement.querySelectorAll(".worker-row").forEach((row) => {
-        row.onclick = () => onViewDetails(row.dataset.id);
+        row.onclick = () => {
+            if (onViewDetails) onViewDetails(row.dataset.id);
+        };
     });
   }
 
@@ -279,11 +289,13 @@ export class ManageWorkersView {
                         <span class="text-[10px] font-black uppercase tracking-tighter text-on-surface-variant/60">${count} Huellas</span>
                     </div>
                     <div class="flex gap-2">
-                        <button class="edit-worker-btn p-2.5 text-blue-600 hover:bg-blue-50 rounded-xl border border-transparent hover:border-blue-100 transition-all" data-id="${w.id}">
-                            <svg class="h-4.5 w-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" stroke-width="2"/></svg>
+                        <button class="edit-worker-btn flex items-center gap-1.5 px-3 py-2 bg-blue-50 text-blue-600 rounded-xl text-[10px] font-black uppercase tracking-tight hover:bg-blue-600 hover:text-white transition-all border border-blue-100 shadow-sm" data-id="${w.id}">
+                            <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                            Editar
                         </button>
-                        <button class="delete-worker-btn p-2.5 text-red-400 hover:bg-red-50 rounded-xl border border-transparent hover:border-red-100 transition-all" data-id="${w.id}">
-                            <svg class="h-4.5 w-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke-width="2"/></svg>
+                        <button class="delete-worker-btn flex items-center gap-1.5 px-3 py-2 bg-red-50 text-red-600 rounded-xl text-[10px] font-black uppercase tracking-tight hover:bg-red-600 hover:text-white transition-all border border-red-100 shadow-sm" data-id="${w.id}">
+                            <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            Borrar
                         </button>
                     </div>
                 </div>

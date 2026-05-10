@@ -20,27 +20,28 @@ export class HeroPromoAdminView {
         <div class="mx-auto w-full max-w-6xl rounded-3xl border border-surface-variant bg-surface p-4 sm:p-10 shadow-xl">
           
           <!-- Header Responsivo Estándar -->
-          <div class="z-40 -mx-4 -mt-4 mb-8 border-b border-surface-variant bg-surface/95 p-4 backdrop-blur-md sm:sticky sm:top-0 sm:-mx-10 sm:-mt-10 sm:px-10 sm:pt-10 sm:pb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div class="z-40 -mx-4 -mt-4 mb-8 border-b border-surface-variant bg-surface/95 p-4 backdrop-blur-md sm:sticky sm:top-0 sm:-mx-10 sm:-mt-10 sm:px-10 sm:pt-10 sm:pb-8 flex flex-col sm:flex-row sm:items-center justify-start gap-4 sm:gap-6">
+            <button type="button" id="back-from-hero" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-stone-100 text-stone-600 border border-stone-200 shadow-sm transition-all hover:bg-stone-200 active:scale-95">
+                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7"></path></svg>
+            </button>
             <div>
               <h2 class="text-xl sm:text-3xl font-black tracking-tight text-primary leading-tight">Gestión Carrusel</h2>
               <p class="hidden sm:block text-sm text-on-surface-variant/60 font-medium">Configura los banners promocionales del inicio.</p>
             </div>
-            <button type="button" id="admin-shell-back" class="${adminShell.backBtn} hidden sm:inline-flex h-11 px-6 shrink-0 bg-stone-100 sm:bg-stone-50 border-stone-200 shadow-sm transition-all hover:bg-stone-200">
-                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                Cerrar gestión
-            </button>
           </div>
 
           <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
             
-            <!-- FORMULARIO DE AGREGAR (Móvil Primero) -->
+            <!-- FORMULARIO DE GESTIÓN -->
             <div class="lg:col-span-4 order-1 lg:order-2">
                 <div class="bg-background rounded-3xl border border-surface-variant p-6 sticky top-24">
                     <div class="mb-6">
-                        <h3 class="text-sm font-black uppercase tracking-widest text-primary">Añadir Banner</h3>
+                        <h3 class="text-sm font-black uppercase tracking-widest text-primary" id="form-title">Añadir Banner</h3>
                     </div>
 
                     <form id="hero-promo-form" class="space-y-5">
+                        <input type="hidden" id="edit-banner-index" value="" />
+                        
                         <div class="flex items-center gap-3 p-3 bg-white rounded-2xl border border-surface-variant">
                             <input type="checkbox" id="hero-promo-activo" checked class="w-5 h-5 rounded border-stone-300 text-primary focus:ring-primary" />
                             <label for="hero-promo-activo" class="text-xs font-black uppercase tracking-tight text-stone-600 cursor-pointer">Banner Activo</label>
@@ -61,9 +62,14 @@ export class HeroPromoAdminView {
                             <input type="url" id="hero-promo-mobile-image-url" class="${form.input} h-12" placeholder="Opcional: URL para celular" />
                         </div>
 
-                        <button type="submit" class="${button.base} ${button.primary} w-full py-4.5 text-base font-black uppercase tracking-widest shadow-xl shadow-primary/20">
-                            Guardar Banner
-                        </button>
+                        <div class="flex flex-col gap-2">
+                            <button type="submit" id="submit-banner-btn" class="${button.base} ${button.primary} w-full py-4 text-sm font-black uppercase tracking-widest shadow-xl shadow-primary/20">
+                                Guardar Banner
+                            </button>
+                            <button type="button" id="cancel-banner-edit" class="hidden ${button.base} border-2 border-stone-200 text-stone-500 w-full py-3 text-[10px] font-black uppercase">
+                                Cancelar Edición
+                            </button>
+                        </div>
                     </form>
                 </div>
             </div>
@@ -106,11 +112,13 @@ export class HeroPromoAdminView {
                                     <p class="text-[9px] font-bold text-stone-400 truncate mt-1 opacity-60">${escapeHtml(b.imageUrl)}</p>
                                 </div>
 
-                                <!-- Botón Eliminar -->
-                                <div class="flex items-center sm:pl-6 border-t sm:border-t-0 sm:border-l border-stone-100 pt-4 sm:pt-0">
-                                    <button class="delete-banner-btn flex items-center justify-center gap-2 w-full sm:w-12 sm:h-12 rounded-2xl bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition-all group/btn" data-index="${index}">
-                                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                                        <span class="sm:hidden font-black uppercase text-xs">Eliminar Banner</span>
+                                <!-- Botones de Acción -->
+                                <div class="flex sm:flex-col items-center justify-center gap-2 sm:pl-6 border-t sm:border-t-0 sm:border-l border-stone-100 pt-4 sm:pt-0">
+                                    <button class="edit-banner-btn flex items-center justify-center w-full sm:w-12 sm:h-12 rounded-2xl bg-blue-50 text-blue-500 hover:bg-blue-500 hover:text-white transition-all group/btn" data-index="${index}">
+                                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                                    </button>
+                                    <button class="delete-banner-btn flex items-center justify-center w-full sm:w-12 sm:h-12 rounded-2xl bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition-all group/btn" data-index="${index}">
+                                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                                     </button>
                                 </div>
                             </div>
@@ -127,8 +135,12 @@ export class HeroPromoAdminView {
 
   setupEventListeners(acciones) {
     const { onSave, onBack } = acciones;
-    const backBtn = document.getElementById("admin-shell-back");
+    const backBtn = this.rootElement.querySelector("#back-from-hero");
     if (backBtn) backBtn.onclick = onBack;
+
+    const formEl = document.getElementById("hero-promo-form");
+    const editIndexInput = document.getElementById("edit-banner-index");
+    const cancelBtn = document.getElementById("cancel-banner-edit");
 
     this.rootElement.querySelectorAll(".delete-banner-btn").forEach(btn => {
       btn.onclick = async () => {
@@ -140,18 +152,54 @@ export class HeroPromoAdminView {
       };
     });
 
-    const formEl = document.getElementById("hero-promo-form");
+    this.rootElement.querySelectorAll(".edit-banner-btn").forEach(btn => {
+        btn.onclick = () => {
+            const index = parseInt(btn.dataset.index);
+            const banner = this.banners[index];
+            if (banner) {
+                editIndexInput.value = index;
+                document.getElementById("hero-promo-activo").checked = !!banner.activo;
+                document.getElementById("hero-promo-titulo").value = banner.titulo || "";
+                document.getElementById("hero-promo-image-url").value = banner.imageUrl || "";
+                document.getElementById("hero-promo-mobile-image-url").value = banner.mobileImageUrl || "";
+                
+                document.getElementById("form-title").textContent = "Editar Banner #" + (index + 1);
+                document.getElementById("submit-banner-btn").textContent = "Actualizar Banner";
+                cancelBtn.classList.remove("hidden");
+                
+                formEl.scrollIntoView({ behavior: "smooth", block: "center" });
+            }
+        };
+    });
+
+    if (cancelBtn) {
+        cancelBtn.onclick = () => {
+            formEl.reset();
+            editIndexInput.value = "";
+            document.getElementById("form-title").textContent = "Añadir Banner";
+            document.getElementById("submit-banner-btn").textContent = "Guardar Banner";
+            cancelBtn.classList.add("hidden");
+        };
+    }
+
     if (formEl) {
       formEl.onsubmit = async (e) => {
         e.preventDefault();
-        const newBanner = { 
-            id: Date.now().toString(), 
+        const index = editIndexInput.value;
+        const bannerData = { 
+            id: index !== "" ? this.banners[index].id : Date.now().toString(), 
             activo: document.getElementById("hero-promo-activo").checked, 
             titulo: document.getElementById("hero-promo-titulo").value.trim() || 'Banner', 
             imageUrl: document.getElementById("hero-promo-image-url").value.trim(), 
             mobileImageUrl: document.getElementById("hero-promo-mobile-image-url").value.trim() || document.getElementById("hero-promo-image-url").value.trim() 
         };
-        this.banners.push(newBanner);
+
+        if (index !== "") {
+            this.banners[index] = bannerData;
+        } else {
+            this.banners.push(bannerData);
+        }
+
         await onSave({ banners: this.banners });
         this.renderInternal(acciones);
       };

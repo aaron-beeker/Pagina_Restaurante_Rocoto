@@ -13,7 +13,7 @@ export class AdminMenuController {
         this.lastAdminSearch = "";
     }
 
-    async abrirPanelGestionCarta() {
+    async abrirGestionCarta() {
         const searchInput = document.getElementById("search-product");
         if (searchInput) this.lastAdminSearch = searchInput.value;
 
@@ -34,19 +34,19 @@ export class AdminMenuController {
                 if (id) {
                     if (await this.menuRepository.updatePlato(id, data)) {
                         toast.success("Producto actualizado correctamente");
-                        this.abrirPanelGestionCarta();
+                        this.abrirGestionCarta();
                     }
                 } else {
                     if (await this.menuRepository.addPlato(data)) {
                         toast.success("Nuevo producto guardado");
-                        this.abrirPanelGestionCarta();
+                        this.abrirGestionCarta();
                     }
                 }
             },
             onDelete: async (id) => { 
                 if (await this.menuRepository.deletePlato(id)) {
                     toast.success("Producto eliminado");
-                    this.abrirPanelGestionCarta();
+                    this.abrirGestionCarta();
                 }
             },
             onSearch: (q) => {
@@ -74,25 +74,25 @@ export class AdminMenuController {
             onAddCategory: async (n, u, a) => { 
                 if (await this.menuRepository.addCategory(n, u, a)) {
                     toast.success("Categoría añadida con éxito");
-                    this.abrirPanelGestionCarta();
+                    this.abrirGestionCarta();
                 }
             },
             onUpdateCategory: async (id, n, an, u, a) => { 
                 if (await this.menuRepository.updateCategory(id, n, an, u, a)) {
                     toast.success("Categoría actualizada");
-                    this.abrirPanelGestionCarta();
+                    this.abrirGestionCarta();
                 }
             },
             onDeleteCategory: async (id) => { 
                 if (await this.menuRepository.deleteCategory(id)) {
                     toast.success("Categoría eliminada");
-                    this.abrirPanelGestionCarta(); 
+                    this.abrirGestionCarta(); 
                 }
             },
             onReorderCategories: async (list) => { 
                 if (await this.menuRepository.saveCategoriesOrder(list)) {
                     toast.success("Orden actualizado");
-                    this.abrirPanelGestionCarta(); 
+                    this.abrirGestionCarta(); 
                 }
             }
         };
@@ -108,7 +108,7 @@ export class AdminMenuController {
         }
     }
 
-    async abrirPanelHeroPromo() {
+    async abrirGestionHero() {
         let d = null; 
         try { d = await this.menuRepository.getHeroPromo(); } catch (e) {}
         const v = new HeroPromoAdminView(document.getElementById("app"));
@@ -125,14 +125,15 @@ export class AdminMenuController {
         });
     }
 
-    async abrirSelectorMenuEjecutivo(currentDailyMenu, onUpdateDailyMenu) {
+    async abrirGestionMenuDiario(currentDailyMenu, onUpdateDailyMenu) {
+        // Si no se pasan argumentos, intentamos obtener el estado actual (opcional pero recomendado)
         const opc = await this.menuRepository.getOpcionesParaAdmin();
         const av = new AdminMenuView(document.getElementById('app'));
         
         av.render(opc.segundos, opc.entradas, opc.refrescos, {
           onSave: async (n) => { 
               if (await this.menuRepository.saveDailyMenu(n)) { 
-                  onUpdateDailyMenu(n);
+                  if (onUpdateDailyMenu) onUpdateDailyMenu(n);
                   toast.success("Menú actualizado"); 
               } 
           },
@@ -143,7 +144,12 @@ export class AdminMenuController {
         });
 
         const handleDownloadPdf = async () => {
-            await this.pdfService.generarMenuDiarioPdf(currentDailyMenu);
+            if (currentDailyMenu) {
+                await this.pdfService.generarMenuDiarioPdf(currentDailyMenu);
+            } else {
+                const daily = await this.menuRepository.getDailyMenuConfig();
+                await this.pdfService.generarMenuDiarioPdf(daily);
+            }
         };
 
         const pdfBtn = document.getElementById("download-pdf-carta");

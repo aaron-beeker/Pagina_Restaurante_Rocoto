@@ -34,6 +34,7 @@ export class HomeController {
 
     // Estado interno para evitar re-renderizados innecesarios
     this.isUpdating = false;
+    this.lastHash = null; // Para rastrear el último hash renderizado
     this.lastRenderedState = {
         userEmail: "initial",
         activeCategory: "Inicio",
@@ -198,20 +199,20 @@ export class HomeController {
 
     // Botones de gestión admin
     const adminButtons = [
-      { id: "admin-daily-menu-btn", action: () => this.adminMenuController.abrirGestionMenuDiario() },
-      { id: "admin-manage-carta-btn", action: () => this.adminMenuController.abrirGestionCarta() },
-      { id: "admin-hero-promo-btn", action: () => this.adminMenuController.abrirGestionHero() },
-      { id: "admin-fasal-attendance-btn", action: () => this.attendanceController.abrirRegistroAsistencia() },
-      { id: "admin-fasal-manage-attendance-btn", action: () => this.attendanceController.abrirGestionAsistencia() },
-      { id: "admin-fasal-workers-btn", action: () => this.attendanceController.abrirGestionTrabajadores() },
-      { id: "admin-fasal-companies-btn", action: () => this.attendanceController.abrirGestionEmpresas() },
-      { id: "admin-manage-users-btn", action: () => this.abrirGestionUsuarios() }
+      { id: "admin-daily-menu-btn", route: "#/admin/menu-diario" },
+      { id: "admin-manage-carta-btn", route: "#/admin/carta" },
+      { id: "admin-hero-promo-btn", route: "#/admin/hero" },
+      { id: "admin-fasal-attendance-btn", route: "#/admin/asistencia" },
+      { id: "admin-fasal-manage-attendance-btn", route: "#/admin/reportes" },
+      { id: "admin-fasal-workers-btn", route: "#/admin/personal" },
+      { id: "admin-fasal-companies-btn", route: "#/admin/empresas" },
+      { id: "admin-manage-users-btn", route: "#/admin/users" }
     ];
 
     adminButtons.forEach(btn => {
       const el = document.getElementById(btn.id);
       if (el) el.onclick = () => {
-          btn.action();
+          this.navigateTo(btn.route);
           document.getElementById("user-menu-panel")?.classList.add("hidden");
       };
     });
@@ -262,15 +263,19 @@ export class HomeController {
   }
 
   navigateTo(hash) {
-    window.location.hash = hash;
+    if (window.location.hash === hash) {
+      this.handleRouting();
+    } else {
+      window.location.hash = hash;
+    }
   }
 
   async handleRouting(fromStateUpdate = false) {
     const hash = window.location.hash || '#/';
     
-    // Si el hash no ha cambiado y viene de un cambio de estado, ignorar
-    if (fromStateUpdate && hash === this.currentHash) return;
-    this.currentHash = hash;
+    // Si viene de actualización de estado y el hash ya fue renderizado, ignorar
+    if (fromStateUpdate && hash === this.lastHash) return;
+    this.lastHash = hash;
 
     // Si es Home o un ancla de sección del home
     const isHome = hash === '#/' || hash === '' || (!hash.startsWith('#/admin') && !hash.startsWith('#/'));
@@ -281,7 +286,10 @@ export class HomeController {
     }
 
     if (hash === '#/admin/menu-diario') {
-      await this.adminMenuController.abrirGestionMenuDiario();
+      const state = appStore.getState();
+      await this.adminMenuController.abrirGestionMenuDiario(state.dailyMenu, (newMenu) => {
+          appStore.setState({ dailyMenu: newMenu });
+      });
     } else if (hash === '#/admin/carta') {
       await this.adminMenuController.abrirGestionCarta();
     } else if (hash === '#/admin/hero') {
