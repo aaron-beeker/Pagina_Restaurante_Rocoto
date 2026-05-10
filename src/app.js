@@ -3,6 +3,7 @@ import { menuSeed, restaurantInfo } from "./data/seed.js";
 import { MenuRepository } from "./services/MenuRepository.js";
 import { HomeView } from "./views/HomeView.js";
 import { MenuView } from "./views/MenuView.js";
+import { UserRepository } from "./services/UserRepository.js";
 
 function bootstrap() {
   const root = document.getElementById("app");

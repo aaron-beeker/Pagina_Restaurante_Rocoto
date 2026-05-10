@@ -1,3 +1,5 @@
+import XLSX from "xlsx-js-style";
+
 export class ExcelService {
     constructor(restaurantInfo) {
         this.info = restaurantInfo;
@@ -7,7 +9,7 @@ export class ExcelService {
      * Reporte Individual (Listado cronológico)
      */
     async generarReporteAsistencia(worker, attendanceList) {
-        const { XLSX } = window;
+        
         const reportData = attendanceList.map(reg => ({
             'FECHA': reg.fecha,
             'HORA': reg.timestamp?.seconds ? new Date(reg.timestamp.seconds * 1000).toLocaleTimeString() : '---',
@@ -34,7 +36,7 @@ export class ExcelService {
      * Reporte Grupal MATRICIAL AVANZADO (Cuadro de Control de Alimentación)
      */
     async generarReporteAsistenciaGrupal(companyName, startDate, endDate, attendanceList, allWorkers, prices = {d:12, a:12, c:12}) {
-        const { XLSX } = window;
+        
         const workbook = XLSX.utils.book_new();
         
         // 1. Calcular los días del rango solicitado

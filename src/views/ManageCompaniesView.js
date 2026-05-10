@@ -16,11 +16,10 @@ export class ManageCompaniesView {
                         <h2 class="${adminShell.title}">Gestión de Empresas</h2>
                         <p class="${adminShell.subtitle}">Administra las empresas que consumen en el restaurante.</p>
                     </div>
-                    <button type="button" id="back-from-companies" class="${adminShell.backBtn}">
+                    <button type="button" id="back-from-companies" class="${adminShell.backBtn} hidden sm:inline-flex">
                         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                         Cerrar gestión
-                    </button>
-                </div>
+                    </button>                </div>
 
                 <div class="${adminShell.mutedBox} mb-12 scroll-mt-24" id="company-form-section">
                     <h3 class="${adminShell.sectionTitle}">Añadir / Editar Empresa</h3>

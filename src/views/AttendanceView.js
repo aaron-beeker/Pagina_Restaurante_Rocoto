@@ -10,67 +10,105 @@ export class AttendanceView {
   render(acciones) {
     const currentMeal = this.getSuggestedMeal();
     
-    this.rootElement.innerHTML = `
-        <div class="min-h-screen bg-background flex flex-col items-center justify-center p-6">
-            <div class="w-full max-w-md bg-surface rounded-[3rem] shadow-2xl border border-surface-variant p-10 flex flex-col items-center gap-6">
-                <div class="text-center">
-                    <h2 class="text-3xl font-black text-primary uppercase tracking-tight mb-1">Asistencia</h2>         
-                </div>
-                
-                <div class="text">
-                    <p class="text-xs font-bold text-on-surface-variant opacity-50 ">Seleccione que va a consumir</p>        
-                </div>                
+    const mealStyles = {
+        "Desayuno": { 
+            active: "border-amber-400 bg-amber-50 text-amber-700 shadow-md shadow-amber-200/50", 
+            icon: '<path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>',
+            accent: "text-amber-500"
+        },
+        "Almuerzo": { 
+            active: "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-md shadow-emerald-200/50", 
+            icon: '<path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>',
+            accent: "text-emerald-500"
+        },
+        "Cena": { 
+            active: "border-indigo-500 bg-indigo-50 text-indigo-700 shadow-md shadow-indigo-200/50", 
+            icon: '<path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>',
+            accent: "text-indigo-500"
+        }
+    };
 
-                <div class="flex flex-col gap-3 w-full">
-                    <div class="grid grid-cols-3 gap-2">
-                        ${["Desayuno", "Almuerzo", "Cena"].map(meal => `
-                            <button type="button" class="meal-btn flex flex-col items-center gap-1 p-3 rounded-2xl border-2 transition-all ${currentMeal === meal ? 'border-primary bg-primary/5 text-primary' : 'border-surface-variant bg-surface text-on-surface-variant opacity-60'}" data-meal="${meal}">
-                                <span class="text-[10px] font-black uppercase">${meal}</span>
+    this.rootElement.innerHTML = `
+        <div class="min-h-screen bg-[#fafafa] lg:h-screen flex items-center justify-center p-4 sm:p-6 overflow-hidden relative">
+            
+            <!-- Elementos Decorativos de Fondo (Aesthetic) -->
+            <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-emerald-50 rounded-full blur-[120px] opacity-60 pointer-events-none"></div>
+            <div class="absolute bottom-[-10%] right-[-10%] w-[30%] h-[30%] bg-blue-50 rounded-full blur-[100px] opacity-50 pointer-events-none"></div>
+
+            <!-- Botón Volver (Solo Móvil) -->
+            <button id="back-to-home-mobile" class="sm:hidden fixed top-6 left-6 z-50 h-10 w-10 bg-white/90 backdrop-blur-xl rounded-2xl shadow-sm border border-stone-200 flex items-center justify-center text-stone-400 active:scale-90 transition-all">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="3" d="M15 19l-7-7 7-7"/></svg>
+            </button>
+
+            <div class="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center relative z-10 animate-fade-in">
+                
+                <!-- COLUMNA IZQUIERDA: TERMINAL DE REGISTRO -->
+                <div class="lg:col-span-6 flex flex-col items-center justify-center order-1">
+                    <div class="w-full max-w-sm bg-white rounded-[3rem] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.08)] border border-stone-100 p-8 sm:p-10 flex flex-col items-center gap-8 relative overflow-hidden transition-all duration-700">
+                        
+                        <!-- Cabecera Logo/Título -->
+                        <div class="text-center w-full space-y-4">
+                            <img src="https://res.cloudinary.com/dhcgrkrdc/image/upload/v1777604357/Logo_Rest_Rocoto_Horizontal_bgslwf.png" 
+                                 alt="Rocoto Logo" 
+                                 class="h-10 sm:h-12 w-auto mx-auto object-contain" />
+                            <h2 class="text-[9px] font-black text-stone-300 uppercase tracking-[0.6em] leading-none text-center pl-2">Registrar Asistencia</h2>
+                        </div>
+                        
+                        <!-- Selector de Comida (Premium) -->
+                        <div class="w-full space-y-3">
+                            <div class="grid grid-cols-3 gap-2">
+                                ${Object.entries(mealStyles).map(([meal, style]) => `
+                                    <button type="button" 
+                                        class="meal-btn group flex flex-col items-center gap-2.5 p-4 rounded-3xl border-2 transition-all duration-500 active:scale-95 ${currentMeal === meal ? style.active : 'border-stone-50 bg-stone-50/40 text-stone-300'}" 
+                                        data-meal="${meal}"
+                                        data-active-class="${style.active}">
+                                        <svg class="h-5 w-5 transition-transform duration-500 group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">${style.icon}</svg>
+                                        <span class="text-[8px] font-black uppercase tracking-widest leading-none">${meal}</span>
+                                    </button>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <!-- Input de DNI (Focal Point) -->
+                        <div class="w-full">
+                            <div class="relative group">
+                                <label class="absolute -top-2 left-6 px-1.5 bg-white text-[8px] font-black uppercase tracking-widest text-primary/30 z-10 transition-colors group-focus-within:text-primary">Identificación</label>
+                                <input type="text" id="attendance-dni" maxlength="8" inputmode="numeric" placeholder="DNI" 
+                                    class="w-full bg-stone-50/30 border border-stone-100 rounded-3xl py-5 px-8 text-3xl font-black text-center tracking-[0.2em] text-primary focus:border-primary/20 focus:bg-white transition-all outline-none shadow-inner"
+                                />
+                            </div>
+                        </div>
+
+                        <!-- Botón Biométrico (Iconic) -->
+                        <div class="relative w-full flex justify-center">
+                            <div id="scan-feedback" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 bg-primary/5 rounded-full scale-0 transition-transform duration-700 pointer-events-none"></div>
+                            <button id="main-scan-btn" class="relative group h-32 w-32 sm:h-36 sm:w-36 rounded-full bg-primary text-white shadow-2xl shadow-primary/20 flex flex-col items-center justify-center gap-2 hover:scale-105 active:scale-90 transition-all duration-500 disabled:grayscale disabled:opacity-30 border-[6px] border-white ring-1 ring-stone-100">
+                                <div class="h-12 w-12 rounded-2xl bg-white/10 flex items-center justify-center group-hover:rotate-12 transition-transform duration-500">
+                                    <svg class="h-7 w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4"/><path d="M14 13.12c0 2.38 0 6.38-1 8.88"/><path d="M17.29 21.02c.12-.6.43-2.3.5-3.02"/><path d="M2 12a10 10 0 0 1 18-6"/><path d="M2 16h.01"/><path d="M21.8 16c.2-2 .131-5.354 0-6"/><path d="M5 19.5C5.5 18 6 15 6 12a6 6 0 0 1 .34-2"/><path d="M8.65 22c.21-.66.45-1.32.57-2"/><path d="M9 6.8a6 6 0 0 1 9 5.2v2"/></svg>
+                                </div>
+                                <span class="text-[7px] font-black uppercase tracking-[0.3em] opacity-60 group-hover:opacity-100 transition-opacity">Scanner</span>
                             </button>
-                        `).join('')}
+                        </div>
+
+                        <!-- Status Bar -->
+                        <div id="attendance-status" class="w-full text-center min-h-[44px] bg-stone-50/50 rounded-2xl p-2 border border-stone-100 flex flex-col justify-center">
+                            <p class="text-[8px] font-black text-stone-300 uppercase tracking-widest">En línea</p>
+                        </div>
+
+                        <!-- Botón Volver Desktop -->
+                        <button id="back-to-home" class="hidden sm:inline-flex items-center gap-3 text-stone-300 hover:text-primary font-black text-[8px] uppercase tracking-[0.4em] transition-all">
+                            <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="3" d="M15 19l-7-7 7-7"/></svg>
+                            Regresar
+                        </button>
                     </div>
                 </div>
 
-                <div class="text-center">
-                    <p class="text-xs font-bold text-on-surface-variant opacity-60 uppercase">Ingrese su DNI y presione ENTER o use el lector</p>
+                <!-- COLUMNA DERECHA: FEED DE REGISTROS -->
+                <div class="lg:col-span-6 order-2 flex flex-col justify-center h-full max-w-sm mx-auto lg:mx-0 w-full pt-4 lg:pt-0">
+                    <div id="last-registrations" class="space-y-4 w-full"></div>
                 </div>
 
-                <!-- Input de DNI para Verificación 1:1 -->
-                <div class="w-full">
-                    <label class="text-[10px] font-bold uppercase tracking-widest text-primary mb-2 block ml-2">DNI del Trabajador</label>
-                    <input type="text" id="attendance-dni" maxlength="8" placeholder="8 dígitos" 
-                        class="w-full bg-surface-container-low border-2 border-surface-variant rounded-2xl py-4 px-6 text-2xl font-black text-center tracking-[0.3em] focus:border-primary transition-all outline-none"
-                    />
-                </div>
-
-                
-
-                <div class="relative group mt-2">
-                    <div id="scan-feedback" class="absolute inset-0 bg-primary/10 rounded-full scale-0 transition-transform duration-500"></div>
-                    <button id="main-scan-btn" class="relative h-40 w-48 rounded-[2.5rem] bg-primary text-white shadow-xl shadow-primary/30 flex flex-col items-center justify-center gap-2 hover:scale-105 active:scale-95 transition-all disabled:grayscale disabled:opacity-50">
-                        <svg class="h-14 w-14" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4"/>
-                            <path d="M14 13.12c0 2.38 0 6.38-1 8.88"/>
-                            <path d="M17.29 21.02c.12-.6.43-2.3.5-3.02"/>
-                            <path d="M2 12a10 10 0 0 1 18-6"/>
-                            <path d="M2 16h.01"/>
-                            <path d="M21.8 16c.2-2 .131-5.354 0-6"/>
-                            <path d="M5 19.5C5.5 18 6 15 6 12a6 6 0 0 1 .34-2"/>
-                            <path d="M8.65 22c.21-.66.45-1.32.57-2"/>
-                            <path d="M9 6.8a6 6 0 0 1 9 5.2v2"/>
-                        </svg>
-                        <span class="text-[10px] font-black uppercase tracking-widest">Validar Huella</span>
-                    </button>
-                </div>
-
-                <div id="attendance-status" class="text-center min-h-[60px] flex flex-col justify-center">
-                    <p class="text-xs font-bold text-on-surface-variant opacity-40 uppercase">Esperando validación...</p>
-                </div>
-
-                <button id="back-to-home" class="${button.base} ${button.ghost} text-on-surface-variant opacity-40 text-xs">Regresar al inicio</button>
             </div>
-            
-            <div id="last-registrations" class="mt-8 w-full max-w-md space-y-3"></div>
         </div>
     `;
     this.setupEventListeners(acciones);
@@ -96,95 +134,79 @@ export class AttendanceView {
     this.rootElement.querySelectorAll(".meal-btn").forEach(btn => {
         btn.onclick = () => {
             this.rootElement.querySelectorAll(".meal-btn").forEach(b => {
-                b.classList.remove("border-primary", "bg-primary/5", "text-primary");
-                b.classList.add("border-surface-variant", "bg-surface", "text-on-surface-variant", "opacity-60");
+                const activeClasses = b.dataset.activeClass.split(" ");
+                b.classList.remove(...activeClasses, "shadow-md");
+                b.classList.add("border-stone-50", "bg-stone-50/40", "text-stone-300");
             });
-            btn.classList.add("border-primary", "bg-primary/5", "text-primary");
-            btn.classList.remove("border-surface-variant", "bg-surface", "text-on-surface-variant", "opacity-60");
+            const myActiveClass = btn.dataset.activeClass.split(" ");
+            btn.classList.add(...myActiveClass, "shadow-md");
+            btn.classList.remove("border-stone-50", "bg-stone-50/40", "text-stone-300");
             selectedMeal = btn.dataset.meal;
         };
     });
 
-    // MÉTODO: DNI + ENTER
     dniInput.onkeydown = async (e) => {
         if (e.key === 'Enter') {
             const dni = dniInput.value.trim();
-            if (dni.length !== 8) {
-                toast.error("Por favor, ingrese un DNI válido de 8 dígitos.");
-                dniInput.focus();
-                return;
-            }
+            if (dni.length !== 8) { toast.error("DNI inválido."); return; }
 
-            status.innerHTML = `<p class="text-sm font-black text-primary animate-pulse uppercase">Validando DNI...</p>`;
+            status.innerHTML = `<p class="text-[8px] font-black text-primary animate-pulse uppercase tracking-[0.2em]">Verificando...</p>`;
             
             try {
                 const result = await onManualDni(dni, selectedMeal);
                 if (result.success) {
                     status.innerHTML = `
-                        <p class="text-lg font-black text-green-600 uppercase tracking-tight">¡Éxito!</p>
-                        <p class="text-xs font-bold text-green-700 mt-1 uppercase tracking-tighter">Registrado: ${result.workerName}</p>
+                        <p class="text-xs font-black text-green-600 uppercase tracking-tight leading-none">¡Acceso Correcto!</p>
+                        <p class="text-[8px] font-bold text-green-700 mt-1 uppercase truncate max-w-[200px] mx-auto">${result.workerName}</p>
                     `;
                     dniInput.value = "";
                     this.showSuccessAnimation();
                 } else {
-                    status.innerHTML = `
-                        <p class="text-sm font-black text-red-500 uppercase">${result.error}</p>
-                    `;
+                    status.innerHTML = `<p class="text-[9px] font-black text-red-500 uppercase">${result.error}</p>`;
                 }
-            } catch (error) {
-                status.innerHTML = `<p class="text-sm font-black text-red-500 uppercase">Error de sistema</p>`;
-            }
+            } catch (error) { status.innerHTML = `<p class="text-[9px] font-black text-red-500 uppercase">Error</p>`; }
         }
     };
 
     btn.onclick = async () => {
         const dni = dniInput.value.trim();
-        
         btn.disabled = true;
-        feedback.classList.add("scale-150", "opacity-100", "bg-primary/20");
-        status.innerHTML = `<p class="text-sm font-black text-primary animate-pulse uppercase">Coloque su dedo en el lector...</p>`;
+        feedback.classList.add("scale-150", "opacity-100");
+        status.innerHTML = `<p class="text-[8px] font-black text-primary animate-pulse uppercase tracking-[0.2em]">Escaneando...</p>`;
 
         try {
-            let result;
-            if (dni.length === 8) {
-                result = await onVerify(dni, selectedMeal);
-            } else {
-                result = await onScanFingerprint(selectedMeal);
-            }
-            
+            let result = (dni.length === 8) ? await onVerify(dni, selectedMeal) : await onScanFingerprint(selectedMeal);
             if (result.success) {
                 status.innerHTML = `
-                    <p class="text-lg font-black text-green-600 uppercase tracking-tight">¡Éxito!</p>
-                    <p class="text-xs font-bold text-green-700 mt-1 uppercase tracking-tighter">Validado: ${result.workerName}</p>
+                    <p class="text-xs font-black text-green-600 uppercase tracking-tight leading-none">¡Bienvenido!</p>
+                    <p class="text-[8px] font-bold text-green-700 mt-1 uppercase truncate max-w-[200px] mx-auto">${result.workerName}</p>
                 `;
-                dniInput.value = ""; // Limpiar para el siguiente
+                dniInput.value = "";
                 this.showSuccessAnimation();
             } else {
-                status.innerHTML = `
-                    <p class="text-sm font-black text-red-500 uppercase">${result.error}</p>
-                    <p class="text-[10px] text-red-400 font-bold mt-1 uppercase">Intente nuevamente o use su DNI + ENTER</p>
-                `;
+                status.innerHTML = `<p class="text-[9px] font-black text-red-500 uppercase">${result.error}</p>`;
             }
-        } catch (e) {
-            status.innerHTML = `<p class="text-sm font-black text-red-500 uppercase">Error de sistema</p>`;
-        } finally {
+        } catch (e) { status.innerHTML = `<p class="text-[9px] font-black text-red-500 uppercase">Error</p>`; }
+        finally {
             setTimeout(() => {
                 btn.disabled = false;
-                feedback.classList.remove("scale-150", "opacity-100", "bg-primary/20");
-                if (!status.innerText.includes("Éxito")) {
-                    status.innerHTML = `<p class="text-xs font-bold text-on-surface-variant opacity-40 uppercase">Esperando validación...</p>`;
+                feedback.classList.remove("scale-150", "opacity-100");
+                if (!status.innerText.includes("!")) {
+                    status.innerHTML = `<p class="text-[8px] font-black text-stone-300 uppercase tracking-widest">Listo</p>`;
                 }
             }, 3000);
         }
     };
 
-    document.getElementById("back-to-home").onclick = onBack;
+    const homeAction = () => acciones.onBack();
+    const b1 = document.getElementById("back-to-home"); if (b1) b1.onclick = homeAction;
+    const b2 = document.getElementById("back-to-home-mobile"); if (b2) b2.onclick = homeAction;
   }
 
   showSuccessAnimation() {
     const btn = document.getElementById("main-scan-btn");
-    btn.classList.add("bg-green-500");
-    setTimeout(() => btn.classList.remove("bg-green-500"), 2000);
+    btn.classList.add("bg-green-500", "ring-green-100");
+    setTimeout(() => btn.classList.remove("bg-green-500", "ring-green-100"), 2000);
   }
 
   renderLastRegistrations(list) {
@@ -193,28 +215,33 @@ export class AttendanceView {
     if (list.length === 0) { container.innerHTML = ""; return; }
 
     container.innerHTML = `
-        <p class="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant/40 text-center mb-4">Últimos registros</p>
-        ${list.slice(0, 3).map(reg => `
-            <div class="bg-surface/50 backdrop-blur-sm border border-surface-variant p-4 rounded-3xl flex items-center justify-between animate-fade-in">
-                <div class="flex items-center gap-3">
-                    <div class="h-8 w-8 rounded-full bg-green-100 text-green-600 flex items-center justify-center">
-                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-width="3"/></svg>
-                    </div>
-                    <div>
-                        <p class="text-xs font-black text-on-background uppercase">${reg.nombreCompleto}</p>
-                        <div class="flex items-center gap-1.5 mt-0.5">
-                            <p class="text-[9px] font-bold text-primary uppercase tracking-tighter">${escapeHtml(reg.empresa || 'Particular')}</p>
-                            ${reg.esEncargadoCampo 
-                                ? `<span class="text-[7px] font-black text-primary uppercase bg-primary/10 px-1.5 py-0.5 rounded">Encargado</span>` 
-                                : `<span class="text-[7px] font-black text-stone-400 uppercase bg-stone-100 px-1.5 py-0.5 rounded">Personal</span>`
-                            }
-                            ${reg.cantidadCampo ? `<span class="bg-primary text-white text-[7px] font-black px-1.5 py-0.5 rounded-full uppercase">Campo: ${reg.cantidadCampo}</span>` : ''}
+        <div class="flex items-center justify-between mb-4 px-2">
+            <h3 class="text-[9px] font-black uppercase tracking-[0.4em] text-stone-300">Actividad Reciente</h3>
+            <div class="flex gap-1">
+                <div class="h-1 w-1 rounded-full bg-emerald-500 animate-pulse"></div>
+                <div class="h-1 w-1 rounded-full bg-emerald-500/40"></div>
+                <div class="h-1 w-1 rounded-full bg-emerald-500/20"></div>
+            </div>
+        </div>
+        <div class="space-y-2.5">
+            ${list.slice(0, 4).map(reg => `
+                <div class="bg-white/60 backdrop-blur-xl border border-white/40 p-4 rounded-[1.8rem] flex items-center justify-between animate-slide-in-right shadow-[0_8px_30px_rgb(0,0,0,0.02)] hover:shadow-md transition-all duration-500">
+                    <div class="flex items-center gap-4">
+                        <div class="h-10 w-10 rounded-2xl bg-gradient-to-br from-emerald-50 to-emerald-100/50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100/50 shadow-inner">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-width="3"/></svg>
                         </div>
-                        <p class="text-[9px] font-bold text-on-surface-variant opacity-60 mt-0.5">${reg.tipo} • ${reg.timestamp?.seconds ? new Date(reg.timestamp.seconds * 1000).toLocaleTimeString() : 'Recién'}</p>
+                        <div class="min-w-0">
+                            <p class="text-xs font-black text-stone-800 uppercase truncate tracking-tight leading-none">${reg.nombreCompleto}</p>
+                            <div class="flex items-center gap-2 mt-1.5">
+                                <p class="text-[8px] font-bold text-primary/40 uppercase tracking-tighter">${escapeHtml(reg.empresa || 'Particular')}</p>
+                                <span class="h-0.5 w-0.5 rounded-full bg-stone-200"></span>
+                                <p class="text-[8px] font-bold text-stone-400 uppercase">${reg.tipo} • ${reg.timestamp?.seconds ? new Date(reg.timestamp.seconds * 1000).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : 'Ahora'}</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-        `).join('')}
+            `).join('')}
+        </div>
     `;
   }
 }

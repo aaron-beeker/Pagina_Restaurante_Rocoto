@@ -2,15 +2,23 @@
   "name": "pagina-restaurante-rocoto",
   "version": "1.0.0",
   "description": "Pagina web para Rocoto Restaurante Chifa",
-  "main": "index.html",
+  "type": "module",
   "scripts": {
-    "start": "serve .",
-    "build": "echo 'Build skip'"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "dependencies": {
-    "firebase": "^10.7.1"
+    "firebase": "^10.7.1",
+    "swiper": "^11.0.5",
+    "jspdf": "^2.5.1",
+    "jspdf-autotable": "^3.8.1",
+    "xlsx-js-style": "^1.2.0"
   },
   "devDependencies": {
-    "serve": "^14.2.0"
+    "vite": "^5.0.0",
+    "autoprefixer": "^10.4.16",
+    "postcss": "^8.4.32",
+    "tailwindcss": "^3.4.0"
   }
 }

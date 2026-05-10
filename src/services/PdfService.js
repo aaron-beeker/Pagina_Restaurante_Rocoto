@@ -1,373 +1,300 @@
+import { jsPDF } from "jspdf";
+import "jspdf-autotable";
+
 export class PdfService {
     constructor(restaurantInfo) {
         this.info = restaurantInfo;
-        this.primary = [0, 59, 27];   // Verde Rocoto
-        this.secondary = [188, 0, 0]; // Rojo Rocoto
-        this.textMain = [30, 30, 30];
-        this.textMuted = [80, 80, 80];
+        this.primary = [6, 78, 59];   // Esmeralda Profundo (Ajustado al nuevo diseño)
+        this.secondary = [16, 185, 129]; // Esmeralda Brillante
+        this.textMain = [15, 23, 42];
+        this.textMuted = [100, 116, 139];
+        this.logoUrlWhite = "https://res.cloudinary.com/dhcgrkrdc/image/upload/v1778318308/logo_blanco_qcb2a6.png";
     }
 
-    async generarMenuA2(dailyMenu, allPlatos) {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF({
-            orientation: 'portrait',
-            unit: 'mm',
-            format: 'a2'
-        });
-
+    async generarMenuDiarioPdf(dailyMenu) {
+        const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'letter' });
         const width = doc.internal.pageSize.getWidth();
         const height = doc.internal.pageSize.getHeight();
 
-        // --- PÁGINA 1: EL MENÚ DIARIO (FRENTE) ---
-        // Borde Ornamental Doble
-        doc.setDrawColor(...this.primary);
-        doc.setLineWidth(2);
-        doc.rect(20, 20, width - 40, height - 40);
-        doc.setLineWidth(0.5);
-        doc.rect(23, 23, width - 46, height - 46);
+        // 1. Fondo y Borde Minimalista
+        doc.setFillColor(255, 255, 255);
+        doc.rect(0, 0, width, height, 'F');
+        
+        doc.setDrawColor(240, 240, 240);
+        doc.setLineWidth(0.2);
+        doc.rect(10, 10, width - 20, height - 20);
 
-        // Logo centrado con mayor presencia
-        try {
-            const logoImg = await this.getBase64FromUrl(this.info.logoUrl);
-            doc.addImage(logoImg, 'PNG', width / 2 - 60, 45, 120, 35);
-        } catch (e) { console.error("Error al cargar logo", e); }
+        // 2. Logo Centrado (Usamos el logo oficial del restaurante)
+        await this.insertLogo(doc, this.info.logoUrl, width / 2, 35, 45, 25);
 
-        doc.setFont("times", "bolditalic");
-        doc.setFontSize(70);
+        // 3. Título Elegante
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(22);
         doc.setTextColor(...this.primary);
-        doc.text("MENÚ EJECUTIVO", width / 2, 105, { align: 'center' });
+        doc.text("MENÚ DE HOY", width / 2, 65, { align: 'center' });
+        
+        // Línea divisoria fina
+        doc.setDrawColor(...this.secondary);
+        doc.setLineWidth(0.5);
+        doc.line(width/2 - 15, 72, width/2 + 15, 72);
 
-        // Línea divisoria artesanal
-        this.drawArtisticLine(doc, width / 2, 115, 200);
-
-        // Secciones del día
-        let y = 160;
+        // 4. Secciones del Menú
+        let y = 90;
         const secciones = [
             { t: "ENTRADAS", d: dailyMenu.entradas },
             { t: "PLATOS DE FONDO", d: dailyMenu.segundos },
-            { t: "REFRESCOS", d: dailyMenu.refrescos }
+            { t: "REFRESCO", d: dailyMenu.refrescos }
         ];
 
         secciones.forEach(sec => {
+            // Título de Sección
             doc.setFont("helvetica", "bold");
-            doc.setFontSize(35);
+            doc.setFontSize(10);
             doc.setTextColor(...this.secondary);
-            doc.text(sec.t, width / 2, y, { align: 'center' });
+            doc.text(sec.t, width / 2, y, { align: 'center', charSpace: 2 });
             
-            y += 20;
-            doc.setFont("times", "normal");
-            doc.setFontSize(28);
+            y += 10;
+            
+            // Items
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(14);
             doc.setTextColor(...this.textMain);
+            
             sec.d.forEach(item => {
                 doc.text(item.toUpperCase(), width / 2, y, { align: 'center' });
-                y += 15;
+                y += 8;
             });
-            y += 35;
+            
+            y += 15; // Espacio entre secciones
         });
 
-        // Precio destacado en la parte inferior
-        doc.setFontSize(45);
+        // 5. Pie de Página (Precio y Detalle)
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(24);
         doc.setTextColor(...this.primary);
-        doc.text("PRECIO TOTAL: S/ 8.00", width / 2, height - 80, { align: 'center' });
+        doc.text("S/ 8.00", width / 2, height - 35, { align: 'center' });
 
-        // --- PÁGINA 2: LA CARTA (DORSO) ---
-        doc.addPage();
+        doc.setFontSize(8);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(...this.textMuted);
+        doc.text("SERVICIO DE 12:00 PM A 3:30 PM", width / 2, height - 28, { align: 'center' });
         
-        // Cabecera elegante
-        doc.setFillColor(...this.primary);
-        doc.rect(0, 0, width, 60, 'F');
-        doc.setTextColor(255, 255, 255);
-        doc.setFont("times", "bold");
-        doc.setFontSize(50);
-        doc.text("NUESTRA CARTA GENERAL", width / 2, 40, { align: 'center' });
+        doc.text(`${this.info.name.toUpperCase()} - ${this.info.address.toUpperCase()}`, width / 2, height - 20, { align: 'center' });
 
-        // Filtrar platos que no son del menú diario
-        const cartaPlatos = allPlatos.filter(p => {
-            const cats = Array.isArray(p.category) ? p.category : [p.category];
-            return !cats.every(c => ["Entrada", "Menú del Día", "Bebida Menú"].includes(c));
+        doc.save(`Menu_Rocoto_${new Date().toLocaleDateString().replace(/\//g, '-')}.pdf`);
+    }
+
+    async generarReporteAsistencia(worker, attendanceList) {
+        
+        const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+        const width = doc.internal.pageSize.getWidth();
+        
+        doc.setFillColor(...this.primary);
+        doc.rect(0, 0, width, 45, 'F');
+        
+        await this.insertLogo(doc, this.logoUrlWhite, 35, 22.5, 45, 20);
+
+        doc.setTextColor(255, 255, 255);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(20);
+        doc.text("REPORTE INDIVIDUAL", width - 15, 20, { align: 'right' });
+        doc.setFontSize(9);
+        doc.text(`EMISIÓN: ${new Date().toLocaleDateString()}`, width - 15, 28, { align: 'right' });
+
+        let y = 65;
+        doc.setTextColor(...this.textMain);
+        doc.setFontSize(12);
+        doc.text("DATOS DEL PERSONAL", 15, y);
+        y += 8;
+        doc.setDrawColor(240, 240, 240);
+        doc.line(15, y, width - 15, y);
+        y += 10;
+
+        const info = [
+            ["COLABORADOR:", `${worker.apellidos}, ${worker.nombre}`],
+            ["DNI:", worker.dni],
+            ["EMPRESA:", worker.empresa || "Particular"]
+        ];
+
+        doc.setFontSize(9);
+        info.forEach(([l, v]) => {
+            doc.setFont("helvetica", "bold"); doc.text(l, 15, y);
+            doc.setFont("helvetica", "normal"); doc.text(v, 50, y);
+            y += 6;
         });
 
-        // Renderizar en 3 COLUMNAS para aprovechar el A2
+        const sortedList = [...attendanceList].sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
+
         doc.autoTable({
-            startY: 85,
-            head: [],
-            body: this.formatPlatosParaTresColumnas(cartaPlatos),
-            theme: 'plain',
-            styles: {
-                font: "times",
-                cellPadding: 8,
-                fontSize: 14
+            startY: y + 10,
+            head: [['FECHA', 'HORA', 'SERVICIO', 'EMPRESA']],
+            body: sortedList.map(r => [r.fecha, r.timestamp?.seconds ? new Date(r.timestamp.seconds * 1000).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '--:--', r.tipo.toUpperCase(), r.empresa || 'PARTICULAR']),
+            theme: 'grid',
+            headStyles: { fillColor: this.primary, textColor: [255, 255, 255], fontStyle: 'bold', halign: 'center' },
+            styles: { font: "helvetica", fontSize: 8, cellPadding: 3 },
+            columnStyles: { 0: { halign: 'center' }, 1: { halign: 'center' }, 2: { halign: 'center' } },
+            margin: { left: 15, right: 15 }
+        });
+
+        this.addFooter(doc, width);
+        doc.save(`Asistencia_${worker.dni}.pdf`);
+    }
+
+    async generarReporteAsistenciaGrupal(companyName, startDate, endDate, attendanceList, allWorkers, prices = {d:10, a:10, c:10}) {
+        const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+        const width = doc.internal.pageSize.getWidth();
+        
+        // 1. Encabezado Estilizado
+        doc.setFillColor(...this.primary);
+        doc.rect(0, 0, width, 40, 'F');
+        await this.insertLogo(doc, this.logoUrlWhite, 30, 20, 40, 18);
+
+        doc.setTextColor(255, 255, 255);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(16);
+        doc.text("CUADRO DE CONTROL DE ALIMENTACIÓN", width - 15, 18, { align: 'right' });
+        doc.setFontSize(9);
+        doc.text(`EMPRESA: ${companyName || 'CONSOLIDADO GENERAL'}`, width - 15, 25, { align: 'right' });
+        doc.text(`PERIODO: ${startDate} AL ${endDate}`, width - 15, 30, { align: 'right' });
+
+        // 2. Procesamiento de Datos (Lógica idéntica a Excel)
+        let grandTotalD = 0;
+        let grandTotalA = 0;
+        let grandTotalC = 0;
+
+        // 2.1 Procesar Trabajadores Individuales
+        const tableBody = allWorkers.map((worker, index) => {
+            let workerTotalD = 0, workerTotalA = 0, workerTotalC = 0;
+
+            attendanceList.forEach(a => {
+                if (String(a.dni).trim() === String(worker.dni).trim() && !a.soloCampo) {
+                    const t = a.tipo.toLowerCase();
+                    if (t.includes('desayuno')) workerTotalD++;
+                    else if (t.includes('almuerzo')) workerTotalA++;
+                    else if (t.includes('cena')) workerTotalC++;
+                }
+            });
+
+            const workerCost = (workerTotalD * prices.d) + (workerTotalA * prices.a) + (workerTotalC * prices.c);
+            
+            grandTotalD += workerTotalD;
+            grandTotalA += workerTotalA;
+            grandTotalC += workerTotalC;
+
+            return [
+                index + 1,
+                worker.dni,
+                `${worker.apellidos}, ${worker.nombre}`.toUpperCase(),
+                workerTotalD,
+                workerTotalA,
+                workerTotalC,
+                `S/ ${workerCost.toFixed(2)}`
+            ];
+        });
+
+        // 2.2 Fila de Raciones a Campo (Grupales)
+        let fieldTotalD = 0, fieldTotalA = 0, fieldTotalC = 0;
+        attendanceList.forEach(a => {
+            if ((a.cantidadCampo || 0) > 0) {
+                const t = a.tipo.toLowerCase();
+                if (t.includes('desayuno')) fieldTotalD += a.cantidadCampo;
+                else if (t.includes('almuerzo')) fieldTotalA += a.cantidadCampo;
+                else if (t.includes('cena')) fieldTotalC += a.cantidadCampo;
+            }
+        });
+
+        const fieldCost = (fieldTotalD * prices.d) + (fieldTotalA * prices.a) + (fieldTotalC * prices.c);
+        tableBody.push([
+            allWorkers.length + 1,
+            "-",
+            "TOTAL RACIONES A CAMPO (GRUPALES)",
+            fieldTotalD,
+            fieldTotalA,
+            fieldTotalC,
+            `S/ ${fieldCost.toFixed(2)}`
+        ]);
+
+        // Actualizar grandes totales con lo de campo
+        grandTotalD += fieldTotalD;
+        grandTotalA += fieldTotalA;
+        grandTotalC += fieldTotalC;
+        const grandTotalCost = (grandTotalD * prices.d) + (grandTotalA * prices.a) + (grandTotalC * prices.c);
+
+        // 3. Renderizar Tabla Principal
+        doc.autoTable({
+            startY: 50,
+            head: [['ITEM', 'DNI', 'APELLIDOS Y NOMBRES', 'DES.', 'ALM.', 'CENA', 'SUBTOTAL']],
+            body: tableBody,
+            theme: 'grid',
+            headStyles: { fillColor: this.primary, textColor: [255, 255, 255], fontStyle: 'bold', halign: 'center' },
+            styles: { font: "helvetica", fontSize: 8, cellPadding: 2.5 },
+            columnStyles: { 
+                0: { halign: 'center', cellWidth: 12 }, 
+                1: { halign: 'center', cellWidth: 25 },
+                3: { halign: 'center', cellWidth: 15 },
+                4: { halign: 'center', cellWidth: 15 },
+                5: { halign: 'center', cellWidth: 15 },
+                6: { halign: 'right', cellWidth: 30, fontStyle: 'bold' }
             },
-            columnStyles: {
-                0: { cellWidth: (width - 60) / 3 },
-                1: { cellWidth: (width - 60) / 3 },
-                2: { cellWidth: (width - 60) / 3 }
-            },
-            margin: { left: 25, right: 25 },
-            didDrawCell: (data) => {
-                // Separadores verticales discretos
-                if (data.column.index < 2) {
-                    doc.setDrawColor(220, 220, 220);
-                    doc.line(data.cell.x + data.cell.width, data.cell.y + 5, data.cell.x + data.cell.width, data.cell.y + data.cell.height - 5);
+            margin: { left: 15, right: 15 },
+            didParseCell: (data) => {
+                if (data.row.index === allWorkers.length) {
+                    data.cell.styles.fillColor = [240, 253, 244]; // Fondo esmeralda muy suave para fila de campo
+                    data.cell.styles.fontStyle = 'bold';
                 }
             }
         });
 
-        doc.save(`Carta_Rocoto_A2.pdf`);
-    }
-
-    async generarReporteAsistencia(worker, attendanceList) {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF({
-            orientation: 'portrait',
-            unit: 'mm',
-            format: 'a4'
-        });
-
-        const width = doc.internal.pageSize.getWidth();
-        
-        // --- CABECERA ---
-        // Fondo verde superior
-        doc.setFillColor(...this.primary);
-        doc.rect(0, 0, width, 40, 'F');
-        
-        // Logo
-        try {
-            const logoImg = await this.getBase64FromUrl(this.info.logoUrl);
-            doc.addImage(logoImg, 'PNG', 15, 10, 45, 15);
-        } catch (e) {}
-
-        // Título del Reporte
-        doc.setTextColor(255, 255, 255);
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(22);
-        doc.text("REPORTE DE ASISTENCIA", width - 15, 20, { align: 'right' });
-        
-        doc.setFontSize(10);
-        doc.setFont("helvetica", "normal");
-        doc.text(`Fecha de emisión: ${new Date().toLocaleDateString()}`, width - 15, 28, { align: 'right' });
-
-        // --- INFORMACIÓN DEL TRABAJADOR ---
-        let y = 55;
-        doc.setTextColor(...this.textMain);
-        doc.setFontSize(14);
-        doc.setFont("helvetica", "bold");
-        doc.text("DATOS DEL TRABAJADOR", 15, y);
-        
-        y += 10;
-        doc.setDrawColor(230, 230, 230);
-        doc.line(15, y - 5, width - 15, y - 5);
-
-        const data = [
-            ["NOMBRE COMPLETO:", `${worker.apellidos}, ${worker.nombre}`],
-            ["DNI:", worker.dni],
-            ["EMPRESA:", worker.empresa || "Particular"],
-            ["TOTAL REGISTROS:", attendanceList.length.toString()]
+        // 4. Resumen de Liquidación Final (Footer de Costos)
+        const finalY = doc.lastAutoTable.finalY + 10;
+        const summaryData = [
+            ["DESCRIPCIÓN", "CANT. TOTAL", "PRECIO U.", "TOTAL S/"],
+            ["DESAYUNOS", grandTotalD, `S/ ${prices.d.toFixed(2)}`, `S/ ${(grandTotalD * prices.d).toFixed(2)}`],
+            ["ALMUERZOS", grandTotalA, `S/ ${prices.a.toFixed(2)}`, `S/ ${(grandTotalA * prices.a).toFixed(2)}`],
+            ["CENAS", grandTotalC, `S/ ${prices.c.toFixed(2)}`, `S/ ${(grandTotalC * prices.c).toFixed(2)}`],
+            [{ content: "TOTAL A FACTURAR", colSpan: 3, styles: { halign: 'right', fontStyle: 'bold' } }, { content: `S/ ${grandTotalCost.toFixed(2)}`, styles: { halign: 'right', fontStyle: 'bold', fillColor: this.primary, textColor: [255, 255, 255] } }]
         ];
 
-        doc.setFontSize(10);
-        data.forEach(([label, value]) => {
-            doc.setFont("helvetica", "bold");
-            doc.text(label, 15, y);
-            doc.setFont("helvetica", "normal");
-            doc.text(value, 60, y);
-            y += 7;
-        });
-
-        // --- TABLA DE ASISTENCIA ---
-        y += 10;
-        
-        // Ordenar por fecha y hora (descendente)
-        const sortedList = [...attendanceList].sort((a, b) => {
-            const dateA = a.timestamp?.seconds ? a.timestamp.seconds : 0;
-            const dateB = b.timestamp?.seconds ? b.timestamp.seconds : 0;
-            return dateB - dateA;
-        });
-
         doc.autoTable({
-            startY: y,
-            head: [['FECHA', 'HORA', 'TIPO DE CONSUMO', 'EMPRESA']],
-            body: sortedList.map(reg => [
-                reg.fecha,
-                reg.timestamp?.seconds ? new Date(reg.timestamp.seconds * 1000).toLocaleTimeString() : '---',
-                reg.tipo.toUpperCase(),
-                reg.empresa || 'PARTICULAR'
-            ]),
-            theme: 'striped',
-            headStyles: {
-                fillColor: this.primary,
-                textColor: [255, 255, 255],
-                fontStyle: 'bold',
-                halign: 'center'
-            },
-            styles: {
-                font: "helvetica",
-                fontSize: 9,
-                cellPadding: 4
-            },
-            columnStyles: {
-                0: { halign: 'center', cellWidth: 35 },
-                1: { halign: 'center', cellWidth: 35 },
-                2: { halign: 'center' },
-                3: { halign: 'center' }
-            },
-            margin: { left: 15, right: 15 }
+            startY: finalY,
+            head: [],
+            body: summaryData,
+            theme: 'grid',
+            styles: { font: "helvetica", fontSize: 9, cellPadding: 3 },
+            columnStyles: { 0: { cellWidth: 60 }, 1: { halign: 'center' }, 2: { halign: 'center' }, 3: { halign: 'right' } },
+            margin: { left: width - 150 }, // Alineado a la derecha
         });
 
-        // Pie de página
-        doc.setFontSize(8);
-        doc.setTextColor(...this.textMuted);
-        const footerText = `${this.info.name} - ${this.info.address} - WhatsApp: ${this.info.phone}`;
-        doc.text(footerText, width / 2, 285, { align: 'center' });
-
-        doc.save(`Asistencia_${worker.dni}_${worker.apellidos}.pdf`);
+        this.addFooter(doc, width);
+        doc.save(`Reporte_Pension_${companyName || 'General'}_${startDate}.pdf`);
     }
 
-    async generarReporteAsistenciaGrupal(companyName, startDate, endDate, attendanceList, prices = {d:10, a:10, c:10}) {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF({
-            orientation: 'portrait',
-            unit: 'mm',
-            format: 'a4'
-        });
+    addFooter(doc, width) {
+        const h = doc.internal.pageSize.getHeight();
+        doc.setFontSize(7);
+        doc.setTextColor(...this.textMuted);
+        doc.text(`${this.info.name} - San Ramón - WhatsApp: ${this.info.phone}`, width / 2, h - 10, { align: 'center' });
+    }
 
-        const width = doc.internal.pageSize.getWidth();
-        
-        // --- CABECERA ---
-        doc.setFillColor(...this.primary);
-        doc.rect(0, 0, width, 40, 'F');
-        
+    /**
+     * Inserta el logo manteniendo la proporción para evitar deformaciones
+     */
+    async insertLogo(doc, url, x, y, maxW, maxH) {
         try {
-            const logoImg = await this.getBase64FromUrl(this.info.logoUrl);
-            doc.addImage(logoImg, 'PNG', 15, 10, 45, 15);
-        } catch (e) {}
-
-        doc.setTextColor(255, 255, 255);
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(18);
-        doc.text("REPORTE GRUPAL DE ASISTENCIA", width - 15, 20, { align: 'right' });
-        
-        doc.setFontSize(10);
-        doc.setFont("helvetica", "normal");
-        const rangeText = `Desde: ${startDate}  Hasta: ${endDate}`;
-        doc.text(rangeText, width - 15, 28, { align: 'right' });
-
-        // --- INFORMACIÓN DEL REPORTE ---
-        let y = 55;
-        doc.setTextColor(...this.textMain);
-        doc.setFontSize(12);
-        doc.setFont("helvetica", "bold");
-        doc.text(`EMPRESA: ${companyName || 'TODAS LAS EMPRESAS'}`, 15, y);
-        
-        y += 7;
-        doc.setFontSize(10);
-        doc.setFont("helvetica", "normal");
-        doc.text(`Total de consumos registrados: ${attendanceList.length}`, 15, y);
-        
-        y += 5;
-        let totalAmount = 0;
-        attendanceList.forEach(reg => {
-            const type = reg.tipo.toLowerCase();
-            if (type.includes('desayuno')) totalAmount += (prices.d || 0);
-            else if (type.includes('almuerzo')) totalAmount += (prices.a || 0);
-            else if (type.includes('cena')) totalAmount += (prices.c || 0);
-        });
-
-        doc.text(`Precios: D: S/ ${prices.d.toFixed(2)} | A: S/ ${prices.a.toFixed(2)} | C: S/ ${prices.c.toFixed(2)}`, 15, y);
-        doc.setFont("helvetica", "bold");
-        doc.text(`MONTO TOTAL A PAGAR: S/ ${totalAmount.toFixed(2)}`, 15, y + 5);
-
-        // --- TABLA DE ASISTENCIA ---
-        y += 15;
-        
-        doc.autoTable({
-            startY: y,
-            head: [['FECHA', 'TRABAJADOR', 'DNI', 'TIPO', 'PRECIO']],
-            body: attendanceList.map(reg => {
-                const type = reg.tipo.toLowerCase();
-                let price = 0;
-                if (type.includes('desayuno')) price = prices.d;
-                else if (type.includes('almuerzo')) price = prices.a;
-                else if (type.includes('cena')) price = prices.c;
-
-                return [
-                    reg.fecha,
-                    reg.nombreCompleto.toUpperCase(),
-                    reg.dni,
-                    reg.tipo.toUpperCase(),
-                    `S/ ${price.toFixed(2)}`
-                ];
-            }),
-            theme: 'striped',
-            headStyles: {
-                fillColor: this.primary,
-                textColor: [255, 255, 255],
-                fontStyle: 'bold',
-                halign: 'center'
-            },
-            styles: {
-                font: "helvetica",
-                fontSize: 8,
-                cellPadding: 3
-            },
-            columnStyles: {
-                0: { halign: 'center', cellWidth: 25 },
-                1: { halign: 'left', cellWidth: 70 },
-                2: { halign: 'center', cellWidth: 25 },
-                3: { halign: 'center', cellWidth: 25 },
-                4: { halign: 'right' }
-            },
-            margin: { left: 15, right: 15 }
-        });
-
-        // Pie de página
-        doc.setFontSize(8);
-        doc.setTextColor(...this.textMuted);
-        const footerText = `${this.info.name} - ${this.info.address} - WhatsApp: ${this.info.phone}`;
-        doc.text(footerText, width / 2, 285, { align: 'center' });
-
-        const fileName = `Reporte_Grupal_${companyName || 'General'}_${startDate}_${endDate}.pdf`;
-        doc.save(fileName);
-    }
-
-    formatPlatosParaTresColumnas(platos) {
-        const platosPorCat = {};
-        platos.forEach(p => {
-            const cat = Array.isArray(p.category) ? p.category[0] : p.category;
-            if (!platosPorCat[cat]) platosPorCat[cat] = [];
-            platosPorCat[cat].push(p);
-        });
-
-        let rows = [];
-        Object.keys(platosPorCat).forEach(cat => {
-            // Título de categoría a lo ancho
-            rows.push([{ content: cat.toUpperCase(), colSpan: 3, styles: { textColor: this.primary, fontStyle: 'bold', fontSize: 24, halign: 'center', cellPadding: 15 } }]);
+            const imgData = await this.getBase64FromUrl(url);
+            const img = new Image();
+            img.src = imgData;
+            await new Promise(resolve => img.onload = resolve);
             
-            const items = platosPorCat[cat];
-            for (let i = 0; i < items.length; i += 3) {
-                rows.push([
-                    this.renderItem(items[i]),
-                    items[i + 1] ? this.renderItem(items[i + 1]) : "",
-                    items[i + 2] ? this.renderItem(items[i + 2]) : ""
-                ]);
-            }
-        });
-        return rows;
-    }
+            let w = img.width;
+            let h = img.height;
+            const ratio = w / h;
 
-    renderItem(p) {
-        if (!p) return "";
-        return {
-            content: `${p.name.toUpperCase()}\n${p.description || ''}\nS/ ${Number(p.price).toFixed(2)}`,
-            styles: { cellPadding: 5 }
-        };
-    }
+            if (w > maxW) { w = maxW; h = w / ratio; }
+            if (h > maxH) { h = maxH; w = h * ratio; }
 
-    drawArtisticLine(doc, x, y, w) {
-        doc.setDrawColor(...this.secondary);
-        doc.setLineWidth(1);
-        doc.line(x - w/2, y, x + w/2, y);
-        doc.circle(x, y, 1.5, 'F');
+            doc.addImage(imgData, 'PNG', x - w / 2, y - h / 2, w, h);
+        } catch (e) { console.error("Error al insertar logo proporcional", e); }
     }
 
     async getBase64FromUrl(url) {
