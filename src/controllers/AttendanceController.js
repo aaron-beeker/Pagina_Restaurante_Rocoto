@@ -35,7 +35,10 @@ export class AttendanceController {
         const manageView = new ManageAttendanceView(document.getElementById("app"));
         
         const acciones = {
-            onBack: () => this.navigateTo('#/'),
+          onBack: () => {
+            this.navigateTo("#/");
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          },
             onSave: async (id, data) => {
                 if (id) {
                     if (await this.attendanceRepository.updateAttendance(id, data)) {
@@ -113,7 +116,10 @@ export class AttendanceController {
         };
 
         const acciones = {
-            onBack: () => this.navigateTo('#/'),
+          onBack: () => {
+            this.navigateTo("#/");
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          },
             onScanFingerprint: async (tipo) => {
                 try {
                     await this.supremaService.init();
@@ -195,7 +201,10 @@ export class AttendanceController {
         const companies = await this.companyRepository.getAllCompanies();
         const manageView = new ManageCompaniesView(document.getElementById("app"));
         const acciones = {
-            onBack: () => this.navigateTo('#/'),
+          onBack: () => {
+            this.navigateTo("#/");
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          },
             onSave: async (id, data) => {
                 if (id ? await this.companyRepository.updateCompany(id, data) : await this.companyRepository.addCompany(data)) {
                     toast.success("Empresa guardada");
@@ -219,7 +228,10 @@ export class AttendanceController {
         const [workers, companies] = await Promise.all([this.workerRepository.getAllWorkers(), this.companyRepository.getAllCompanies()]);
         const manageView = new ManageWorkersView(document.getElementById("app"));
         const acciones = {
-            onBack: () => this.navigateTo('#/'),
+          onBack: () => {
+            this.navigateTo("#/");
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          },
             onSave: async (id, data) => {
                 try {
                     if (id) {

@@ -24,7 +24,11 @@ export class AdminMenuController {
 
         const manageView = new ManageCartaView(document.getElementById("app"));
         const acciones = {
-            onBack: () => { this.lastAdminSearch = ""; this.navigateTo('#/'); },
+            onBack: () => { 
+                this.lastAdminSearch = ""; 
+                this.navigateTo('#/');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            },
             onAdd: async (data) => {
                 const id = document.getElementById("edit-id").value;
                 if (id) {
@@ -114,7 +118,10 @@ export class AdminMenuController {
                     toast.success("Banners guardados correctamente"); 
                 }
             },
-            onBack: () => this.navigateTo('#/')
+            onBack: () => {
+                this.navigateTo('#/');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
         });
     }
 
@@ -129,7 +136,10 @@ export class AdminMenuController {
                   toast.success("Menú actualizado"); 
               } 
           },
-          onBack: () => this.navigateTo('#/')
+          onBack: () => {
+              this.navigateTo('#/');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+          }
         });
 
         const handleDownloadPdf = async () => {

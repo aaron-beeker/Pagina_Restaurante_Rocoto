@@ -6,6 +6,9 @@ import { MenuView } from "./views/MenuView.js";
 import { UserRepository } from "./services/UserRepository.js";
 
 function bootstrap() {
+  if ('scrollRestoration' in history) {
+    history.scrollRestoration = 'manual';
+  }
   const root = document.getElementById("app");
   const homeView = new HomeView(root);
   const menuView = new MenuView(null, null);

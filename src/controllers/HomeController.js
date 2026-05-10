@@ -121,22 +121,30 @@ export class HomeController {
     // 1. Asegurar que el Shell estático existe
     this.homeView.renderStaticShell(state.restaurantInfo);
     
-    // 2. Actualizaciones quirúrgicas
+    // 2. Actualizaciones quirúrgicas en cascada para suavizar la carga (Top -> Bottom)
     this.homeView.updateUserUI(state.restaurantInfo, state.user);
-    this.homeView.updateDailyMenuUI(state.dailyMenu);
-    this.homeView.updateHeroUI(state.heroPromo);
-    this.homeView.updateMobileNavUI(state.restaurantInfo);
+    
+    // Prioridad 1: Hero (Lo primero que ve el usuario)
+    requestAnimationFrame(() => {
+        this.homeView.updateHeroUI(state.heroPromo);
+        
+        // Prioridad 2: Menú del Día (Justo debajo del Hero)
+        requestAnimationFrame(async () => {
+            this.homeView.updateDailyMenuUI(state.dailyMenu);
+            this.homeView.updateMobileNavUI(state.restaurantInfo);
 
-    // 3. Re-vincular eventos
-    this._bindEvents();
-    
-    // 4. Conectar y renderizar el menú dinámico
-    this.menuView.filterContainer = document.getElementById("menu-filters");
-    this.menuView.gridContainer = document.getElementById("menu-grid");
-    
-    if (this.menuView.gridContainer) {
-        await this.renderMenu();
-    }
+            // 3. Re-vincular eventos
+            this._bindEvents();
+            
+            // 4. Conectar y renderizar el menú dinámico (La Carta)
+            this.menuView.filterContainer = document.getElementById("menu-filters");
+            this.menuView.gridContainer = document.getElementById("menu-grid");
+            
+            if (this.menuView.gridContainer) {
+                await this.renderMenu();
+            }
+        });
+    });
   }
 
   _bindEvents() {
@@ -211,6 +219,9 @@ export class HomeController {
     }
 
     if (internalAnchors.includes(hash)) {
+      if (hash === '#menu') {
+          appStore.setState({ activeCategory: "Inicio" });
+      }
       if (!document.getElementById("nav-container")) { await this.updateUI(state); }
       // El scroll lo maneja el navegador por defecto con el hash
       return;
@@ -238,6 +249,10 @@ export class HomeController {
       const users = await this.userRepository.getAllUsers();
       const view = new ManageUsersView(document.getElementById("app"));
       view.render(users, {
+          onBack: () => {
+              this.navigateTo("#/");
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+          },
           onAdd: async (email, role) => {
               if (await this.userRepository.setUserRole(email, role)) {
                   toast.success("Usuario autorizado");

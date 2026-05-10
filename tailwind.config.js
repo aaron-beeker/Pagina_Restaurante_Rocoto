@@ -11,9 +11,9 @@ export default {
         "on-background": "#18181b",
         background: "#fafafa",
         surface: "#ffffff",
-        primary: "#003b1b",
+        primary: "#1B5E34",
         secondary: "#bc0000",
-        "primary-container": "#003b1b",
+        "primary-container": "#1B5E34",
         "surface-container": "#f4f4f5",
         "surface-container-low": "#fafafa",
         "surface-container-lowest": "#ffffff",
@@ -21,8 +21,9 @@ export default {
         "on-surface-variant": "#52525b",
       },
       fontFamily: {
-        display: ["Nunito", "sans-serif"],
-        sans: ["Open Sans", "sans-serif"],
+        display: ["Lobster", "cursive"],
+        sans: ["Montserrat", "sans-serif"],
+        cursive: ["Pacifico", "cursive"],
       },
       fontSize: {
         xs: ["12px", { lineHeight: "1.2", letterSpacing: "0.01em" }],
