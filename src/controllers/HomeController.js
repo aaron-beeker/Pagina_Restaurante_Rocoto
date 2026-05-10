@@ -90,11 +90,22 @@ export class HomeController {
       
       await this.menuRepository.loadAllPlatos();
       
-      const [daily, hero, companies] = await Promise.all([
+      // Cargar Menú y Hero (Datos Públicos)
+      const [daily, hero] = await Promise.all([
           this.menuRepository.getDailyMenuConfig().catch(() => null),
-          this.menuRepository.getHeroPromo().catch(() => null),
-          this.attendanceController.companyRepository.getAllCompanies().catch(() => [])
+          this.menuRepository.getHeroPromo().catch(() => null)
       ]);
+
+      // Solo cargar empresas si hay usuario o si son necesarias (Evita FirebaseError: Missing or insufficient permissions)
+      let companies = [];
+      try {
+          // Si necesitas que las empresas sean públicas para el carrusel, 
+          // asegúrate de que las reglas de Firestore permitan lectura a 'empresas_fasal'
+          companies = await this.attendanceController.companyRepository.getAllCompanies();
+      } catch (error) {
+          console.warn("No se pudieron cargar las empresas (posible falta de permisos):", error);
+          companies = [];
+      }
 
       appStore.setState({ 
           user: userData,
