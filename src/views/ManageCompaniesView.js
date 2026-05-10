@@ -35,6 +35,10 @@ export class ManageCompaniesView {
                                 <input type="text" id="company-name" placeholder="Nombre comercial" class="${form.input}" required />
                             </div>
                         </div>
+                        <div>
+                            <label class="${form.label}">URL del Logo (Opcional)</label>
+                            <input type="url" id="company-logo" placeholder="https://ejemplo.com/logo.png" class="${form.input}" />
+                        </div>
                         <button type="submit" id="submit-company-btn" class="${button.base} ${button.primary} w-full py-4 text-lg">Guardar Empresa</button>
                         <button type="button" id="cancel-company-edit" class="hidden ${button.base} ${button.outlineDark} w-full py-3 mt-2">Cancelar Edición</button>
                     </form>
@@ -57,7 +61,8 @@ export class ManageCompaniesView {
       e.preventDefault();
       onSave(document.getElementById("edit-company-id").value, {
         ruc: document.getElementById("company-ruc").value.trim(),
-        nombre: document.getElementById("company-name").value.trim()
+        nombre: document.getElementById("company-name").value.trim(),
+        logo: document.getElementById("company-logo").value.trim()
       });
     };
     document.getElementById("cancel-company-edit").onclick = () => this.resetForm();
@@ -65,7 +70,8 @@ export class ManageCompaniesView {
   }
 
   resetForm() {
-    document.getElementById("edit-company-id").value = ""; document.getElementById("company-form").reset();
+    document.getElementById("edit-company-id").value = ""; 
+    document.getElementById("company-form").reset();
     document.getElementById("submit-company-btn").textContent = "Guardar Empresa";
     document.getElementById("cancel-company-edit").classList.add("hidden");
   }
@@ -84,8 +90,8 @@ export class ManageCompaniesView {
     return companies.map(c => `
         <div class="p-4 rounded-2xl border border-surface-variant bg-surface flex items-center justify-between shadow-sm hover:shadow-md transition-shadow">
             <div class="flex items-center gap-4">
-                <div class="h-10 w-10 rounded-full bg-surface-container-low flex items-center justify-center border border-surface-variant text-primary font-bold">
-                    ${c.nombre.charAt(0).toUpperCase()}
+                <div class="h-12 w-12 rounded-xl bg-surface-container-low flex items-center justify-center border border-surface-variant text-primary font-bold overflow-hidden">
+                    ${c.logo ? `<img src="${escapeHtml(c.logo)}" alt="${escapeHtml(c.nombre)}" class="h-full w-full object-contain" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(c.nombre)}&background=1B5E34&color=fff'" />` : c.nombre.charAt(0).toUpperCase()}
                 </div>
                 <div>
                     <p class="text-sm font-bold text-on-background">${escapeHtml(c.nombre)}</p>
@@ -101,7 +107,9 @@ export class ManageCompaniesView {
   }
 
   prepareEdit(company) {
-    document.getElementById("company-ruc").value = company.ruc || ""; document.getElementById("company-name").value = company.nombre;
+    document.getElementById("company-ruc").value = company.ruc || ""; 
+    document.getElementById("company-name").value = company.nombre;
+    document.getElementById("company-logo").value = company.logo || "";
     document.getElementById("edit-company-id").value = company.id;
     document.getElementById("submit-company-btn").textContent = "Actualizar Empresa";
     document.getElementById("cancel-company-edit").classList.remove("hidden");
@@ -109,6 +117,10 @@ export class ManageCompaniesView {
   }
 
   renderListOnly(companies, onEdit, onDelete) {
-    const c = document.getElementById("companies-list-container"); if (c) { c.innerHTML = this.renderCompanyList(companies); this.attachListEvents(onEdit, onDelete); }
+    const c = document.getElementById("companies-list-container"); 
+    if (c) { 
+      c.innerHTML = this.renderCompanyList(companies); 
+      this.attachListEvents(onEdit, onDelete); 
+    }
   }
 }

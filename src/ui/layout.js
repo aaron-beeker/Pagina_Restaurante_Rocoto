@@ -3,24 +3,24 @@
  * Define tokens de Tailwind compartidos para mantener la armonía visual.
  */
 
+// --- Tipografía ---
+export const typography = {
+  h1: "font-display text-4xl sm:text-6xl lg:text-8xl font-black text-on-background tracking-tighter leading-[0.9]",
+  h2: "font-display text-3xl sm:text-5xl lg:text-6xl font-black text-on-background tracking-tight leading-tight",
+  h3: "font-display text-xl sm:text-2xl lg:text-3xl font-bold text-on-background tracking-tight",
+  bodyLg: "font-sans text-base sm:text-lg text-on-surface-variant font-medium leading-relaxed",
+  bodyMd: "font-sans text-sm sm:text-base text-on-surface-variant font-normal leading-relaxed",
+  bodySm: "font-sans text-xs sm:text-sm text-on-surface-variant/70 font-medium",
+};
+
 // --- Contenedores y Secciones ---
 export const layout = {
   container: "mx-auto max-w-7xl px-4 sm:px-6 lg:px-8",
   section: "py-14 sm:py-20",
   sectionHeader: "mb-10 sm:mb-16 text-center",
-  sectionTitle: "font-display text-3xl font-extrabold text-on-background sm:text-5xl tracking-tight",
-  sectionSubtitle: "mt-4 mx-auto max-w-2xl text-base sm:text-lg text-on-surface-variant font-normal leading-relaxed",
-  label: "font-sans text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] text-secondary mb-3 block",
-};
-
-// --- Tipografía ---
-export const typography = {
-  h1: "font-display text-4xl font-black text-on-background sm:text-6xl lg:text-7xl tracking-tight",
-  h2: "font-display text-3xl font-extrabold text-on-background sm:text-5xl tracking-tight",
-  h3: "font-display text-xl font-bold text-on-background sm:text-2xl tracking-tight",
-  bodyLg: "font-sans text-base sm:text-lg text-on-surface-variant font-medium leading-relaxed",
-  bodyMd: "font-sans text-sm sm:text-base text-on-surface-variant font-normal leading-relaxed",
-  bodySm: "font-sans text-xs sm:text-sm text-on-surface-variant/80",
+  sectionTitle: "font-display text-4xl sm:text-6xl font-black text-on-background tracking-tight leading-tight",
+  sectionSubtitle: "mt-4 mx-auto max-w-2xl text-base sm:text-lg text-on-surface-variant/80 font-normal leading-relaxed font-sans",
+  label: "font-sans text-[10px] sm:text-xs font-bold uppercase tracking-[0.3em] text-primary mb-3 block",
 };
 
 // --- Botones ---

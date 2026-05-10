@@ -41,5 +41,6 @@ export const appStore = new Store({
   activeCategory: "Inicio",
   dailyMenu: { entradas: [], segundos: [], refrescos: [] },
   heroPromo: null,
-  restaurantInfo: null
+  restaurantInfo: null,
+  companies: []
 });

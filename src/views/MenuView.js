@@ -15,7 +15,7 @@ export class MenuView {
     this.categorySwiper = null;
   }
 
-  // Renderiza las categorías: Fijas en PC, Carrusel de 1 en 1 en Móvil
+  // Renderiza las categorías: Fijas en PC, Carrusel Premium en Móvil
   renderCategoryGrid(categories, onCategoryClick) {
     if (!this.gridContainer) return;
     
@@ -28,22 +28,22 @@ export class MenuView {
     }
 
     this.gridContainer.innerHTML = `
-        <div class="col-span-full py-4 sm:py-6 animate-fade-in overflow-hidden w-full relative">
+        <div class="col-span-full py-6 animate-fade-in overflow-hidden w-full relative">
             
-            <!-- VISTA MÓVIL: Carrusel (1 a la vez) - Absolutamente exclusivo < 768px -->
-            <div class="block md:!hidden swiper category-swiper pb-12 w-full relative">
+            <!-- VISTA MÓVIL: Carrusel Premium (Múltiples platos a la vez) - < 768px -->
+            <div class="block md:!hidden swiper category-swiper pb-14 w-full relative">
                 <div class="swiper-wrapper">
                     ${categories.map(cat => `
-                        <div class="swiper-slide px-4 flex justify-center">
-                            ${this.renderCategoryItem(cat, "w-full max-w-[240px]")}
+                        <div class="swiper-slide flex justify-center">
+                            ${this.renderCategoryItem(cat, "w-full")}
                         </div>
                     `).join('')}
                 </div>
                 <div class="swiper-pagination absolute !bottom-0 left-1/2 -translate-x-1/2 flex justify-center gap-2"></div>
             </div>
 
-            <!-- VISTA ESCRITORIO: Cuadrícula Fija - Absolutamente exclusivo >= 768px -->
-            <div class="hidden md:!grid grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-10 w-full px-4 sm:px-0">
+            <!-- VISTA ESCRITORIO: Cuadrícula Fija - >= 768px -->
+            <div class="hidden md:!grid grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12 w-full px-4 sm:px-0">
                 ${categories.map(cat => `
                     <div class="flex justify-center w-full">
                         ${this.renderCategoryItem(cat, "w-full")}
@@ -72,23 +72,23 @@ export class MenuView {
   renderCategoryItem(cat, sizeClass) {
     return `
         <button type="button" class="group flex flex-col items-center gap-4 transition-all active:scale-95 bg-transparent w-full" data-category="${escapeHtml(cat.nombre)}">
-            <!-- Contenedor de Imagen con Efecto Flotante - TAMAÑO REDUCIDO -->
-            <div class="relative ${sizeClass} max-w-[180px] sm:max-w-[200px] aspect-square flex items-center justify-center transition-all duration-700">
+            <!-- Contenedor de Imagen con Efecto Flotante -->
+            <div class="relative ${sizeClass} max-w-[220px] aspect-square flex items-center justify-center transition-all duration-700">
                 
                 <!-- Fondo Decorativo Circular (Glow) -->
-                <div class="absolute inset-0 bg-stone-50 rounded-full group-hover:bg-[#1B5E34]/10 group-hover:scale-105 transition-all duration-700 shadow-inner"></div>
+                <div class="absolute inset-0 bg-stone-50 rounded-full group-hover:bg-primary/10 group-hover:scale-105 transition-all duration-700 shadow-inner"></div>
                 
                 <!-- Imagen PNG sin fondo con Sombra Proyectada -->
                 <img src="${cat.imageUrl || CAT_IMG_FALLBACK}" 
-                     class="relative z-10 w-[80%] h-[80%] object-contain drop-shadow-[0_15px_30px_rgba(0,0,0,0.12)] group-hover:drop-shadow-[0_25px_40px_rgba(27,94,52,0.2)] group-hover:-translate-y-3 group-hover:scale-105 transition-all duration-700" 
+                     class="relative z-10 w-[82%] h-[82%] object-contain drop-shadow-[0_15px_35px_rgba(0,0,0,0.15)] group-hover:drop-shadow-[0_25px_45px_rgba(27,94,52,0.25)] group-hover:-translate-y-3 group-hover:scale-105 transition-all duration-700" 
                      onerror="this.src='${CAT_IMG_FALLBACK}'; this.classList.remove('object-contain'); this.classList.add('object-cover');" />
                 
                 <!-- Círculo decorativo giratorio sutil -->
-                <div class="absolute inset-0 border border-dashed border-[#1B5E34]/10 rounded-full -m-2 animate-[spin_30s_linear_infinite] opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div class="absolute inset-0 border border-dashed border-primary/15 rounded-full -m-2 animate-[spin_40s_linear_infinite] opacity-0 group-hover:opacity-100 transition-opacity"></div>
             </div>
 
             <div class="flex flex-col items-center space-y-2">
-                <span class="text-on-background font-black text-xs sm:text-sm uppercase tracking-[0.4em] text-center transition-colors group-hover:text-primary leading-none">
+                <span class="${typography.h3} text-on-background group-hover:text-primary transition-colors text-center !text-sm sm:!text-base uppercase !tracking-widest leading-none">
                     ${escapeHtml(cat.nombre)}
                 </span>
                 <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-1 group-hover:translate-y-0">
@@ -108,14 +108,16 @@ export class MenuView {
     
     this.categorySwiper = new Swiper('.category-swiper', {
         modules: [Navigation, Pagination, Autoplay],
-        slidesPerView: 1,
-        centeredSlides: true,
-        spaceBetween: 20,
-        loop: count > 1,
+        slidesPerView: 2.1,
+        centeredSlides: false,
+        spaceBetween: 12,
+        slidesOffsetBefore: 16,
+        slidesOffsetAfter: 16,
+        loop: false,
         grabCursor: true,
         watchSlidesProgress: true,
         autoplay: { 
-            delay: 4000, 
+            delay: 5000, 
             disableOnInteraction: false 
         },
         pagination: { 
@@ -139,20 +141,20 @@ export class MenuView {
             <!-- CABECERA DE CATEGORÍA COMPACTA -->
             <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-10 sm:mb-16 pb-6 border-b border-stone-100">
                 <div class="space-y-2">
-                    <button id="btn-back-to-categories" class="flex items-center gap-2 text-[#1B5E34] hover:text-[#1B5E34]/70 font-black text-[9px] uppercase tracking-[0.4em] transition-all group mb-4">
+                    <button id="btn-back-to-categories" class="flex items-center gap-2 text-primary hover:text-primary/70 font-bold text-[9px] uppercase tracking-[0.4em] transition-all group mb-4">
                         <svg class="h-3 w-3 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="3" d="M15 19l-7-7 7-7"></path></svg>
                         Volver a Categorías
                     </button>
                     <div class="flex items-center gap-4">
                         <div class="h-10 w-1 bg-amber-400 rounded-full"></div>
-                        <h2 class="text-4xl sm:text-6xl font-black text-on-background tracking-tighter italic font-display leading-none uppercase">
+                        <h2 class="${typography.h2} !text-4xl sm:!text-6xl uppercase italic leading-none">
                             ${escapeHtml(categoryName)}
                         </h2>
                     </div>
                 </div>
                 <div class="text-right hidden sm:block">
-                    <span class="text-[10px] font-black text-stone-300 uppercase tracking-[0.3em] block mb-1">Especialidades</span>
-                    <span class="text-2xl font-black text-[#1B5E34] italic font-display leading-none">${items.length} Platos</span>
+                    <span class="${layout.label} !mb-1 opacity-30">Especialidades</span>
+                    <span class="${typography.h3} text-primary leading-none">${items.length} Platos</span>
                 </div>
             </div>
 
@@ -168,14 +170,14 @@ export class MenuView {
                             
                             <!-- Precio Flotante -->
                             <div class="absolute bottom-3 right-3 bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-xl shadow-lg border border-white/50">
-                               <span class="text-xs sm:text-lg font-black text-[#1B5E34] italic font-display leading-none whitespace-nowrap">S/ ${Number(item.price).toFixed(2)}</span>
+                               <span class="${typography.h3} !text-xs sm:!text-lg text-primary italic leading-none whitespace-nowrap">S/ ${Number(item.price).toFixed(2)}</span>
                             </div>
                         </div>
 
                         <!-- Información -->
                         <div class="px-1 flex flex-col flex-1">
-                            <h3 class="text-xs sm:text-lg font-black text-on-background group-hover:text-[#1B5E34] transition-colors tracking-tight uppercase leading-tight mb-2 line-clamp-2">${escapeHtml(item.name)}</h3>
-                            <p class="text-[9px] sm:text-xs text-on-surface-variant/50 leading-tight font-medium italic line-clamp-2">
+                            <h3 class="${typography.h3} !text-xs sm:!text-lg text-on-background group-hover:text-primary transition-colors leading-tight mb-2 line-clamp-2 uppercase">${escapeHtml(item.name)}</h3>
+                            <p class="${typography.bodySm} italic line-clamp-2">
                                 ${escapeHtml(item.description || "Receta tradicional de la casa.")}
                             </p>
                         </div>
@@ -185,12 +187,12 @@ export class MenuView {
 
             ${items.length === 0 ? `
                 <div class="py-20 text-center">
-                    <p class="text-stone-300 font-black text-[10px] uppercase tracking-[0.4em]">Próximamente más delicias</p>
+                    <p class="${layout.label} opacity-30">Próximamente más delicias</p>
                 </div>
             ` : ''}
             
             <div class="mt-20 text-center">
-                <button id="btn-back-to-categories-bottom" class="inline-flex items-center gap-4 border-2 border-stone-100 text-stone-400 px-10 py-4 rounded-full text-[9px] font-black uppercase tracking-[0.4em] hover:bg-stone-50 hover:text-[#1B5E34] transition-all">
+                <button id="btn-back-to-categories-bottom" class="${button.base} ${button.outlineDark} rounded-full tracking-[0.4em] uppercase">
                     Ver otras categorías
                 </button>
             </div>

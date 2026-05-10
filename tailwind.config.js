@@ -21,9 +21,9 @@ export default {
         "on-surface-variant": "#52525b",
       },
       fontFamily: {
-        display: ["Lobster", "cursive"],
-        sans: ["Montserrat", "sans-serif"],
-        cursive: ["Pacifico", "cursive"],
+        display: ["Lato", "sans-serif"],
+        sans: ["Outfit", "sans-serif"],
+        cursive: ["Cantarell", "sans-serif"],
       },
       fontSize: {
         xs: ["12px", { lineHeight: "1.2", letterSpacing: "0.01em" }],
