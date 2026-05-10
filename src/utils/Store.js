@@ -37,6 +37,7 @@ export class Store {
 // Exportamos una instancia única para todo el proyecto (Singleton)
 export const appStore = new Store({
   user: null,
+  authInitialized: false,
   activeCategory: "Inicio",
   dailyMenu: { entradas: [], segundos: [], refrescos: [] },
   heroPromo: null,

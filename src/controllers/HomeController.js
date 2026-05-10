@@ -60,6 +60,7 @@ export class HomeController {
     // Estado inicial en Store
     appStore.setState({ restaurantInfo });
     
+    this.currentHash = window.location.hash || '#/';
     window.addEventListener('hashchange', () => this.handleRouting());
   }
 
@@ -76,17 +77,14 @@ export class HomeController {
     });
 
     onAuthStateChanged(auth, async (user) => {
+      let userData = null;
       if (user) {
         const role = await this.userRepository.getUserRole(user.email);
-        appStore.setState({
-          user: {
-            name: user.displayName.split(' ')[0],
-            email: user.email.toLowerCase().trim(),
-            role: role
-          }
-        });
-      } else { 
-        appStore.setState({ user: null }); 
+        userData = {
+          name: user.displayName.split(' ')[0],
+          email: user.email.toLowerCase().trim(),
+          role: role
+        };
       }
       
       await this.menuRepository.loadAllPlatos();
@@ -97,8 +95,10 @@ export class HomeController {
       ]);
 
       appStore.setState({ 
+          user: userData,
           dailyMenu: daily || { entradas: [], segundos: [], refrescos: [] },
-          heroPromo: hero
+          heroPromo: hero,
+          authInitialized: true 
       });
     });
   }
@@ -112,7 +112,9 @@ export class HomeController {
     
     // Si no estamos en el home, delegamos el renderizado al router
     if (!isHome) {
-        await this.handleRouting();
+        if (state.authInitialized) {
+            await this.handleRouting(true);
+        }
         return;
     }
 
@@ -184,19 +186,33 @@ export class HomeController {
     if (loBtn) loBtn.onclick = () => signOut(auth);
   }
 
-  async handleRouting() {
+  async handleRouting(force = false) {
     const hash = window.location.hash || '#/';
     const state = appStore.getState();
     
+    // Si no se ha inicializado el auth, no tomamos decisiones de redirección
+    if (!state.authInitialized) return;
+
+    // Evitar re-renderizado si ya estamos en la misma ruta y no es forzado
+    // (Excepto para anclas internas que solo necesitan scroll)
+    const internalAnchors = ['#menu-del-dia', '#menu', '#pension', '#contacto'];
+    if (!force && hash === this.currentHash && !internalAnchors.includes(hash)) return;
+    
+    this.currentHash = hash;
+
     const adminRoutes = ['#/admin/menu', '#/admin/carta', '#/admin/hero', '#/admin/asistencia', '#/admin/trabajadores', '#/admin/empresas', '#/admin/users'];
-    if (adminRoutes.includes(hash) && (!state.user || state.user.role !== 'admin')) {
-      window.location.hash = '#/';
-      return;
+    
+    if (adminRoutes.includes(hash)) {
+      if (!state.user || state.user.role !== 'admin') {
+        this.currentHash = '#/';
+        window.location.hash = '#/';
+        return;
+      }
     }
 
-    const internalAnchors = ['#menu-del-dia', '#menu', '#pension', '#contacto'];
     if (internalAnchors.includes(hash)) {
       if (!document.getElementById("nav-container")) { await this.updateUI(state); }
+      // El scroll lo maneja el navegador por defecto con el hash
       return;
     }
 
@@ -210,7 +226,11 @@ export class HomeController {
       case '#/admin/trabajadores': await this.attendanceController.abrirGestionTrabajadores(); break;
       case '#/admin/empresas': await this.attendanceController.abrirGestionEmpresas(); break;
       case '#/admin/users': await this.abrirGestionUsuarios(); break;
-      default: window.location.hash = '#/';
+      default: 
+        if (hash !== '#/' && !hash.startsWith('#')) {
+          this.currentHash = '#/';
+          window.location.hash = '#/';
+        }
     }
   }
 
