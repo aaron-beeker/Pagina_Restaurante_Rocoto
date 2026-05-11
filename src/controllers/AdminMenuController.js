@@ -34,41 +34,32 @@ export class AdminMenuController {
                 if (id) {
                     if (await this.menuRepository.updatePlato(id, data)) {
                         toast.success("Producto actualizado correctamente");
-                        this.abrirGestionCarta();
+                        await this.abrirGestionCarta();
+                        document.getElementById("form-editor-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
                     }
                 } else {
                     if (await this.menuRepository.addPlato(data)) {
                         toast.success("Nuevo producto guardado");
-                        this.abrirGestionCarta();
+                        await this.abrirGestionCarta();
+                        document.getElementById("form-editor-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
                     }
                 }
             },
             onDelete: async (id) => { 
                 if (await this.menuRepository.deletePlato(id)) {
                     toast.success("Producto eliminado");
-                    this.abrirGestionCarta();
+                    await this.abrirGestionCarta();
+                    document.getElementById("form-editor-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
                 }
             },
             onSearch: (q) => {
                 this.lastAdminSearch = q;
-                const query = q.toLowerCase().trim();
-                const filtrados = platosOriginales.filter(p => {
-                    const coincideNombre = p.name.toLowerCase().includes(query);
-                    const categories = Array.isArray(p.category) ? p.category : [p.category];
-                    return coincideNombre || categories.some(c => String(c).toLowerCase().includes(query));
-                });
-                const container = document.getElementById("table-container");
-                if (container) { 
-                  container.innerHTML = manageView.renderTableBody(filtrados); 
-                  manageView.attachTableEvents(acciones.onEdit, acciones.onDelete); 
-                }
+                manageView.applyFilter(q);
             },
             onEdit: (id) => { 
                 const p = platosOriginales.find(x => x.id === id); 
                 if (p) {
                     manageView.prepareEdit(p);
-                    // Asegurar que el scroll vaya al formulario
-                    document.getElementById("form-editor-section").scrollIntoView({ behavior: "smooth", block: "center" });
                 } 
             },
             onAddCategory: async (n, u, a) => { 
@@ -124,26 +115,39 @@ export class AdminMenuController {
             }
         });
     }
+async abrirGestionMenuDiario(currentDailyMenu, onUpdateDailyMenu) {
+    // Si no se pasan argumentos, intentamos obtener el estado actual (opcional pero recomendado)
+    const opc = await this.menuRepository.getOpcionesParaAdmin();
+    const av = new AdminMenuView(document.getElementById("admin-layer"));
 
-    async abrirGestionMenuDiario(currentDailyMenu, onUpdateDailyMenu) {
-        // Si no se pasan argumentos, intentamos obtener el estado actual (opcional pero recomendado)
-        const opc = await this.menuRepository.getOpcionesParaAdmin();
-        const av = new AdminMenuView(document.getElementById("admin-layer"));
-        
-        av.render(opc.segundos, opc.entradas, opc.refrescos, {
-          onSave: async (n) => { 
-              if (await this.menuRepository.saveDailyMenu(n)) { 
-                  if (onUpdateDailyMenu) onUpdateDailyMenu(n);
-                  toast.success("Menú actualizado"); 
-              } 
-          },
-          onBack: () => {
-              this.navigateTo('#/');
-              window.scrollTo({ top: 0, behavior: 'smooth' });
+    av.render(opc.segundos, opc.entradas, opc.refrescos, {
+      onSave: async (n) => { 
+          // 1. Intentar guardar en Firebase
+          if (await this.menuRepository.saveDailyMenu(n)) { 
+              // 2. Notificar al store/padre
+              if (onUpdateDailyMenu) onUpdateDailyMenu(n);
+
+              // 3. Mostrar aviso de ÉXITO
+              toast.success("El menú público ha sido actualizado correctamente.", 3000);
+
+              // 4. LIMPIAR EL FORMULARIO (Resetea los checks físicamente)
+              document.getElementById("admin-menu-form")?.reset();
+
+              // 5. RECARGAR la vista para sincronizar datos
+              await this.abrirGestionMenuDiario(n, onUpdateDailyMenu);
+
+              // 6. SUBIR AL INICIO (Afectando al contenedor de admin que tiene el scroll)
+              const adminLayer = document.getElementById("admin-layer");
+              if (adminLayer) adminLayer.scrollTo({ top: 0, behavior: 'smooth' });
+          } else {
+              toast.error("Error al intentar guardar el menú");
           }
-        });
-
-        const handleDownloadPdf = async () => {
+      },
+      onBack: () => {
+          this.navigateTo('#/');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    });        const handleDownloadPdf = async () => {
             if (currentDailyMenu) {
                 await this.pdfService.generarMenuDiarioPdf(currentDailyMenu);
             } else {

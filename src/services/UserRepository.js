@@ -52,6 +52,17 @@ export class UserRepository {
         }
     }
 
+    async saveUser(email, data) {
+        try {
+            const docRef = doc(db, this.collectionName, email.toLowerCase().trim());
+            await setDoc(docRef, data, { merge: true });
+            return true;
+        } catch (error) {
+            console.error("Error saving user:", error);
+            return false;
+        }
+    }
+
     async setUserRole(email, role) {
         try {
             const docRef = doc(db, this.collectionName, email.toLowerCase().trim());

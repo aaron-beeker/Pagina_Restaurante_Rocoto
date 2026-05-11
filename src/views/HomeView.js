@@ -32,7 +32,8 @@ export class HomeView {
         const adminLayer = document.getElementById("admin-layer");
         if (adminLayer) {
             adminLayer.classList.add("hidden");
-            adminLayer.innerHTML = ""; 
+            // Limpieza SEGURA usando Lit-html en lugar de innerHTML
+            render(html``, adminLayer); 
         }
     }
 

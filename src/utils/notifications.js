@@ -10,7 +10,7 @@ export const showNotification = (message, type = 'success', duration = 3000) => 
 
     const container = document.createElement('div');
     container.id = 'global-notification';
-    container.className = `fixed inset-0 z-[1000] flex items-center justify-center pointer-events-none p-4 animate-fade-in`;
+    container.className = `fixed inset-0 z-[3000] flex items-center justify-center pointer-events-none p-4 animate-fade-in`;
 
     const styles = {
         success: { bg: 'bg-green-600', icon: '<svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>' },
@@ -43,7 +43,7 @@ export const showNotification = (message, type = 'success', duration = 3000) => 
 // --- DIÁLOGOS INTERACTIVOS (CONFIRM / PROMPT) ---
 const createModalOverlay = () => {
     const overlay = document.createElement('div');
-    overlay.className = "fixed inset-0 z-[1100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in";
+    overlay.className = "fixed inset-0 z-[3000] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in";
     return overlay;
 };
 

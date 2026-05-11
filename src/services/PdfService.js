@@ -72,14 +72,17 @@ export class PdfService {
         doc.setFont("helvetica", "bold");
         doc.setFontSize(24);
         doc.setTextColor(...this.primary);
-        doc.text("S/ 8.00", width / 2, height - 35, { align: 'center' });
+        doc.text("S/ 8.00", width / 2, height - 40, { align: 'center' });
 
         doc.setFontSize(8);
         doc.setFont("helvetica", "normal");
         doc.setTextColor(...this.textMuted);
-        doc.text("SERVICIO DE 12:00 PM A 3:30 PM", width / 2, height - 28, { align: 'center' });
+        doc.text("SERVICIO DE 12:00 PM A 3:30 PM", width / 2, height - 33, { align: 'center' });
         
-        doc.text(`${this.info.name.toUpperCase()} - ${this.info.address.toUpperCase()}`, width / 2, height - 20, { align: 'center' });
+        doc.text(`${this.info.name.toUpperCase()} - ${this.info.address.toUpperCase()}`, width / 2, height - 25, { align: 'center' });
+
+        // 6. QR de Visita (Abajo a la derecha)
+        await this.addQRToFooter(doc, width, height);
 
         doc.save(`Menu_Rocoto_${new Date().toLocaleDateString().replace(/\//g, '-')}.pdf`);
     }
@@ -88,6 +91,7 @@ export class PdfService {
         
         const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
         const width = doc.internal.pageSize.getWidth();
+        const height = doc.internal.pageSize.getHeight();
         
         doc.setFillColor(...this.primary);
         doc.rect(0, 0, width, 45, 'F');
@@ -136,13 +140,14 @@ export class PdfService {
             margin: { left: 15, right: 15 }
         });
 
-        this.addFooter(doc, width);
+        await this.addFooter(doc, width);
         doc.save(`Asistencia_${worker.dni}.pdf`);
     }
 
     async generarReporteAsistenciaGrupal(companyName, startDate, endDate, attendanceList, allWorkers, prices = {d:10, a:10, c:10}) {
         const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
         const width = doc.internal.pageSize.getWidth();
+        const height = doc.internal.pageSize.getHeight();
         
         // 1. Encabezado Estilizado
         doc.setFillColor(...this.primary);
@@ -157,12 +162,11 @@ export class PdfService {
         doc.text(`EMPRESA: ${companyName || 'CONSOLIDADO GENERAL'}`, width - 15, 25, { align: 'right' });
         doc.text(`PERIODO: ${startDate} AL ${endDate}`, width - 15, 30, { align: 'right' });
 
-        // 2. Procesamiento de Datos (Lógica idéntica a Excel)
+        // 2. Procesamiento de Datos
         let grandTotalD = 0;
         let grandTotalA = 0;
         let grandTotalC = 0;
 
-        // 2.1 Procesar Trabajadores Individuales
         const tableBody = allWorkers.map((worker, index) => {
             let workerTotalD = 0, workerTotalA = 0, workerTotalC = 0;
 
@@ -214,7 +218,6 @@ export class PdfService {
             `S/ ${fieldCost.toFixed(2)}`
         ]);
 
-        // Actualizar grandes totales con lo de campo
         grandTotalD += fieldTotalD;
         grandTotalA += fieldTotalA;
         grandTotalC += fieldTotalC;
@@ -239,13 +242,13 @@ export class PdfService {
             margin: { left: 15, right: 15 },
             didParseCell: (data) => {
                 if (data.row.index === allWorkers.length) {
-                    data.cell.styles.fillColor = [240, 253, 244]; // Fondo esmeralda muy suave para fila de campo
+                    data.cell.styles.fillColor = [240, 253, 244];
                     data.cell.styles.fontStyle = 'bold';
                 }
             }
         });
 
-        // 4. Resumen de Liquidación Final (Footer de Costos)
+        // 4. Resumen de Liquidación Final
         const finalY = doc.lastAutoTable.finalY + 10;
         const summaryData = [
             ["DESCRIPCIÓN", "CANT. TOTAL", "PRECIO U.", "TOTAL S/"],
@@ -262,18 +265,46 @@ export class PdfService {
             theme: 'grid',
             styles: { font: "helvetica", fontSize: 9, cellPadding: 3 },
             columnStyles: { 0: { cellWidth: 60 }, 1: { halign: 'center' }, 2: { halign: 'center' }, 3: { halign: 'right' } },
-            margin: { left: width - 150 }, // Alineado a la derecha
+            margin: { left: width - 150 },
         });
 
-        this.addFooter(doc, width);
+        await this.addFooter(doc, width);
         doc.save(`Reporte_Pension_${companyName || 'General'}_${startDate}.pdf`);
     }
 
-    addFooter(doc, width) {
+    async addFooter(doc, width) {
         const h = doc.internal.pageSize.getHeight();
         doc.setFontSize(7);
         doc.setTextColor(...this.textMuted);
         doc.text(`${this.info.name} - San Ramón - WhatsApp: ${this.info.phone}`, width / 2, h - 10, { align: 'center' });
+        
+        // Agregar QR también a los reportes
+        await this.addQRToFooter(doc, width, h);
+    }
+
+    async addQRToFooter(doc, width, height) {
+        try {
+            // URL oficial del restaurante
+            const websiteUrl = "https://restaurante-rocoto.vercel.app/";
+            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(websiteUrl)}`;
+            
+            // Posición QR: Abajo a la derecha
+            const qrSize = 22;
+            const margin = 15;
+            const x = width - qrSize - margin;
+            const y = height - qrSize - margin;
+
+            // Texto "VISÍTANOS" arriba del QR
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(7);
+            doc.setTextColor(...this.primary);
+            doc.text("VISÍTANOS", x + qrSize/2, y - 2, { align: 'center' });
+
+            const qrData = await this.getBase64FromUrl(qrUrl);
+            doc.addImage(qrData, 'PNG', x, y, qrSize, qrSize);
+        } catch (e) {
+            console.error("Error al agregar QR al PDF", e);
+        }
     }
 
     /**

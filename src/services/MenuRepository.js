@@ -167,12 +167,17 @@ export class MenuRepository {
 
   async getOpcionesParaAdmin() {
     try {
-      const platos = await this.getAllFromFirestore();
+      // Priorizar datos en memoria (caché) para carga instantánea
+      const platos = this.allPlatos.length > 0 ? this.allPlatos : await this.loadAllPlatos();
+      
       return {
         entradas: platos.filter(p => Array.isArray(p.category) ? p.category.includes("Entrada") : p.category === "Entrada"),
         segundos: platos.filter(p => Array.isArray(p.category) ? p.category.includes("Menú del Día") : p.category === "Menú del Día"),
         refrescos: platos.filter(p => Array.isArray(p.category) ? p.category.includes("Bebida Menú") : p.category === "Bebida Menú")
       };
-    } catch (error) { return { entradas: [], segundos: [], refrescos: [] }; }
+    } catch (error) { 
+      console.error("Error en getOpcionesParaAdmin:", error);
+      return { entradas: [], segundos: [], refrescos: [] }; 
+    }
   }
 }

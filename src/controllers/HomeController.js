@@ -261,24 +261,33 @@ export class HomeController {
     this.navigateTo("#/admin/users");
     const users = await this.userRepository.getAllUsers();
     
-    this.homeView.hide(); // Ocultar el Home
-    const adminLayer = document.getElementById("admin-layer");
+    this.homeView.hide(); 
+    const adminLayer = this._getCleanAdminLayer();
     const manageView = new ManageUsersView(adminLayer);
     
     manageView.render(users, {
       onBack: () => this.navigateTo("#/"),
-      onUpdateRole: async (email, role) => {
-        if (await this.userRepository.updateUserRole(email, role)) {
-          toast.success("Rol actualizado");
+      onSave: async (userData, oldEmail) => {
+        const { email, nombre, role } = userData;
+        
+        // Si hay oldEmail y es diferente al nuevo, borrar el viejo primero
+        if (oldEmail && oldEmail !== email) {
+            await this.userRepository.deleteUser(oldEmail);
+        }
+
+        if (await this.userRepository.saveUser(email, { nombre, role })) {
+          toast.success(oldEmail ? "Usuario actualizado" : "Usuario creado");
           const updatedUsers = await this.userRepository.getAllUsers();
-          manageView.renderListOnly(updatedUsers, manageView.acciones.onUpdateRole, manageView.acciones.onDelete);
+          manageView.render(updatedUsers, manageView.acciones);
+        } else {
+          toast.error("Error al procesar el usuario");
         }
       },
       onDelete: async (email) => {
         if (await this.userRepository.deleteUser(email)) {
           toast.success("Usuario eliminado");
           const updatedUsers = await this.userRepository.getAllUsers();
-          manageView.renderListOnly(updatedUsers, manageView.acciones.onUpdateRole, manageView.acciones.onDelete);
+          manageView.render(updatedUsers, manageView.acciones);
         }
       }
     });
@@ -309,7 +318,10 @@ export class HomeController {
     }
 
     // --- RUTA DE ADMINISTRACIÓN ---
-    this.homeView.hide(); // Ocultar restaurante y mostrar capa admin
+    this.homeView.hide(); // Ocultar restaurante
+
+    // HARD RESET: Reemplazar el contenedor por uno nuevo para eliminar marcas corruptas de Lit-html
+    const adminLayer = this._getCleanAdminLayer();
 
     if (hash === '#/admin/menu-diario') {
       const state = appStore.getState();
@@ -334,6 +346,17 @@ export class HomeController {
     
     // Una vez abierta la vista de admin, quitar el preloader si estaba activo
     this.homeView.dismissPreloader();
+  }
+
+  // Helper para limpiar el rastro de errores del DOM (Solución definitiva al error de ChildPart)
+  _getCleanAdminLayer() {
+      const oldLayer = document.getElementById("admin-layer");
+      if (!oldLayer) return null;
+      
+      const newLayer = oldLayer.cloneNode(false); // Clonar sin hijos
+      newLayer.classList.remove("hidden"); // Asegurar que sea visible
+      oldLayer.parentNode.replaceChild(newLayer, oldLayer);
+      return newLayer;
   }
 
   async renderMenu() {

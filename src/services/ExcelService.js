@@ -3,16 +3,23 @@ import XLSX from "xlsx-js-style";
 export class ExcelService {
     constructor(restaurantInfo) {
         this.info = restaurantInfo;
+        this.primaryColor = "1b5e34"; // Esmeralda Rocoto
+        this.headerBg = { fill: { fgColor: { rgb: "1b5e34" } }, font: { color: { rgb: "FFFFFF" }, bold: true }, alignment: { horizontal: "center", vertical: "center" } };
+        this.borderStyle = {
+            top: { style: "thin", color: { rgb: "000000" } },
+            bottom: { style: "thin", color: { rgb: "000000" } },
+            left: { style: "thin", color: { rgb: "000000" } },
+            right: { style: "thin", color: { rgb: "000000" } }
+        };
     }
 
     /**
-     * Reporte Individual (Listado cronológico)
+     * Reporte Individual (Ficha Personal)
      */
     async generarReporteAsistencia(worker, attendanceList) {
-        
         const reportData = attendanceList.map(reg => ({
             'FECHA': reg.fecha,
-            'HORA': reg.timestamp?.seconds ? new Date(reg.timestamp.seconds * 1000).toLocaleTimeString() : '---',
+            'HORA': reg.timestamp?.seconds ? new Date(reg.timestamp.seconds * 1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '---',
             'TIPO': reg.tipo.toUpperCase(),
             'EMPRESA': reg.empresa || 'PARTICULAR'
         }));
@@ -27,19 +34,29 @@ export class ExcelService {
 
         const ws = XLSX.utils.aoa_to_sheet(header);
         XLSX.utils.sheet_add_json(ws, reportData, { origin: "A6" });
+
+        // Estilos
+        for (let r = 0; r <= 3; r++) {
+            const cell = XLSX.utils.encode_cell({ r, c: 0 });
+            if (ws[cell]) ws[cell].s = { font: { bold: true, color: { rgb: r === 0 ? this.primaryColor : "000000" }, size: r === 0 ? 14 : 10 } };
+        }
+
+        for (let c = 0; c <= 3; c++) {
+            const cell = XLSX.utils.encode_cell({ r: 5, c });
+            if (ws[cell]) ws[cell].s = { ...this.headerBg, border: this.borderStyle };
+        }
+
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Asistencia");
         XLSX.writeFile(wb, `Asistencia_${worker.dni}.xlsx`);
     }
 
     /**
-     * Reporte Grupal MATRICIAL AVANZADO (Cuadro de Control de Alimentación)
+     * Reporte Grupal MATRICIAL (Cuadro de Control de Alimentación)
      */
     async generarReporteAsistenciaGrupal(companyName, startDate, endDate, attendanceList, allWorkers, prices = {d:12, a:12, c:12}) {
-        
         const workbook = XLSX.utils.book_new();
         
-        // 1. Calcular los días del rango solicitado
         const dates = [];
         let curr = new Date(startDate + "T12:00:00");
         let last = new Date(endDate + "T12:00:00");
@@ -48,282 +65,178 @@ export class ExcelService {
             curr.setDate(curr.getDate() + 1);
         }
 
-        const totalDays = dates.length;
-        const matrixColsCount = totalDays * 3; // 3 raciones por día
-        const totalsColsStart = 3 + matrixColsCount; // ITEM, DNI, NOMBRES + MALLA
+        const totalsColsStart = 3 + (dates.length * 3);
+        const totalCols = totalsColsStart + 4;
 
-        // 2. Definir los Encabezados
+        // 1. Cabeceras Principales
         const headers = [
             [this.info.name.toUpperCase()],
             ["CUADRO DE CONTROL DE ALIMENTACIÓN - SERVICIO DE PENSIÓN"],
             [`EMPRESA: ${companyName || 'TODAS LAS EMPRESAS'}`],
             [`PERIODO: ${startDate} al ${endDate}`],
             [],
-            ["ITEM", "DNI", "APELLIDOS Y NOMBRES"], // Fila 5: Etiquetas principales + Nombres de días
-            ["", "", ""] // Fila 6: Números de día
+            ["ITEM", "DNI", "APELLIDOS Y NOMBRES"], // Fila 5
+            ["", "", ""] // Fila 6
         ];
 
-        // Fila 5 (Nombres de día) y Fila 6 (Números de día)
+        // 2. Cabeceras de Días
         dates.forEach(date => {
             const d = new Date(date + "T12:00:00");
             const dayName = d.toLocaleDateString('es-ES', { weekday: 'long' }).toUpperCase();
-            const dayNum = date.split('-')[2];
-            
             headers[5].push(dayName, "", ""); 
-            headers[6].push(dayNum, "", ""); 
+            headers[6].push(date.split('-')[2], "", ""); 
         });
 
-        // Agregados finales para Fila 5 y 6 (Sección TOTAL)
+        // "TOTAL" en cabecera (Se combinará luego)
         headers[5].push("TOTAL", "", "", ""); 
         headers[6].push("", "", "", ""); 
 
-        // Fila 7: Sub-cabeceras (D, A, C)
+        // Fila 7: Sub-cabeceras
         const subHeaders = ["", "", ""]; 
-        dates.forEach(() => {
-            subHeaders.push("DESAYUNO", "ALMUERZO", "CENA");
-        });
+        dates.forEach(() => subHeaders.push("DESAYUNO", "ALMUERZO", "CENA"));
         subHeaders.push("DESAYUNO", "ALMUERZO", "CENA", "COSTO TOTAL"); 
         headers.push(subHeaders);
 
-        // 3. Procesar las Filas y Acumuladores
-        let grandTotalD = 0;
-        let grandTotalA = 0;
-        let grandTotalC = 0;
-
+        // 3. Procesar Filas de Datos
+        let grandTotalD = 0, grandTotalA = 0, grandTotalC = 0;
         const rows = allWorkers.map((worker, index) => {
-            const row = [
-                index + 1,
-                worker.dni,
-                `${worker.apellidos.toUpperCase()}, ${worker.nombre.toUpperCase()}`
-            ];
-
-            let workerTotalD = 0;
-            let workerTotalA = 0;
-            let workerTotalC = 0;
-
+            const row = [index + 1, worker.dni, `${worker.apellidos.toUpperCase()}, ${worker.nombre.toUpperCase()}`];
+            let wD = 0, wA = 0, wC = 0;
             dates.forEach((date) => {
-                const dayRecords = attendanceList.filter(a => 
-                    String(a.dni).trim() === String(worker.dni).trim() && a.fecha === date
-                );
-
+                const dayRecords = attendanceList.filter(a => String(a.dni).trim() === String(worker.dni).trim() && a.fecha === date);
                 const hasD = dayRecords.some(r => r.tipo.toLowerCase().includes('desayuno') && !r.soloCampo) ? 1 : "";
                 const hasA = dayRecords.some(r => r.tipo.toLowerCase().includes('almuerzo') && !r.soloCampo) ? 1 : "";
                 const hasC = dayRecords.some(r => r.tipo.toLowerCase().includes('cena') && !r.soloCampo) ? 1 : "";
-
                 row.push(hasD, hasA, hasC);
-
-                if (hasD) workerTotalD++;
-                if (hasA) workerTotalA++;
-                if (hasC) workerTotalC++;
+                if (hasD) wD++; if (hasA) wA++; if (hasC) wC++;
             });
-
-            const workerCost = (workerTotalD * prices.d) + (workerTotalA * prices.a) + (workerTotalC * prices.c);
-            row.push(workerTotalD, workerTotalA, workerTotalC, workerCost);
-
-            grandTotalD += workerTotalD;
-            grandTotalA += workerTotalA;
-            grandTotalC += workerTotalC;
-
+            const workerCost = (wD * prices.d) + (wA * prices.a) + (wC * prices.c);
+            row.push(wD, wA, wC, workerCost);
+            grandTotalD += wD; grandTotalA += wA; grandTotalC += wC;
             return row;
         });
 
-        // 3.1 Fila Especial: TOTAL RACIONES A CAMPO (Suma de raciones grupales por día)
-        const fieldRationsRow = [
-            allWorkers.length + 1,
-            "", // DNI vacío
-            "TOTAL RACIONES A CAMPO (GRUPALES)"
-        ];
-
-        let fieldGrandTotalD = 0;
-        let fieldGrandTotalA = 0;
-        let fieldGrandTotalC = 0;
-
+        // Fila de Campo
+        const fieldRow = [allWorkers.length + 1, "-", "TOTAL RACIONES A CAMPO (GRUPALES)"];
+        let fD = 0, fA = 0, fC = 0;
         dates.forEach(date => {
             const dayFieldRecords = attendanceList.filter(a => a.fecha === date && (a.cantidadCampo || 0) > 0);
             const sumD = dayFieldRecords.filter(r => r.tipo.toLowerCase().includes('desayuno')).reduce((acc, r) => acc + (r.cantidadCampo || 0), 0);
             const sumA = dayFieldRecords.filter(r => r.tipo.toLowerCase().includes('almuerzo')).reduce((acc, r) => acc + (r.cantidadCampo || 0), 0);
             const sumC = dayFieldRecords.filter(r => r.tipo.toLowerCase().includes('cena')).reduce((acc, r) => acc + (r.cantidadCampo || 0), 0);
-
-            fieldRationsRow.push(sumD || "", sumA || "", sumC || "");
-            fieldGrandTotalD += sumD;
-            fieldGrandTotalA += sumA;
-            fieldGrandTotalC += sumC;
+            fieldRow.push(sumD || "", sumA || "", sumC || "");
+            fD += sumD; fA += sumA; fC += sumC;
         });
+        fieldRow.push(fD, fA, fC, (fD * prices.d) + (fA * prices.a) + (fC * prices.c));
+        rows.push(fieldRow);
 
-        const fieldTotalCost = (fieldGrandTotalD * prices.d) + (fieldGrandTotalA * prices.a) + (fieldGrandTotalC * prices.c);
-        fieldRationsRow.push(fieldGrandTotalD, fieldGrandTotalA, fieldGrandTotalC, fieldTotalCost);
-
-        // Añadir la fila de campo al final de la lista de trabajadores
-        rows.push(fieldRationsRow);
-
-        // Actualizar los Grandes Totales para el Footer
-        grandTotalD += fieldGrandTotalD;
-        grandTotalA += fieldGrandTotalA;
-        grandTotalC += fieldGrandTotalC;
-
-        // 4. Pie de Página de Costos (Footer)
-        const grandTotalCost = (grandTotalD * prices.d) + (grandTotalA * prices.a) + (grandTotalC * prices.c);
+        grandTotalD += fD; grandTotalA += fA; grandTotalC += fC;
+        
+        // 4. Footer de Liquidación (Alineado y Combinado 6 celdas)
         const footerStartRow = headers.length + rows.length;
+        const labelCol = totalsColsStart - 6;
         
         const footerRows = [
             [], // Espacio
-            new Array(totalsColsStart).fill(""), 
-            new Array(totalsColsStart).fill(""), 
-            new Array(totalsColsStart).fill("")  
+            new Array(labelCol).concat(["SUMA TOTAL CANTIDAD", "", "", "", "", "", grandTotalD, grandTotalA, grandTotalC, grandTotalD+grandTotalA+grandTotalC]),
+            new Array(labelCol).concat(["PRECIO UNITARIO", "", "", "", "", "", prices.d, prices.a, prices.c, ""]),
+            new Array(labelCol).concat(["COSTO TOTAL CATEGORÍA", "", "", "", "", "", grandTotalD * prices.d, grandTotalA * prices.a, grandTotalC * prices.c, (grandTotalD * prices.d) + (grandTotalA * prices.a) + (grandTotalC * prices.c)])
         ];
 
-        const labelStartCol = totalsColsStart - 6;
-        footerRows[1][labelStartCol] = "SUMA TOTAL CANTIDAD";
-        footerRows[2][labelStartCol] = "PRECIO UNITARIO";
-        footerRows[3][labelStartCol] = "COSTO TOTAL CATEGORÍA";
+        const ws = XLSX.utils.aoa_to_sheet([...headers, ...rows, ...footerRows]);
 
-        footerRows[1].push(grandTotalD, grandTotalA, grandTotalC, grandTotalD + grandTotalA + grandTotalC);
-        footerRows[2].push(prices.d, prices.a, prices.c, ""); 
-        footerRows[3].push(grandTotalD * prices.d, grandTotalA * prices.a, grandTotalC * prices.c, grandTotalCost);
+        // --- APLICACIÓN DE ESTILOS Y MERGES ---
 
-        // 5. Crear Hoja y Aplicar Estilos
-        const ws = XLSX.utils.aoa_to_sheet([
-            ...headers, 
-            ...rows, 
-            ...footerRows
-        ]);
-
-        // Anchos de columna
-        const colWidths = [{ wch: 5 }, { wch: 12 }, { wch: 60 }]; 
-        dates.forEach(() => {
-            colWidths.push({ wch: 3.5 }, { wch: 3.5 }, { wch: 3.5 }); 
-        });
-        colWidths.push({ wch: 3.5 }, { wch: 3.5 }, { wch: 3.5 }, { wch: 12 });
-        ws['!cols'] = colWidths;
-
-        // Combinación de Celdas
-        const totalCols = totalsColsStart + 4;
-        const merges = [
-            { s: { r: 0, c: 0 }, e: { r: 0, c: totalCols - 1 } }, 
-            { s: { r: 1, c: 0 }, e: { r: 1, c: totalCols - 1 } }, 
-            { s: { r: 2, c: 0 }, e: { r: 2, c: totalCols - 1 } }, 
-            { s: { r: 3, c: 0 }, e: { r: 3, c: totalCols - 1 } }, 
-            { s: { r: 5, c: 0 }, e: { r: 7, c: 0 } }, // ITEM (Combinar Filas 5, 6, 7)
-            { s: { r: 5, c: 1 }, e: { r: 7, c: 1 } }, // DNI
-            { s: { r: 5, c: 2 }, e: { r: 7, c: 2 } }  // NOMBRES
-        ];
-
-        // Merge para el footer de costos
-        for (let i = 1; i <= 3; i++) {
-            merges.push({
-                s: { r: footerStartRow + i, c: labelStartCol },
-                e: { r: footerStartRow + i, c: totalsColsStart - 1 }
-            });
-        }
-
-        // Merges para días
-        dates.forEach((_, i) => {
-            const startCol = 3 + (i * 3);
-            merges.push({ s: { r: 5, c: startCol }, e: { r: 5, c: startCol + 2 } }); // Nombre Día
-            merges.push({ s: { r: 6, c: startCol }, e: { r: 6, c: startCol + 2 } }); // Número Día
-        });
-
-        // Combinar cabecera "TOTAL" sobre las 4 columnas finales (Filas 5 y 6)
-        merges.push({ s: { r: 5, c: totalsColsStart }, e: { r: 6, c: totalsColsStart + 3 } });
-
-        ws['!merges'] = merges;
-
-        // --- APLICACIÓN DE ESTILOS ---
-        const borderStyle = {
-            top: { style: "thin", color: { rgb: "000000" } },
-            bottom: { style: "thin", color: { rgb: "000000" } },
-            left: { style: "thin", color: { rgb: "000000" } },
-            right: { style: "thin", color: { rgb: "000000" } }
-        };
-
-        const headerBgColor = { rgb: "003b1b" }; // Verde oscuro restaurante
-        const subHeaderBgColor = { rgb: "F2F2F2" }; // Gris muy claro
-        const whiteText = { color: { rgb: "FFFFFF" }, bold: true };
-
-        // 1. Estilos para Títulos principales
+        // 1. Estilos Títulos de Cabecera
         for (let r = 0; r <= 3; r++) {
-            const cellRef = XLSX.utils.encode_cell({ r, c: 0 });
-            if (!ws[cellRef]) ws[cellRef] = { v: "" };
-            ws[cellRef].s = {
-                font: { bold: true, size: r === 0 ? 16 : 12 },
+            const cell = XLSX.utils.encode_cell({ r, c: 0 });
+            ws[cell].s = {
+                font: { bold: true, size: r === 0 ? 18 : 11, color: { rgb: r === 0 ? this.primaryColor : "000000" } },
                 alignment: { horizontal: "center" }
             };
         }
 
-        // 2. Estilos para Cabeceras (Fila 5 y 6)
+        // 2. Cabeceras de Tabla (Verde)
         for (let r = 5; r <= 6; r++) {
             for (let c = 0; c < totalCols; c++) {
-                const cellRef = XLSX.utils.encode_cell({ r, c });
-                if (!ws[cellRef]) continue;
-                ws[cellRef].s = {
-                    fill: { fgColor: headerBgColor },
-                    font: whiteText,
-                    alignment: { 
-                        horizontal: "center", 
-                        vertical: "center"
-                    },
-                    border: borderStyle
-                };
-                if (c === 0) ws[cellRef].s.alignment.textRotation = 90;
+                const ref = XLSX.utils.encode_cell({ r, c });
+                if (ws[ref]) ws[ref].s = { ...this.headerBg, border: this.borderStyle };
             }
         }
 
-        // 3. Estilos para Sub-cabeceras (Fila 7)
+        // Sub-cabeceras (D/A/C)
         for (let c = 0; c < totalCols; c++) {
-            const cellRef = XLSX.utils.encode_cell({ r: 7, c });
-            if (!ws[cellRef]) ws[cellRef] = { v: "" };
-            ws[cellRef].s = {
-                fill: { fgColor: subHeaderBgColor },
-                font: { bold: true, size: 9 },
-                alignment: { 
-                    horizontal: "center", 
-                    vertical: (c >= 3) ? "bottom" : "center",
-                    textRotation: (c >= 3 && c < totalCols - 1) ? 90 : 0
-                },
-                border: borderStyle
+            const ref = XLSX.utils.encode_cell({ r: 7, c });
+            if (ws[ref]) ws[ref].s = { 
+                fill: { fgColor: { rgb: "f8fafc" } }, 
+                font: { bold: true, size: 8 }, 
+                border: this.borderStyle, 
+                alignment: { horizontal: "center", vertical: "center", textRotation: c >= 3 ? 90 : 0 } 
             };
-            if (c === totalCols - 1) {
-                ws[cellRef].s.alignment.vertical = "center";
-            }
         }
 
-        // 4. Estilos para el Cuerpo de Datos
-        const lastDataRow = 7 + rows.length;
-        for (let r = 8; r <= lastDataRow; r++) {
+        // 3. Cuerpo (Bordes y Zebra)
+        rows.forEach((row, i) => {
+            const rowIdx = 8 + i;
             for (let c = 0; c < totalCols; c++) {
-                const cellRef = XLSX.utils.encode_cell({ r, c });
-                if (!ws[cellRef]) ws[cellRef] = { v: "" };
-                ws[cellRef].s = {
-                    border: borderStyle,
-                    alignment: { 
-                        horizontal: c === 2 ? "left" : "center",
-                        vertical: "center"
-                    }
+                const ref = XLSX.utils.encode_cell({ r: rowIdx, c });
+                if (ws[ref]) ws[ref].s = { 
+                    border: this.borderStyle, 
+                    fill: { fgColor: { rgb: i === rows.length - 1 ? "fffbeb" : (i % 2 === 0 ? "FFFFFF" : "f9fafb") } }, 
+                    alignment: { horizontal: c === 2 ? "left" : "center", vertical: "center" } 
                 };
-                if (c === totalCols - 1) { 
-                    ws[cellRef].s.font = { bold: true };
-                }
+            }
+        });
+
+        // 4. Footer (Combinar 6 celdas y Alinear Derecha)
+        for (let r = 1; r <= 3; r++) {
+            const rowIdx = footerStartRow + r;
+            // Estilo etiqueta (Combinada de 6)
+            const labelRef = XLSX.utils.encode_cell({ r: rowIdx, c: labelCol });
+            ws[labelRef].s = { 
+                font: { bold: true, size: 9 }, 
+                alignment: { horizontal: "right", vertical: "center" }, 
+                fill: { fgColor: { rgb: "f8fafc" } },
+                border: this.borderStyle 
+            };
+            
+            // Estilo valores footer
+            for (let c = totalsColsStart; c < totalCols; c++) {
+                const valRef = XLSX.utils.encode_cell({ r: rowIdx, c });
+                if (ws[valRef]) ws[valRef].s = { 
+                    font: { bold: true, color: { rgb: (r === 3 && c === totalCols - 1) ? "FFFFFF" : "000000" } },
+                    fill: { fgColor: { rgb: (r === 3 && c === totalCols - 1) ? this.primaryColor : "f0fdf4" } },
+                    alignment: { horizontal: "center" },
+                    border: this.borderStyle 
+                };
             }
         }
 
-        // 5. Estilos para el Footer
+        // 5. Configuración de Columnas y Combinaciones
+        ws['!cols'] = [{ wch: 5 }, { wch: 12 }, { wch: 45 }];
+        for (let i = 3; i < totalCols; i++) ws['!cols'].push({ wch: 4 });
+
+        ws['!merges'] = [
+            { s: { r: 0, c: 0 }, e: { r: 0, c: totalCols - 1 } }, // Título 1
+            { s: { r: 1, c: 0 }, e: { r: 1, c: totalCols - 1 } }, // Título 2
+            { s: { r: 2, c: 0 }, e: { r: 2, c: totalCols - 1 } }, // Título 3
+            { s: { r: 3, c: 0 }, e: { r: 3, c: totalCols - 1 } }, // Título 4
+            { s: { r: 5, c: 0 }, e: { r: 7, c: 0 } }, // ITEM
+            { s: { r: 5, c: 1 }, e: { r: 7, c: 1 } }, // DNI
+            { s: { r: 5, c: 2 }, e: { r: 7, c: 2 } }, // NOMBRES
+            { s: { r: 5, c: totalsColsStart }, e: { r: 6, c: totalCols - 1 } } // EL "TOTAL" CENTRADO EN CABECERA
+        ];
+
+        // Merges de Días
+        dates.forEach((_, i) => {
+            const startCol = 3 + (i * 3);
+            ws['!merges'].push({ s: { r: 5, c: startCol }, e: { r: 5, c: startCol + 2 } });
+            ws['!merges'].push({ s: { r: 6, c: startCol }, e: { r: 6, c: startCol + 2 } });
+        });
+
+        // Merges de Footer (Combinar 6 celdas para cada etiqueta)
         for (let r = 1; r <= 3; r++) {
-            const currentRow = footerStartRow + r;
-            for (let c = labelStartCol; c < totalCols; c++) {
-                const cellRef = XLSX.utils.encode_cell({ r: currentRow, c });
-                if (!ws[cellRef]) ws[cellRef] = { v: "" };
-                ws[cellRef].s = {
-                    border: borderStyle,
-                    font: { bold: true },
-                    alignment: { 
-                        horizontal: c < totalsColsStart ? "right" : "center",
-                        vertical: "center"
-                    }
-                };
-                if (c >= totalsColsStart) {
-                    ws[cellRef].s.fill = { fgColor: subHeaderBgColor };
-                }
-            }
+            ws['!merges'].push({ s: { r: footerStartRow + r, c: labelCol }, e: { r: footerStartRow + r, c: totalsColsStart - 1 } });
         }
 
         XLSX.utils.book_append_sheet(workbook, ws, "Cuadro_Pension");
