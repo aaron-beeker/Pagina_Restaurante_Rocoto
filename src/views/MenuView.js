@@ -92,29 +92,29 @@ export class MenuView {
 
   _renderDetailHeader(categoryName, count) {
     return html`
-        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-10 sm:mb-16 pb-6 border-b border-stone-100">
-            <div class="space-y-2">
-                <button id="btn-back-to-categories" class="flex items-center gap-2 text-primary hover:text-primary/70 font-bold text-[9px] uppercase tracking-[0.4em] transition-all group mb-4">
-                    <svg class="h-3 w-3 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="3" d="M15 19l-7-7 7-7"></path></svg>
-                    Volver a Categorías
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-8 mb-16 sm:mb-20 pb-8 border-b border-stone-100">
+            <div class="space-y-6">
+                <button id="btn-back-to-categories" class="flex items-center gap-3 text-primary hover:text-stone-900 font-bold text-[10px] uppercase tracking-[0.5em] transition-all group">
+                    <svg class="h-4 w-4 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="3" d="M15 19l-7-7 7-7"></path></svg>
+                    Volver
                 </button>
-                <div class="flex items-center gap-4">
-                    <div class="h-10 w-1 bg-amber-400 rounded-full"></div>
-                    <h2 class="${typography.h2} !text-4xl sm:!text-6xl uppercase italic leading-none">
+                <div class="flex flex-col gap-2">
+                    <span class="text-[9px] uppercase tracking-[0.4em] text-stone-400 font-bold">Explorando</span>
+                    <h2 class="text-4xl sm:text-6xl font-display italic text-stone-950 leading-none lowercase first-letter:uppercase">
                         ${categoryName}
                     </h2>
                 </div>
             </div>
             <div class="text-right hidden sm:block">
-                <span class="${layout.label} !mb-1 opacity-30">Especialidades</span>
-                <span class="${typography.h3} text-primary leading-none">${count} Platos</span>
+                <span class="block text-[8px] uppercase tracking-[0.5em] text-stone-300 font-bold mb-1">Disponibles</span>
+                <span class="text-2xl font-display italic text-primary leading-none">${count} Especialidades</span>
             </div>
         </div>`;
   }
 
   _renderDetailGrid(items) {
     return html`
-        <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-4 gap-y-10 sm:gap-x-8 sm:gap-y-16">
+        <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-12 sm:gap-x-10 sm:gap-y-20">
             ${items.map((item, index) => this._renderMenuItem(item, index))}
         </div>`;
   }
@@ -122,49 +122,57 @@ export class MenuView {
   _renderMenuItem(item, index) {
     return html`
         <div class="group flex flex-col h-full animate-scale-in" style="animation-delay: ${index * 50}ms">
-            <div class="relative aspect-[16/11] rounded-[2rem] overflow-hidden mb-4 bg-stone-100 shadow-sm transition-all duration-700 group-hover:shadow-xl group-hover:-translate-y-1 border border-stone-50">
+            <!-- Imagen con ratio mantenido y badge refinado -->
+            <div class="relative aspect-[16/11] rounded-[2.5rem] overflow-hidden mb-6 bg-stone-100 shadow-sm transition-all duration-700 group-hover:shadow-2xl group-hover:-translate-y-2 border border-stone-50">
                 <img src="${item.imageUrl || CAT_IMG_FALLBACK}" 
-                     class="h-full w-full object-cover transition-transform duration-[2000ms] group-hover:scale-110" 
+                     class="h-full w-full object-cover transition-transform duration-[3s] group-hover:scale-110" 
                      loading="lazy" />
-                <div class="absolute bottom-3 right-3 bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-xl shadow-lg border border-white/50">
-                   <span class="${typography.h3} !text-xs sm:!text-lg text-primary italic leading-none whitespace-nowrap">S/ ${Number(item.price).toFixed(2)}</span>
+                
+                <!-- Badge de precio minimalista -->
+                <div class="absolute bottom-4 right-4 bg-white/95 backdrop-blur-xl px-4 py-2 rounded-2xl shadow-xl border border-white/50">
+                   <span class="text-sm sm:text-base font-display italic text-primary font-black">S/ ${Number(item.price).toFixed(2)}</span>
                 </div>
             </div>
-            <div class="px-1 flex flex-col flex-1">
-                <h3 class="${typography.h3} !text-xs sm:!text-lg text-on-background group-hover:text-primary transition-colors leading-tight mb-2 line-clamp-2 uppercase">${item.name}</h3>
-                <p class="${typography.bodySm} italic line-clamp-2">
-                    ${item.description || "Receta tradicional de la casa."}
+
+            <!-- Textos con estilo editorial -->
+            <div class="px-2 flex flex-col flex-1 space-y-2">
+                <h3 class="text-sm sm:text-lg font-display italic text-stone-900 group-hover:text-primary transition-colors leading-tight uppercase tracking-tight">${item.name}</h3>
+                <p class="text-[10px] sm:text-xs text-stone-400 font-light italic line-clamp-2 leading-relaxed">
+                    ${item.description || "Receta artesanal preparada con insumos seleccionados de nuestra selva."}
                 </p>
+                <div class="h-[1px] w-8 bg-primary/10 group-hover:w-full transition-all duration-700"></div>
             </div>
         </div>`;
   }
 
   _renderEmptyState() {
     return html`
-        <div class="py-20 text-center">
-            <p class="${layout.label} opacity-30">Próximamente más delicias</p>
+        <div class="py-32 text-center space-y-4">
+            <div class="h-12 w-[1px] bg-stone-100 mx-auto"></div>
+            <p class="text-[10px] uppercase tracking-[0.6em] text-stone-300 font-bold italic">Próximamente nuevas delicias</p>
         </div>`;
   }
 
   renderCategoryItem(cat, sizeClass) {
     return html`
-        <button type="button" class="group flex flex-col items-center gap-4 transition-all active:scale-95 bg-transparent w-full" data-category="${cat.nombre}">
-            <div class="relative ${sizeClass} max-w-[220px] aspect-square flex items-center justify-center transition-all duration-700">
-                <div class="absolute inset-0 bg-stone-50 rounded-full group-hover:bg-primary/10 group-hover:scale-105 transition-all duration-700 shadow-inner"></div>
+        <button type="button" class="group flex flex-col items-center gap-6 transition-all active:scale-95 bg-transparent w-full" data-category="${cat.nombre}">
+            <!-- Forma circular mantenida con efecto premium -->
+            <div class="relative ${sizeClass} max-w-[200px] aspect-square flex items-center justify-center transition-all duration-1000">
+                <div class="absolute inset-0 bg-stone-50 rounded-full group-hover:bg-primary/[0.03] group-hover:scale-110 transition-all duration-1000 shadow-inner"></div>
+                
                 <img src="${cat.imageUrl || CAT_IMG_FALLBACK}" 
-                     class="relative z-10 w-[82%] h-[82%] object-contain drop-shadow-[0_15px_35px_rgba(0,0,0,0.15)] group-hover:drop-shadow-[0_25px_45px_rgba(27,94,52,0.25)] group-hover:-translate-y-3 group-hover:scale-105 transition-all duration-700" 
+                     class="relative z-10 w-[78%] h-[82%] object-contain drop-shadow-[0_15px_30px_rgba(0,0,0,0.1)] group-hover:drop-shadow-[0_25px_45px_rgba(27,94,52,0.2)] group-hover:-translate-y-4 group-hover:scale-105 transition-all duration-700" 
                      @error=${(e) => { e.target.src = CAT_IMG_FALLBACK; e.target.classList.remove('object-contain'); e.target.classList.add('object-cover'); }} />
-                <div class="absolute inset-0 border border-dashed border-primary/15 rounded-full -m-2 animate-[spin_40s_linear_infinite] opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                
+                <!-- Anillo punteado mantenido -->
+                <div class="absolute inset-0 border border-dashed border-stone-200 rounded-full -m-2 animate-[spin_60s_linear_infinite] opacity-40 group-hover:opacity-100 group-hover:border-primary/30 transition-all"></div>
             </div>
+            
             <div class="flex flex-col items-center space-y-2">
-                <span class="${typography.h3} text-on-background group-hover:text-primary transition-colors text-center !text-sm sm:!text-base uppercase !tracking-widest leading-none">
+                <span class="text-stone-900 group-hover:text-primary transition-colors text-center text-xs sm:text-sm font-bold uppercase tracking-[0.4em] leading-none select-none">
                     ${cat.nombre}
                 </span>
-                <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-1 group-hover:translate-y-0">
-                    <div class="h-0.5 w-0.5 rounded-full bg-amber-500"></div>
-                    <div class="h-0.5 w-6 rounded-full bg-amber-500"></div>
-                    <div class="h-0.5 w-0.5 rounded-full bg-amber-500"></div>
-                </div>
+                <div class="h-[1px] w-4 bg-stone-200 group-hover:w-12 group-hover:bg-primary/30 transition-all duration-700"></div>
             </div>
         </button>`;
   }

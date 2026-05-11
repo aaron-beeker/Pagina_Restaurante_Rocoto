@@ -6,6 +6,8 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 
+import logoSolo from "../assets/img/logo_small_restaurante_rocoto.png";
+
 const LOGO_HORIZONTAL = "https://res.cloudinary.com/dhcgrkrdc/image/upload/v1777604357/Logo_Rest_Rocoto_Horizontal_bgslwf.png";
 
 export class HomeView {
@@ -14,7 +16,12 @@ export class HomeView {
         this.swiper = null;
         this.companiesSwiper = null;
         this.elements = {}; 
-        this._initialScrollDone = false;
+        this._isFirstLoad = true;
+
+        // Evitar que el navegador restaure la posición del scroll al recargar
+        if ('scrollRestoration' in history) {
+            history.scrollRestoration = 'manual';
+        }
     }
 
     /**
@@ -39,7 +46,7 @@ export class HomeView {
     }
 
     /**
-     * Renderiza la estructura base del Home (Shell estático).
+     * Renderiza la estructura base del Home (Marco Global).
      */
     renderStaticShell(restaurantInfo) {
       if (document.getElementById("nav-container")) {
@@ -49,37 +56,57 @@ export class HomeView {
       }
 
       const template = html`
-        <!-- Preloader Full Screen -->
-        <div id="main-preloader" class="fixed inset-0 z-[1000] bg-stone-950 flex flex-col items-center justify-center overflow-hidden transition-opacity duration-700">
-            <div class="absolute inset-0 bg-gradient-to-tr from-primary/10 to-transparent opacity-50"></div>
-            <div class="relative z-10 flex flex-col items-center gap-8">
-                <div class="h-24 w-24 rounded-full border-2 border-primary/30 flex items-center justify-center animate-pulse shadow-[0_0_60px_rgba(27,94,52,0.3)]">
-                    <span class="text-5xl font-black text-primary italic font-display">R</span>
+        <!-- Preloader Essence Ultra-Minimalista -->
+        <div id="main-preloader" class="fixed inset-0 z-[1000] bg-black flex flex-col items-center justify-center transition-opacity duration-1000">
+            <div class="relative flex flex-col items-center gap-6 animate-pulse" style="animation-duration: 3s">
+                <div class="relative h-16 w-16 sm:h-20 sm:w-20 flex items-center justify-center">
+                    <img src="${logoSolo}" class="h-full w-full object-contain opacity-80 select-none" alt="Rocoto" />
+                    <div class="absolute inset-0 -m-2 border-t border-primary/10 rounded-full animate-[spin_6s_linear_infinite]"></div>
                 </div>
-                <div class="flex flex-col items-center text-center px-4">
-                    <span class="text-white/60 font-black uppercase tracking-[0.8em] text-xs sm:text-sm animate-pulse mb-3">Rocoto Experience</span>
-                    <div class="h-[1px] w-24 bg-gradient-to-r from-transparent via-primary/50 to-transparent"></div>
+                <div class="flex flex-col items-center">
+                    <span class="text-stone-700 font-medium uppercase tracking-[1.5em] text-[7px] sm:text-[8px] select-none translate-x-[0.75em]">Rocoto</span>
                 </div>
             </div>
-            <div class="absolute bottom-12 text-white/20 text-[9px] font-bold uppercase tracking-[0.5em] italic">San Ramón &bull; Chanchamayo</div>
         </div>
 
         <div id="nav-container"></div>
         <div id="mobile-nav-container"></div>
         <div id="user-menu-container"></div>
         
-        <main id="main-content" class="bg-[#fafafa] opacity-0 transition-opacity duration-1000">
+        <main id="main-content" class="bg-[#fafafa] opacity-0 transition-opacity duration-1000 overflow-x-hidden">
+          
+          <!-- SECCIÓN: HERO -->
           <div id="hero-container" class="bg-white"></div>
-          <div id="daily-menu-container" class="bg-white"></div>
+
+          <!-- SECCIÓN: MENÚ DEL DÍA -->
+          <div id="daily-menu-container" class="relative bg-stone-50/50">
+             <div class="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+                <div class="absolute -top-24 -right-24 w-96 h-96 bg-primary/5 blur-[120px] rounded-full animate-float"></div>
+             </div>
+          </div>
           
-          ${this._renderAboutUs(restaurantInfo)}
-          ${this._renderMenuSection()}
+          <!-- SECCIÓN: NOSOTROS -->
+          <div class="bg-white relative">
+            ${this._renderAboutUs(restaurantInfo)}
+          </div>
+
+          <!-- SECCIÓN: LA CARTA -->
+          <div class="bg-[#f8f8f8] relative border-y border-stone-100">
+            <div class="absolute top-1/2 left-0 w-80 h-80 bg-primary/5 blur-[100px] rounded-full -translate-x-1/2 animate-float" style="animation-delay: 2s"></div>
+            ${this._renderMenuSection()}
+          </div>
           
-          <div class="bg-stone-50 border-y border-stone-100">
+          <!-- SECCIÓN: PENSIÓN -->
+          <div class="bg-[#f4f7f5] relative">
             ${this._renderPension(restaurantInfo)}
           </div>
 
-          ${this._renderContact(restaurantInfo)}
+          <!-- SECCIÓN: CONTACTO -->
+          <div class="bg-white relative">
+             <div class="absolute bottom-0 left-1/2 w-full h-96 bg-stone-50 -translate-x-1/2 -z-0"></div>
+             ${this._renderContact(restaurantInfo)}
+          </div>
+
           <div id="global-footer-container">
             ${this._renderFooter(restaurantInfo)}
           </div>
@@ -95,7 +122,6 @@ export class HomeView {
         render(template, this.rootElement);
       }
       
-      this._handleInitialScroll();
       this._cacheElements();
       this.show();
     }
@@ -113,7 +139,7 @@ export class HomeView {
         };
     }
 
-    // --- Métodos de Actualización de UI (Puntos de entrada) ---
+    // --- Métodos de Actualización de UI ---
 
     updateCompaniesUI(companies) {
         if (!this.elements.companies) return;
@@ -143,32 +169,46 @@ export class HomeView {
 
     dismissPreloader() {
         if (this.elements.preloader && this.elements.mainContent) {
+            if (this.elements.preloader.style.display === "none") return;
+
             this.elements.preloader.classList.add("opacity-0");
             this.elements.mainContent.classList.remove("opacity-0");
             this.elements.mainContent.classList.add("opacity-100");
             
+            // FORZAR INICIO AL TOP (0,0) en carga o recarga
+            if (this._isFirstLoad) {
+                this._isFirstLoad = false;
+                window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+                
+                // Si hay un hash específico (ej: #contacto), navegar a él después de un pequeño retraso
+                const hash = window.location.hash;
+                if (hash && hash !== '#/' && hash !== '#') {
+                    setTimeout(() => {
+                        const el = document.getElementById(hash.substring(1));
+                        if (el) el.scrollIntoView({ behavior: 'smooth' });
+                    }, 100);
+                }
+            }
+
             setTimeout(() => {
-                this.elements.preloader.style.display = "none";
+                if (this.elements.preloader) this.elements.preloader.style.display = "none";
                 document.body.style.overflow = "auto";
             }, 700);
         }
     }
 
-    // --- Componentes Privados: Navegación ---
+    // --- Componentes Privados ---
 
     _renderNav(user) {
         const userColorClass = user ? "text-primary" : "text-stone-400";
         const userBgClass = user ? "bg-primary/5" : "bg-surface-container-low";
-        
         return html`
          <nav class="fixed top-0 z-50 w-full border-b border-surface-variant bg-surface/90 backdrop-blur-md shadow-sm font-sans">
            <div class="${layout.container} flex h-16 items-center justify-between">
               <a href="#/" class="flex shrink-0 items-center">
                  <img alt="Logo" class="h-10 w-auto" src="${LOGO_HORIZONTAL}" />
               </a>
-              <div class="hidden items-center gap-8 md:flex">
-                 ${this._renderNavLinks()}
-              </div>
+              <div class="hidden items-center gap-8 md:flex">${this._renderNavLinks()}</div>
               <div class="flex items-center gap-2 sm:gap-4">
                  <button id="user-menu-toggle" class="group flex items-center p-1 transition-transform active:scale-95">
                     <div class="flex h-10 w-10 items-center justify-center rounded-full ${userBgClass} border border-surface-variant transition-colors group-hover:border-primary/30">
@@ -191,9 +231,7 @@ export class HomeView {
             { href: "#pension", label: "Servicio Pensión" },
             { href: "#contacto", label: "Contacto" }
         ];
-        return links.map(l => html`
-            <a class="${button.base} ${button.ghost} ${l.primary ? '!text-primary hover:!bg-primary/5' : 'hover:!text-primary'}" href="${l.href}">${l.label}</a>
-        `);
+        return links.map(l => html`<a class="${button.base} ${button.ghost} ${l.primary ? '!text-primary hover:!bg-primary/5' : 'hover:!text-primary'}" href="${l.href}">${l.label}</a>`);
     }
 
     _renderMobileNav() {
@@ -207,9 +245,7 @@ export class HomeView {
                     <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
                   </button>
                 </div>
-                <div class="flex-1 flex flex-col gap-2 p-6 bg-white overflow-y-auto">
-                    ${this._renderMobileNavLinks()}
-                </div>
+                <div class="flex-1 flex flex-col gap-2 p-6 bg-white overflow-y-auto">${this._renderMobileNavLinks()}</div>
             </div>
           </div>`;
     }
@@ -236,14 +272,8 @@ export class HomeView {
             <div class="relative h-full w-80 sm:w-96 bg-[#fafafa] shadow-2xl flex flex-col z-[110] animate-slide-in-right border-l border-stone-100">
                 ${this._renderUserMenuHeader(user)}
                 <div class="flex-1 p-6 sm:p-8 flex flex-col gap-10 overflow-y-auto scrollbar-hide">
-                  ${!user ? html`
-                    <button id="login-btn-panel" class="${button.base} ${button.primary} w-full py-5 rounded-2xl font-sans uppercase tracking-widest text-[10px]">
-                      Entrar con Google
-                    </button>
-                  ` : ''}
-
+                  ${!user ? html`<button id="login-btn-panel" class="${button.base} ${button.primary} w-full py-5 rounded-2xl font-sans uppercase tracking-widest text-[10px]">Entrar con Google</button>` : ''}
                   ${user?.role === 'admin' ? this._renderAdminActions() : ''}
-
                   ${user ? html`
                     <div class="pt-10 border-t border-stone-100">
                       <button id="logout-btn" class="flex items-center gap-4 w-full p-5 rounded-2xl text-red-500 hover:bg-red-500 hover:text-white transition-all group active:scale-95 font-sans">
@@ -253,9 +283,6 @@ export class HomeView {
                         <span class="text-xs font-bold uppercase tracking-widest">Cerrar Sesión</span>
                       </button>
                     </div>` : ''}
-                </div>
-                <div class="p-8 border-t border-stone-100 bg-white text-center">
-                   <p class="text-[8px] font-black uppercase tracking-[0.5em] text-stone-200 italic font-sans">Rocoto Experience &copy; 2026</p>
                 </div>
             </div>
           </div>`;
@@ -282,15 +309,12 @@ export class HomeView {
     _renderAdminActions() {
         return html`
             <div class="space-y-6">
-                <!-- GESTIÓN GASTRONÓMICA -->
                 <div class="flex flex-col gap-2">
                 <h3 class="${layout.label} px-4 !mb-2 opacity-30">Gestión Restaurante</h3>
                 ${this._renderAdminBtn("admin-daily-menu-btn", "emerald", "M12 6v6m0 0v6m0-6h6m-6 0H6", "Menú del Día")}
                 ${this._renderAdminBtn("admin-manage-carta-btn", "emerald", "M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z", "Gestionar Carta")}
                 ${this._renderAdminBtn("admin-hero-promo-btn", "emerald", "M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z", "Banner Principal")}
                 </div>
-
-                <!-- SERVICIO PENSIÓN -->
                 <div class="flex flex-col gap-2">
                 <h3 class="${layout.label} px-4 !mb-2 opacity-30">Servicio Pensión</h3>
                 ${this._renderAdminBtn("admin-fasal-attendance-btn", "blue", "M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z", "Registrar Asistencia")}
@@ -298,8 +322,6 @@ export class HomeView {
                 ${this._renderAdminBtn("admin-fasal-workers-btn", "blue", "M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z", "Lista de Personal")}
                 ${this._renderAdminBtn("admin-fasal-companies-btn", "blue", "M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4", "Empresas Aliadas")}
                 </div>
-
-                <!-- SEGURIDAD -->
                 <div class="flex flex-col gap-2">
                 <h3 class="${layout.label} px-4 !mb-2 opacity-30">Seguridad</h3>
                 ${this._renderAdminBtn("admin-manage-users-btn", "purple", "M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z", "Control de Accesos")}
@@ -308,241 +330,129 @@ export class HomeView {
     }
 
     _renderAdminBtn(id, color, svgPath, label) {
-        const colors = {
-            emerald: "bg-emerald-50 text-emerald-700 border-emerald-100 hover:bg-emerald-600",
-            blue: "bg-blue-50 text-blue-700 border-blue-100 hover:bg-blue-600",
-            purple: "bg-purple-50 text-purple-700 border-purple-100 hover:bg-purple-600"
-        };
-        return html`
-            <button id="${id}" class="flex items-center gap-3 w-full p-4 rounded-2xl ${colors[color]} border hover:text-white transition-all duration-300 group/btn shadow-sm active:scale-95 text-left">
-                <div class="h-10 w-10 rounded-xl bg-white/80 flex items-center justify-center shrink-0 group-hover/btn:bg-white/20 group-hover/btn:text-white transition-colors">
-                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="${svgPath}"/></svg>
-                </div>
-                <span class="text-xs font-black uppercase tracking-widest">${label}</span>
-            </button>`;
+        const colors = { emerald: "bg-emerald-50 text-emerald-700 border-emerald-100 hover:bg-emerald-600", blue: "bg-blue-50 text-blue-700 border-blue-100 hover:bg-blue-600", purple: "bg-purple-50 text-purple-700 border-purple-100 hover:bg-purple-600" };
+        return html`<button id="${id}" class="flex items-center gap-3 w-full p-4 rounded-2xl ${colors[color]} border hover:text-white transition-all duration-300 group/btn shadow-sm active:scale-95 text-left"><div class="h-10 w-10 rounded-xl bg-white/80 flex items-center justify-center shrink-0 group-hover/btn:bg-white/20 group-hover/btn:text-white transition-colors"><svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="${svgPath}"/></svg></div><span class="text-xs font-black uppercase tracking-widest">${label}</span></button>`;
     }
 
-    // --- Componentes Privados: Hero y Menú Diario ---
-
     _renderHero(heroPromo) {
-        if (!heroPromo) {
-            return html`
-                <div class="w-full h-[450px] sm:h-[650px] bg-stone-900 flex flex-col items-center justify-center relative overflow-hidden">
-                    <div class="absolute inset-0 bg-gradient-to-tr from-primary/20 to-transparent opacity-30"></div>
-                    <div class="relative z-10 flex flex-col items-center gap-6">
-                        <div class="h-20 w-20 rounded-full border-2 border-primary/30 flex items-center justify-center animate-pulse shadow-[0_0_50px_rgba(27,94,52,0.2)]">
-                            <span class="text-4xl font-black text-primary italic font-display">R</span>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-
+        if (!heroPromo) return html`<div class="w-full h-[450px] sm:h-[650px] bg-stone-950 flex flex-col items-center justify-center relative overflow-hidden"><div class="relative h-20 w-20 flex items-center justify-center opacity-20"><img src="${logoSolo}" class="h-full w-full object-contain animate-pulse" alt="Loading" /></div></div>`;
         const banners = heroPromo?.banners?.filter(b => b.activo) || [];
-        return html`
-           <section class="relative w-full overflow-hidden bg-background" id="hero">
-             <div class="swiper hero-swiper h-full w-full">
-                <div class="swiper-wrapper">
-                    ${banners.length === 0 ? this._renderHeroPlaceholder() : banners.map(b => this._renderHeroSlide(b))}
-                </div>
-                <div class="swiper-pagination"></div>
-             </div>
-           </section>`;
+        return html`<section class="relative w-full overflow-hidden bg-background" id="hero"><div class="swiper hero-swiper h-full w-full"><div class="swiper-wrapper">${banners.length === 0 ? this._renderHeroPlaceholder() : banners.map(b => this._renderHeroSlide(b))}</div><div class="swiper-pagination"></div></div></section>`;
     }
 
     _renderHeroSlide(banner) {
-        return html`
-            <div class="swiper-slide w-full">
-                <picture class="w-full">
-                    <source media="(max-width: 640px)" srcset="${banner.mobileImageUrl || banner.imageUrl}">
-                    <img src="${banner.imageUrl}" class="w-full h-auto block" alt="Banner" />
-                </picture>
-            </div>`;
+        return html`<div class="swiper-slide w-full"><picture class="w-full"><source media="(max-width: 640px)" srcset="${banner.mobileImageUrl || banner.imageUrl}"><img src="${banner.imageUrl}" class="w-full h-auto block" alt="Banner" /></picture></div>`;
     }
 
-    _renderHeroPlaceholder() {
-        return html`
-            <div class="swiper-slide w-full h-[600px] bg-stone-900 flex items-center justify-center">
-                <span class="text-stone-700 font-black uppercase tracking-[0.5em] italic font-display">Rocoto Experience</span>
-            </div>`;
-    }
+    _renderHeroPlaceholder() { return html`<div class="swiper-slide w-full h-[600px] bg-stone-900 flex items-center justify-center"><span class="text-stone-700 font-black uppercase tracking-[0.5em] italic font-display">Rocoto Experience</span></div>`; }
 
     _renderDailyMenu(dailyMenu) {
-        if (!dailyMenu || (dailyMenu.entradas?.length === 0 && dailyMenu.segundos?.length === 0)) {
-            return html`
-                <div class="max-w-5xl mx-auto py-24 px-4 text-center">
-                    <div class="space-y-4 mb-12">
-                        <div class="h-4 w-32 bg-stone-100 mx-auto rounded-full animate-pulse"></div>
-                        <div class="h-10 w-64 bg-stone-100 mx-auto rounded-full animate-pulse"></div>
-                    </div>
-                    <div class="relative bg-stone-50 rounded-[3rem] p-12 border border-stone-100 overflow-hidden">
-                        <div class="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-2xl"></div>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
-                            <div class="space-y-4">
-                                <div class="h-3 w-20 bg-stone-200/50 mx-auto rounded-full"></div>
-                                <div class="h-6 w-40 bg-stone-200/50 mx-auto rounded-full animate-pulse"></div>
-                            </div>
-                            <div class="space-y-4">
-                                <div class="h-3 w-20 bg-stone-200/50 mx-auto rounded-full"></div>
-                                <div class="h-6 w-48 bg-stone-200/50 mx-auto rounded-full animate-pulse"></div>
-                                <div class="h-6 w-32 bg-stone-200/50 mx-auto rounded-full animate-pulse" style="animation-delay: 200ms"></div>
-                            </div>
-                            <div class="space-y-4">
-                                <div class="h-3 w-20 bg-stone-200/50 mx-auto rounded-full"></div>
-                                <div class="h-6 w-40 bg-stone-200/50 mx-auto rounded-full animate-pulse"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-
-        return html`
-           <section class="relative pt-10 pb-16 sm:pt-12 sm:pb-24 overflow-hidden border-b border-primary/10 bg-white" id="menu-del-dia">
-             <div class="absolute top-0 right-0 w-[300px] h-[300px] bg-primary/5 blur-[80px] rounded-full -mr-16 -mt-16 pointer-events-none"></div>
-             <div class="${layout.container} relative z-10 text-center">
-               <div class="max-w-5xl mx-auto">
-                 ${this._renderSectionHeader("Experiencia Amazónica", html`Menú del <span class='text-primary font-black'>Día</span>`, "Sabor de Casa, Todos los Días.")}
-                 
-                 <div class="relative bg-primary rounded-[2rem] p-0.5 shadow-[0_30px_70px_-15px_rgba(27,94,52,0.15)] overflow-hidden">
-                    <div class="relative bg-white rounded-[1.9rem] overflow-hidden">
-                        <div class="p-6 sm:p-10 lg:px-12 lg:py-10 text-center">
-                            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 relative items-start">
-                                <div class="hidden lg:block absolute left-1/3 top-0 bottom-0 w-px bg-stone-100"></div>
-                                <div class="hidden lg:block absolute left-2/3 top-0 bottom-0 w-px bg-stone-100"></div>
-                                
-                                ${this._renderDailyMenuColumn("Entradas", dailyMenu.entradas || [])}
-                                ${this._renderDailyMenuColumn("Fondos", dailyMenu.segundos || [], true)}
-                                ${this._renderDailyMenuColumn("Refrescos", dailyMenu.refrescos || [])}
-                            </div>
-                            ${this._renderDailyMenuFooter()}
-                        </div>
-                    </div>
-                 </div>
-               </div>
-             </div>
-           </section>`;
+        if (!dailyMenu || (dailyMenu.entradas?.length === 0 && dailyMenu.segundos?.length === 0)) return html`<div class="max-w-5xl mx-auto py-24 px-4 text-center opacity-30"><div class="h-10 w-64 bg-stone-100 mx-auto rounded-full mb-12 animate-pulse"></div><div class="relative bg-stone-50 rounded-[3rem] p-12 border border-stone-100 overflow-hidden"><div class="grid grid-cols-1 md:grid-cols-3 gap-12"><div class="space-y-4"><div class="h-3 w-20 bg-stone-200 mx-auto rounded-full"></div><div class="h-6 w-40 bg-stone-200 mx-auto rounded-full animate-pulse"></div></div><div class="space-y-4"><div class="h-3 w-20 bg-stone-200 mx-auto rounded-full"></div><div class="h-6 w-48 bg-stone-200 mx-auto rounded-full animate-pulse"></div></div><div class="space-y-4"><div class="h-3 w-20 bg-stone-200 mx-auto rounded-full"></div><div class="h-6 w-40 bg-stone-200 mx-auto rounded-full animate-pulse"></div></div></div></div></div>`;
+        return html`<section class="relative pt-10 pb-16 sm:pt-12 sm:pb-24 overflow-hidden border-b border-primary/10 bg-white" id="menu-del-dia"><div class="${layout.container} relative z-10 text-center"><div class="max-w-5xl mx-auto">${this._renderSectionHeader("Experiencia Amazónica", html`Menú del <span class='text-primary font-black'>Día</span>`, "Sabor de Casa, Todos los Días.")}<div class="relative bg-primary rounded-[2rem] p-0.5 shadow-xl overflow-hidden"><div class="relative bg-white rounded-[1.9rem] overflow-hidden"><div class="p-6 sm:p-10 lg:px-12 lg:py-10 text-center"><div class="grid grid-cols-1 lg:grid-cols-3 gap-8 relative items-start"><div class="hidden lg:block absolute left-1/3 top-0 bottom-0 w-px bg-stone-100"></div><div class="hidden lg:block absolute left-2/3 top-0 bottom-0 w-px bg-stone-100"></div>${this._renderDailyMenuColumn("Entradas", dailyMenu.entradas || [])}${this._renderDailyMenuColumn("Fondos", dailyMenu.segundos || [], true)}${this._renderDailyMenuColumn("Refrescos", dailyMenu.refrescos || [])}</div>${this._renderDailyMenuFooter()}</div></div></div></div></div></section>`;
     }
 
     _renderDailyMenuColumn(title, items, isSpecial = false) {
-        return html`
-            <div class="space-y-6 group">
-                <h3 class="${layout.label} !text-stone-300">${title}</h3>
-                <ul class="space-y-3">
-                    ${items.map(item => html`
-                        <li class="flex flex-col items-center">
-                            <span class="${typography.h3} text-primary italic leading-tight font-display">${item}</span>
-                            ${isSpecial ? html`<span class="${layout.label} !text-amber-500 !mb-0">Especialidad</span>` : ''}
-                        </li>`)}
-                </ul>
-            </div>`;
+        return html`<div class="space-y-6 group"><h3 class="${layout.label} !text-stone-300">${title}</h3><ul class="space-y-3">${items.map(item => html`<li class="flex flex-col items-center"><span class="${typography.h3} text-primary italic font-display leading-tight">${item}</span>${isSpecial ? html`<span class="${layout.label} !text-amber-500">Especialidad</span>` : ''}</li>`)}</ul></div>`;
     }
 
     _renderDailyMenuFooter() {
-        return html`
-            <div class="mt-10 flex flex-col sm:flex-row items-center justify-between gap-6 border-t border-stone-50 pt-8">
-                <div class="flex items-center gap-3 text-left font-sans">
-                    <div class="h-8 w-8 rounded-full bg-primary text-white flex items-center justify-center font-black italic text-[10px]">R</div>
-                    <div>
-                        <p class="${layout.label} !mb-0 opacity-40">Atención</p>
-                        <p class="text-[10px] font-bold text-on-background">12:00 PM &mdash; 03:30 PM</p>
-                    </div>
-                </div>
-                <div class="relative group/price">
-                    <div class="absolute inset-0 bg-primary rounded-xl rotate-2 group-hover/price:rotate-0 transition-transform"></div>
-                    <div class="relative bg-white border-2 border-primary rounded-xl px-8 py-2 flex items-baseline gap-2 shadow-lg">
-                        <span class="text-xs font-bold text-primary font-sans">S/</span>
-                        <span class="text-4xl font-black text-primary font-display italic leading-none">8.00</span>
-                    </div>
-                </div>
-                <p class="${layout.label} opacity-30 hidden sm:block font-sans">Calidad e Inocuidad</p>
-            </div>`;
+        return html`<div class="mt-10 flex flex-col sm:flex-row items-center justify-between gap-6 border-t border-stone-50 pt-8"><div class="flex items-center gap-3 text-left font-sans"><div class="h-8 w-8 rounded-full bg-primary text-white flex items-center justify-center font-black italic text-[10px]">R</div><div><p class="${layout.label} !mb-0 opacity-40">Atención</p><p class="text-[10px] font-bold text-on-background">12:00 PM - 03:30 PM</p></div></div><div class="relative group/price"><div class="absolute inset-0 bg-primary rounded-xl rotate-2 group-hover/price:rotate-0 transition-transform"></div><div class="relative bg-white border-2 border-primary rounded-xl px-8 py-2 flex items-baseline gap-2 shadow-lg"><span class="text-xs font-bold text-primary font-sans">S/</span><span class="text-4xl font-black text-primary font-display italic leading-none">8.00</span></div></div><p class="${layout.label} opacity-30 hidden sm:block font-sans">Calidad e Inocuidad</p></div>`;
     }
 
-    // --- Componentes Privados: Quiénes Somos y Carta ---
-
-    _renderAboutUs() {
+    _renderAboutUs(restaurantInfo) {
         return html`
-           <section id="quienes-somos" class="relative pt-10 pb-16 sm:pt-12 sm:pb-24 overflow-hidden bg-white scroll-mt-20">
-             <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-stone-100 to-transparent"></div>
-             <div class="${layout.container}">
-               <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
-                 ${this._renderAboutUsImage()}
-                 <div class="order-1 lg:order-2 space-y-6 text-left">
-                    ${this._renderAboutUsContent()}
+           <section id="quienes-somos" class="relative py-24 sm:py-32 bg-white scroll-mt-20 overflow-hidden">
+             <!-- Sutil textura de fondo -->
+             <div class="absolute top-0 right-0 w-1/2 h-full bg-stone-50/50 -z-0"></div>
+             
+             <div class="${layout.container} relative z-10">
+               <div class="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-24 items-center mb-32">
+                 <!-- Lado Imagen -->
+                 <div class="lg:col-span-5 order-2 lg:order-1">
+                    <div class="relative group">
+                        <div class="absolute -inset-4 border border-stone-100 rounded-[3rem] -z-10 group-hover:scale-[1.02] transition-transform duration-1000"></div>
+                        <div class="relative aspect-[4/5] bg-stone-100 rounded-[2.5rem] overflow-hidden shadow-2xl">
+                            <img src="https://res.cloudinary.com/dhcgrkrdc/image/upload/v1778388097/FB_IMG_1542216440936-removebg-preview_icr9pc.png" 
+                                 class="absolute inset-0 w-full h-full object-contain scale-110 translate-y-8 group-hover:scale-[1.15] transition-transform duration-[3s]" alt="Alicia Mattos" />
+                            <div class="absolute bottom-8 left-8 right-8 p-6 bg-white/90 backdrop-blur-md rounded-2xl border border-white/50 shadow-sm translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-700">
+                                <p class="text-[9px] uppercase tracking-[0.4em] text-primary font-bold mb-1">El Corazón de Rocoto</p>
+                                <h4 class="text-xl font-display italic text-stone-900">Alicia Mattos</h4>
+                            </div>
+                        </div>
+                    </div>
+                 </div>
+
+                 <!-- Lado Contenido -->
+                 <div class="lg:col-span-7 order-1 lg:order-2 space-y-12">
+                    <div class="max-w-2xl space-y-8">
+                        <div class="space-y-4">
+                            <span class="inline-block text-[10px] uppercase tracking-[0.5em] text-primary font-bold border-b border-primary/20 pb-2">Nuestra Esencia</span>
+                            <h2 class="text-5xl sm:text-7xl font-display italic leading-[1.1] text-stone-950">
+                                Sabor que <span class="text-primary font-black not-italic">conecta</span> con la tierra.
+                            </h2>
+                        </div>
+                        
+                        <p class="text-lg text-stone-500 leading-relaxed font-light">
+                            En el corazón de **San Ramón**, fusionamos la riqueza de la selva central con el legado de una sazón artesanal que trasciende generaciones.
+                        </p>
+
+                        <div class="relative pl-12 border-l-2 border-stone-100">
+                            <svg class="absolute left-0 top-0 h-8 w-8 text-primary/10 -translate-x-4" fill="currentColor" viewBox="0 0 24 24"><path d="M14.017 21L14.017 18C14.017 16.895 14.912 16 16.017 16H19.017C19.569 16 20.017 15.552 20.017 15V9C20.017 8.448 19.569 8 19.017 8H15.017C14.465 8 14.017 8.448 14.017 9V15L11.017 15V9C11.017 6.791 12.808 5 15.017 5H19.017C21.226 5 23.017 6.791 23.017 9V15C23.017 18.866 19.883 22 16.017 22H14.017L14.017 21ZM1.017 21L1.017 18C1.017 16.895 1.912 16 3.017 16H6.017C6.569 16 7.017 15.552 7.017 15V9C7.017 8.448 6.569 8 6.017 8H2.017C1.465 8 1.017 8.448 1.017 9V15L-1.983 15V9C-1.983 6.791 -0.192 5 2.017 5H6.017C8.226 5 10.017 6.791 10.017 9V15C10.017 18.866 6.883 22 3.017 22H1.017L1.017 21Z"></path></svg>
+                            <p class="text-2xl sm:text-3xl text-stone-800 font-display italic leading-snug">
+                                "La cocina es un acto de amor. Cada plato que sale de nuestra cocina lleva un pedazo de nuestro hogar."
+                            </p>
+                            <p class="mt-4 text-[10px] uppercase tracking-[0.3em] font-bold text-stone-400">&mdash; Alicia Mattos, Fundadora</p>
+                        </div>
+                    </div>
                     ${this._renderAboutUsStats()}
                  </div>
                </div>
+
                ${this._renderCommitmentBanner()}
                ${this._renderSignatureDishes()}
              </div>
            </section>`;
     }
 
-    _renderAboutUsImage() {
-        return html`
-            <div class="relative order-2 lg:order-1 flex justify-center lg:justify-start">
-                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[110%] aspect-square bg-gradient-to-tr from-primary/5 to-transparent rounded-full blur-3xl opacity-60"></div>
-                <div class="relative group w-full max-w-[320px] sm:max-w-sm">
-                    <img src="https://res.cloudinary.com/dhcgrkrdc/image/upload/v1778388097/FB_IMG_1542216440936-removebg-preview_icr9pc.png" class="relative z-10 w-full h-auto object-contain drop-shadow-[0_25px_50px_rgba(0,0,0,0.15)]" alt="Alicia Mattos" />
-                    <div class="absolute -bottom-4 -right-4 z-20 bg-white p-4 rounded-[2rem] shadow-xl border border-stone-50 hidden sm:block rotate-3">
-                        <p class="${layout.label} !mb-0.5">El Corazón</p>
-                        <h4 class="${typography.h3} italic leading-none">Alicia Mattos</h4>
-                    </div>
-                </div>
-            </div>`;
-    }
-
-    _renderAboutUsContent() {
-        return html`
-            <div class="space-y-2">
-                <span class="${layout.label} border-l-4 border-primary pl-4">Nuestra Esencia</span>
-                <h2 class="${layout.sectionTitle} italic">Bienvenidos a <span class="text-primary font-black">Rocoto</span></h2>
-                <p class="${typography.bodyLg} italic text-stone-300">El Legado de una Gran Sazón.</p>
-            </div>
-            <div class="space-y-4">
-                <p class="${typography.bodyLg}">En **San Ramón**, fusionamos la riqueza amazónica con el cariño inigualable de la cocina de hogar.</p>
-                <div class="relative p-6 bg-amber-50/50 rounded-[2rem] border-l-4 border-amber-500">
-                    <p class="text-xl sm:text-2xl text-amber-900/80 leading-relaxed font-cursive">"La sazón de la Sra. Alicia es el pilar de cada plato. Ella asegura que cada bocado se sienta como un abrazo al corazón."</p>
-                    <p class="text-right text-amber-700/50 font-cursive text-lg mt-2">&mdash; Alicia Mattos</p>
-                </div>
-            </div>`;
-    }
-
     _renderAboutUsStats() {
         const stats = [
-            { val: "100%", label: "Artesanal" },
-            { val: "Local", label: "San Ramón" },
-            { val: "Tradición", label: "Familiar", amber: true }
+            { val: "100%", label: "Insumos Locales" },
+            { val: "Tradición", label: "Cocina de Hogar" },
+            { val: "Amazonía", label: "Nuestra Identidad" }
         ];
         return html`
-            <div class="grid grid-cols-3 gap-4 pt-2">
+            <div class="grid grid-cols-3 gap-8 pt-8 border-t border-stone-100">
                 ${stats.map(s => html`
-                    <div class="flex flex-col gap-1 border-l border-stone-100 pl-4">
-                        <span class="${s.amber ? 'text-2xl text-amber-600' : 'text-3xl text-primary'} font-black leading-none font-display italic">${s.val}</span>
-                        <span class="text-[9px] font-bold uppercase tracking-widest text-stone-400 font-sans">${s.label}</span>
+                    <div class="space-y-1">
+                        <span class="block text-2xl font-black text-primary italic font-display leading-none">${s.val}</span>
+                        <span class="block text-[8px] uppercase tracking-widest text-stone-400 font-bold">${s.label}</span>
                     </div>`)}
             </div>`;
     }
 
     _renderCommitmentBanner() {
         return html`
-            <div class="bg-primary rounded-[3rem] p-8 sm:p-12 text-white overflow-hidden relative mt-16 mb-16">
-                <div class="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -mr-32 -mt-32"></div>
-                <div class="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
-                    <div class="lg:col-span-7 space-y-10">
-                        <h3 class="${typography.h2} text-white uppercase italic">Compromiso con la Excelencia</h3>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 text-left">
-                            <div class="space-y-4">
-                                <h4 class="text-xs font-bold uppercase tracking-[0.3em] text-emerald-300 font-sans">Inocuidad Alimentaria</h4>
-                                <p class="text-sm text-white/70 leading-relaxed font-sans">Nuestros procesos de higiene y seguridad alimentaria garantizan platos saludables para tu familia.</p>
-                            </div>
-                            <div class="space-y-4 font-sans">
-                                <h4 class="text-xs font-bold uppercase tracking-[0.3em] text-emerald-300">Equipo Directivo</h4>
-                                <div class="space-y-2">
-                                    <p class="text-sm font-bold text-white flex items-center gap-3"><span class="h-1.5 w-1.5 rounded-full bg-amber-400"></span> Valdéz Mattos Beeker Aarón</p>
-                                    <p class="text-sm font-bold text-white flex items-center gap-3"><span class="h-1.5 w-1.5 rounded-full bg-amber-400"></span> Fernandez Cordova Samuel</p>
-                                </div>
+            <div class="bg-stone-950 rounded-[4rem] p-12 sm:p-20 text-white overflow-hidden relative mb-32">
+                <div class="absolute top-0 right-0 w-96 h-96 bg-primary/10 rounded-full blur-[120px] -mr-48 -mt-48"></div>
+                
+                <div class="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                    <div class="space-y-8">
+                        <h3 class="text-4xl font-display italic leading-tight">Excelencia en cada <span class="text-primary">detalle.</span></h3>
+                        <p class="text-stone-400 font-light leading-relaxed">
+                            Nuestro compromiso va más allá del sabor. Implementamos los más altos estándares de inocuidad y selección de ingredientes para garantizar una experiencia saludable y honesta.
+                        </p>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-10 border-l border-white/10 pl-10">
+                        <div class="space-y-2">
+                            <span class="text-[9px] uppercase tracking-widest text-primary font-bold">Inocuidad</span>
+                            <p class="text-sm font-light text-stone-300 italic">Procesos certificados de seguridad alimentaria.</p>
+                        </div>
+                        <div class="space-y-2">
+                            <span class="text-[9px] uppercase tracking-widest text-primary font-bold">Dirección</span>
+                            <div class="space-y-1">
+                                <p class="text-xs font-bold text-white uppercase tracking-tighter">B. Aarón Valdéz Mattos</p>
+                                <p class="text-xs font-bold text-white uppercase tracking-tighter">Samuel Fernandez C.</p>
                             </div>
                         </div>
                     </div>
@@ -552,27 +462,43 @@ export class HomeView {
 
     _renderSignatureDishes() {
         const dishes = [
-            { img: "https://res.cloudinary.com/dhcgrkrdc/image/upload/v1778392584/Gemini_Generated_Image_9gab2q9gab2q9gab-removebg-preview_lw7exv.png", name: "Chaufa de Cecina", desc: "Ahumado y Artesanal" },
-            { img: "https://res.cloudinary.com/dhcgrkrdc/image/upload/v1778392882/Gemini_Generated_Image_pvazc5pvazc5pvaz-removebg-preview_akr1dd.png", name: "Chicharrón de Doncella", desc: "Crujiente y Tradicional" },
-            { img: "https://res.cloudinary.com/dhcgrkrdc/image/upload/v1778392997/Gemini_Generated_Image_sl2vm5sl2vm5sl2v-removebg-preview_cokfr1.png", name: "Tacacho con Cecina", desc: "Plátanos verdes y yuca frita" }
+            { img: "https://res.cloudinary.com/dhcgrkrdc/image/upload/v1778392584/Gemini_Generated_Image_9gab2q9gab2q9gab-removebg-preview_lw7exv.png", name: "Chaufa de Cecina", desc: "Ahumado Artesanal" },
+            { img: "https://res.cloudinary.com/dhcgrkrdc/image/upload/v1778392882/Gemini_Generated_Image_pvazc5pvazc5pvaz-removebg-preview_akr1dd.png", name: "Chicharrón de Doncella", desc: "Tradición del Río" },
+            { img: "https://res.cloudinary.com/dhcgrkrdc/image/upload/v1778392997/Gemini_Generated_Image_sl2vm5sl2vm5sl2v-removebg-preview_cokfr1.png", name: "Tacacho con Cecina", desc: "Clásico Amazónico" }
         ];
         return html`
-            <div class="hidden md:block space-y-24 mt-32">
-                <div class="text-center space-y-4">
-                    <span class="${layout.label}">Selección del Chef</span>
-                    <h2 class="${layout.sectionTitle} italic">Platos <span class="text-primary font-black italic">Insignia</span></h2>
-                    <div class="h-1 w-20 bg-amber-400 mx-auto rounded-full"></div>
+            <div class="space-y-24 mt-20 sm:mt-40">
+                <!-- Título minimalista -->
+                <div class="flex flex-col items-center text-center space-y-4">
+                    <div class="h-12 w-px bg-primary/20"></div>
+                    <h2 class="text-3xl sm:text-4xl font-display italic text-stone-950 uppercase tracking-tighter">
+                        Platos <span class="text-primary font-black not-italic">Insignia</span>
+                    </h2>
+                    <span class="text-[8px] uppercase tracking-[0.6em] text-stone-400 font-bold">Selección de la Casa</span>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-16 lg:gap-20">
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-20 lg:gap-24">
                     ${dishes.map(d => html`
-                        <div class="group relative">
-                            <div class="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 bg-stone-50 rounded-full group-hover:bg-primary/5 group-hover:scale-110 transition-all duration-700"></div>
-                            <div class="relative aspect-square flex items-center justify-center mb-8 px-4">
-                                <img src="${d.img}" class="w-full h-auto object-contain drop-shadow-[0_25px_50px_rgba(0,0,0,0.15)] group-hover:-translate-y-4 group-hover:scale-110 transition-all duration-700" alt="${d.name}" />
+                        <div class="group relative flex flex-col items-center text-center space-y-8">
+                            <!-- Pedestal circular con efecto de profundidad -->
+                            <div class="relative w-64 h-64 sm:w-72 sm:h-72 flex items-center justify-center">
+                                <div class="absolute inset-0 bg-stone-50 rounded-full border border-stone-100 group-hover:bg-primary/[0.03] group-hover:scale-105 group-hover:border-primary/10 transition-all duration-1000"></div>
+                                <div class="absolute inset-8 border border-dashed border-stone-200 rounded-full group-hover:rotate-45 group-hover:border-primary/20 transition-all duration-1000"></div>
+                                
+                                <!-- Imagen Flotante (PNG) -->
+                                <img src="${d.img}" 
+                                     class="relative z-10 w-[110%] max-w-none h-auto object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.15)] group-hover:-translate-y-6 group-hover:rotate-2 group-hover:scale-110 transition-all duration-700 select-none" 
+                                     alt="${d.name}" />
                             </div>
-                            <div class="text-center space-y-2">
-                                <h4 class="${typography.h3} italic leading-none">${d.name}</h4>
-                                <p class="${layout.label} !text-primary/60">${d.desc}</p>
+
+                            <!-- Información Minimalista -->
+                            <div class="space-y-2 relative z-20">
+                                <h4 class="text-xl sm:text-2xl font-display italic text-stone-900 leading-none">${d.name}</h4>
+                                <div class="flex items-center justify-center gap-3">
+                                    <div class="h-px w-4 bg-primary/20"></div>
+                                    <p class="text-[9px] uppercase tracking-[0.3em] text-primary font-bold">${d.desc}</p>
+                                    <div class="h-px w-4 bg-primary/20"></div>
+                                </div>
                             </div>
                         </div>`)}
                 </div>
@@ -602,64 +528,73 @@ export class HomeView {
     // --- Componentes Privados: Pensión, Contacto y Footer ---
 
     _renderPension(restaurantInfo) {
-        const whatsappLink = `https://wa.me/${restaurantInfo.phone.replace(/\D/g, '')}?text=${encodeURIComponent('¡Hola Rocoto! Deseo información sobre el servicio de pensión y reservas.')}`;
+        const whatsappLink = `https://wa.me/${restaurantInfo.phone.replace(/\D/g, '')}?text=${encodeURIComponent('¡Hola Rocoto! Deseo información sobre el servicio de pensión.')}`;
 
         return html`
-           <section id="pension" class="relative py-24 sm:py-32 overflow-hidden bg-white scroll-mt-20">
-              <div class="absolute inset-0 bg-stone-50/30 pointer-events-none"></div>
+           <section id="pension" class="relative py-24 sm:py-36 overflow-hidden bg-white scroll-mt-20">
+              <div class="absolute top-0 left-0 w-full h-px bg-stone-100"></div>
+              
               <div class="${layout.container} relative z-10">
-                  <div class="flex flex-col gap-20">
-                      <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20 items-end">
-                          <div class="lg:col-span-7 space-y-6">
-                              <span class="${layout.label} border-l-4 border-primary pl-4">Soluciones Corporativas</span>
-                              <h2 class="${layout.sectionTitle} italic !text-5xl sm:!text-7xl">Servicio de <span class="text-primary font-black">Pensión</span></h2>
-                              <p class="${typography.bodyLg} italic text-on-surface-variant/60 max-w-2xl">Alimentamos el motor de su empresa con la sazón y calidad que nos caracteriza, garantizando puntualidad y nutrición superior.</p>
+                  <div class="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-24">
+                      
+                      <!-- LADO IZQUIERDO: Propuesta de Valor -->
+                      <div class="lg:col-span-5 space-y-12">
+                          <div class="space-y-6">
+                              <span class="inline-block text-[10px] uppercase tracking-[0.5em] text-primary font-bold">Soluciones Corporativas</span>
+                              <h2 class="text-5xl sm:text-6xl font-display italic leading-tight text-stone-950">
+                                  Nutrición que impulsa su <span class="text-primary font-black not-italic">negocio.</span>
+                              </h2>
+                              <p class="text-lg text-stone-500 font-light leading-relaxed">
+                                  Garantizamos la alimentación de su equipo con puntualidad y los más estrictos estándares de inocuidad. Una sazón que motiva y rinde.
+                              </p>
                           </div>
-                          <div class="lg:col-span-5 flex flex-col sm:flex-row gap-6 lg:justify-end">
-                                ${this._renderPensionFeature("Inocuidad Total", "Higiene 100% garantizada.", "M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z")}
-                                ${this._renderPensionFeature("Nutrición", "Menús balanceados.", "M13 10V3L4 14h7v7l9-11h-7z", "amber")}
+
+                          <div class="space-y-4">
+                              ${this._renderPensionFeature("Higiene Certificada", "Protocolos de inocuidad en cada proceso.", "M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z")}
+                              ${this._renderPensionFeature("Menús de Hogar", "Equilibrio nutricional y sabor artesanal.", "M13 10V3L4 14h7v7l9-11h-7z", "amber")}
+                          </div>
+
+                          <div class="pt-6">
+                             <a href="${whatsappLink}" target="_blank" 
+                                class="inline-flex items-center gap-6 px-10 py-5 bg-stone-950 text-white rounded-full text-[10px] uppercase tracking-[0.4em] font-bold group hover:bg-primary transition-all duration-500 shadow-xl">
+                                Cotizar Convenio
+                                <svg class="h-4 w-4 group-hover:translate-x-2 transition-transform duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="3" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                             </a>
                           </div>
                       </div>
 
-                      ${this._renderCompaniesSection()}
+                      <!-- LADO DERECHO: Respaldado por el Mercado (Aliados) -->
+                      <div class="lg:col-span-7 bg-stone-50/50 rounded-[3rem] p-8 sm:p-16 border border-stone-100 flex flex-col justify-center space-y-12">
+                          <div class="space-y-2">
+                              <span class="text-[9px] uppercase tracking-[0.4em] text-primary font-bold">Trayectoria</span>
+                              <h3 class="text-3xl font-display italic text-stone-900 leading-tight">Empresas que respaldan nuestra experiencia.</h3>
+                          </div>
 
-                      <div class="flex justify-center font-sans">
-                         <a href="${whatsappLink}" target="_blank" class="${button.base} ${button.primary} rounded-full tracking-[0.4em] uppercase shadow-2xl py-6 px-12 group">
-                            Cotizar Convenio
-                            <svg class="h-5 w-5 transform group-hover:translate-x-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
-                         </a>
+                          <div id="companies-carousel-container" class="w-full">
+                              <!-- El carrusel se inyecta aquí -->
+                              <div class="py-12 text-center text-stone-200 text-[10px] font-bold uppercase tracking-widest animate-pulse">Conectando...</div>
+                          </div>
+
+                          <p class="text-[10px] text-stone-400 font-light leading-relaxed border-t border-stone-100 pt-8 uppercase tracking-widest">
+                              Más de 5 años brindando soluciones gastronómicas a las principales instituciones de San Ramón y Chanchamayo.
+                          </p>
                       </div>
+
                   </div>
               </div>
            </section>`;
     }
 
     _renderPensionFeature(title, desc, svgPath, color = "primary") {
-        const colors = color === "amber" ? "bg-amber-50 text-amber-600" : "bg-primary/5 text-primary";
+        const colors = color === "amber" ? "text-amber-600 bg-amber-50" : "text-primary bg-primary/5";
         return html`
-            <div class="flex items-center gap-4 bg-white p-6 rounded-[2rem] border border-stone-100 shadow-sm font-sans flex-1">
-                <div class="h-12 w-12 rounded-2xl ${colors} flex items-center justify-center shrink-0 shadow-inner">
-                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="${svgPath}"/></svg>
+            <div class="flex items-center gap-5">
+                <div class="h-10 w-10 rounded-xl ${colors} flex items-center justify-center shrink-0">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="${svgPath}"/></svg>
                 </div>
                 <div>
-                    <h4 class="${layout.label} !mb-0 !text-on-background !text-[11px]">${title}</h4>
-                    <p class="text-[9px] font-bold text-stone-400 uppercase tracking-tighter">${desc}</p>
-                </div>
-            </div>`;
-    }
-
-    _renderCompaniesSection() {
-        return html`
-            <div class="relative py-16 border-y border-stone-100/50">
-                <div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white px-4 sm:px-12 whitespace-nowrap">
-                    <h3 class="${layout.label} italic !mb-0 text-primary opacity-80 flex items-center gap-3 sm:gap-6">
-                    <span class="hidden sm:block h-px w-6 sm:w-10 bg-primary/20"></span>
-                    Avalan nuestra experiencia
-                    <span class="hidden sm:block h-px w-6 sm:w-10 bg-primary/20"></span>
-                    </h3>
-                </div>
-                <div id="companies-carousel-container" class="max-w-6xl mx-auto">
-                    <div class="py-12 text-center text-stone-200 text-[10px] font-bold uppercase tracking-widest animate-pulse">Cargando aliados estratégicos...</div>
+                    <h4 class="text-[11px] font-bold uppercase tracking-widest text-stone-900 leading-none">${title}</h4>
+                    <p class="text-[10px] text-stone-400 font-light uppercase tracking-tighter">${desc}</p>
                 </div>
             </div>`;
     }
@@ -667,19 +602,14 @@ export class HomeView {
     _renderCompaniesCarousel(companies) {
         if (!companies || companies.length === 0) return html``;
         return html`
-            <div class="swiper companies-swiper overflow-hidden py-6">
+            <div class="swiper companies-swiper overflow-hidden">
                 <div class="swiper-wrapper items-center">
                     ${companies.map(c => html`
-                        <div class="swiper-slide flex flex-col items-center justify-center text-center group/logo">
-                            <div class="h-28 sm:h-36 w-full flex items-center justify-center filter grayscale opacity-40 group-hover/logo:grayscale-0 group-hover/logo:opacity-100 transition-all duration-700">
-                                ${c.logo 
-                                    ? html`<img src="${c.logo}" alt="${c.nombre}" class="max-h-full max-w-[85%] object-contain mx-auto transform group-hover/logo:scale-110 transition-transform duration-700" />`
-                                    : html`<div class="h-24 w-24 rounded-3xl bg-stone-50 flex items-center justify-center text-primary font-bold text-3xl border border-stone-100 shadow-sm group-hover/logo:bg-primary group-hover/logo:text-white transition-all duration-500 mx-auto">${c.nombre.charAt(0).toUpperCase()}</div>`
-                                }
-                            </div>
-                            <div class="w-full mt-6 px-2">
-                                <span class="block text-[11px] font-black uppercase tracking-[0.25em] text-stone-300 group-hover/logo:text-primary transition-colors leading-relaxed mx-auto">${c.nombre}</span>
-                            </div>
+                        <div class="swiper-slide flex items-center justify-center grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition-all duration-700">
+                            ${c.logo 
+                                ? html`<img src="${c.logo}" alt="${c.nombre}" class="max-h-16 w-auto object-contain mx-auto" />`
+                                : html`<span class="text-stone-300 font-bold text-sm uppercase tracking-[0.2em]">${c.nombre}</span>`
+                            }
                         </div>
                     `)}
                 </div>
@@ -688,42 +618,80 @@ export class HomeView {
 
     _renderContact(restaurantInfo) {
         return html`
-           <section id="contacto" class="relative pt-10 pb-20 sm:pt-12 sm:pb-28 bg-white overflow-hidden scroll-mt-20">
-              <div class="absolute top-1/2 left-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] opacity-40 pointer-events-none"></div>
+           <section id="contacto" class="relative py-24 sm:py-36 bg-white overflow-hidden scroll-mt-20">
+              <!-- Sutil degradado de fondo para profundidad -->
+              <div class="absolute bottom-0 left-0 w-full h-1/2 bg-stone-50/50 -z-0"></div>
+              
               <div class="${layout.container} relative z-10">
-                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-center">
-                   <div class="lg:col-span-5 space-y-8 text-left">
-                      ${this._renderSectionHeader("Encuéntranos", html`Nuestra <span class='text-primary font-black'>Casa</span>`, "Te esperamos en el corazón de San Ramón.")}
-                      <div class="space-y-4">
-                        ${this._renderContactItem("Visítanos", restaurantInfo.address, "primary", "M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z")}
-                        ${this._renderContactItem("Llámanos", restaurantInfo.phone, "amber", "M3 5a2 2 0 012-2h3.28a1 1 0 011.94.445l-.992 2.985a1 1 0 01-1.16.674l-3.38-.73a1 1 0 00-1.037.495l-1.332 2.332a1 1 0 00.122 1.258l4.13 4.13a1 1 0 001.258.122l2.332-1.332a1 1 0 00.495-1.037l-.73-3.38a1 1 0 01.674-1.16l2.985-.992A1 1 0 0121 8.06V11a2 2 0 01-2 2h-1M3 20a2 2 0 012-2h.01")}
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-24 items-center">
+                   
+                   <!-- LADO IZQUIERDO: Información Editorial -->
+                   <div class="lg:col-span-5 space-y-12 text-left">
+                      <div class="space-y-6">
+                        <span class="inline-block text-[10px] uppercase tracking-[0.5em] text-primary font-bold">Ubicación</span>
+                        <h2 class="text-5xl sm:text-7xl font-display italic leading-[1.1] text-stone-950">
+                            Nuestra <span class="text-primary font-black not-italic underline decoration-stone-200 underline-offset-8">Casa</span>
+                        </h2>
+                        <p class="text-lg text-stone-500 font-light leading-relaxed">
+                            Te esperamos en el corazón de San Ramón para compartir el sabor de nuestra tierra.
+                        </p>
                       </div>
-                      <div class="pt-2 font-sans"><a href="${restaurantInfo.mapsUrl}" target="_blank" class="${button.base} ${button.outlineDark} rounded-full !py-3">Ver Mapa Completo</a></div>
-                   </div>
-                   <div class="lg:col-span-7 relative h-[350px] sm:h-[420px] w-full font-sans">
-                      <div class="h-full w-full rounded-[2.5rem] overflow-hidden shadow-2xl border-4 border-white group relative">
-                        <iframe src="${restaurantInfo.mapsEmbedUrl}" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy" class="grayscale-[0.2] contrast-[1.1] hover:grayscale-0 transition-all duration-1000"></iframe>
-                        <div class="absolute inset-0 bg-transparent pointer-events-none group-hover:pointer-events-auto"></div>
+
+                      <div class="space-y-8">
+                        ${this._renderContactItem("Visítanos", restaurantInfo.address, "M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z")}
+                        ${this._renderContactItem("Llámanos", restaurantInfo.phone, "M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z")}
+                      </div>
+
+                      <div class="pt-4">
+                        <a href="${restaurantInfo.mapsUrl}" target="_blank" 
+                           class="inline-flex items-center gap-4 text-[10px] uppercase tracking-[0.4em] font-bold text-stone-950 hover:text-primary transition-colors group">
+                           Ver Mapa Completo
+                           <svg class="h-4 w-4 group-hover:translate-x-2 transition-transform duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                        </a>
                       </div>
                    </div>
+
+                   <!-- LADO DERECHO: El Mapa (Efecto Zen Branded) -->
+                   <div class="lg:col-span-7 relative group">
+                      <!-- Contenedor con fondo de marca para el efecto de tintado -->
+                      <div class="relative aspect-[4/3] sm:aspect-video rounded-[3rem] overflow-hidden shadow-[0_30px_100px_-20px_rgba(0,0,0,0.2)] border-8 border-white bg-stone-950">
+                        <!-- Mapa con filtros avanzados -->
+                        <iframe src="${restaurantInfo.mapsEmbedUrl}" 
+                                width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy" 
+                                class="grayscale invert contrast-[1.2] opacity-40 mix-blend-luminosity hover:grayscale-0 hover:invert-0 hover:opacity-100 hover:mix-blend-normal transition-all duration-1000"></iframe>
+                        
+                        <!-- Overlay esmeralda sutil para armonizar con el logo -->
+                        <div class="absolute inset-0 bg-primary/10 pointer-events-none group-hover:opacity-0 transition-opacity duration-1000"></div>
+                      </div>
+                      
+                      <!-- Detalle minimalista (Sello de Marca) -->
+                      <div class="absolute -bottom-6 -right-6 h-32 w-32 bg-stone-950 rounded-full flex flex-col items-center justify-center p-6 text-center shadow-2xl rotate-12 hidden sm:flex border border-white/5">
+                        <div class="h-[1px] w-8 bg-primary mb-2 opacity-50"></div>
+                        <span class="text-[8px] uppercase tracking-[0.3em] text-stone-400 font-bold leading-tight select-none">Atención Diaria</span>
+                        <div class="h-[1px] w-8 bg-primary mt-2 opacity-50"></div>
+                      </div>
+                   </div>
+
                 </div>
               </div>
            </section>`;
     }
 
-    _renderContactItem(label, val, color, svgPath) {
-        const colors = color === "amber" ? "bg-amber-500" : "bg-primary";
+    _renderContactItem(label, val, svgPath) {
         return html`
-            <div class="group flex items-center gap-4 p-4 sm:p-5 rounded-[2rem] bg-stone-50 border border-stone-100 transition-all hover:bg-white hover:shadow-xl font-sans">
-                <div class="h-10 w-10 sm:h-12 sm:w-12 rounded-full ${colors} text-white flex items-center justify-center shrink-0 shadow-lg">
-                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="${svgPath}"></path></svg>
+            <div class="group flex items-start gap-6">
+                <div class="h-10 w-10 rounded-full bg-stone-50 border border-stone-100 text-primary flex items-center justify-center shrink-0 group-hover:bg-primary group-hover:text-white transition-all duration-500 shadow-sm">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="1.5" d="${svgPath}"></path></svg>
                 </div>
-                <div class="min-w-0"><p class="${layout.label} !mb-0.5 opacity-40">${label}</p><p class="text-xs sm:text-sm font-bold text-on-background leading-tight truncate">${val}</p></div>
+                <div class="space-y-1">
+                    <p class="text-[9px] uppercase tracking-[0.4em] text-stone-400 font-bold">${label}</p>
+                    <p class="text-sm sm:text-base font-medium text-stone-900 leading-tight">${val}</p>
+                </div>
             </div>`;
     }
 
     _renderFooter(restaurantInfo) {
-        const whatsappLink = `https://wa.me/${restaurantInfo.phone.replace(/\D/g, '')}?text=${encodeURIComponent('¡Hola Rocoto! Deseo información sobre el servicio de pensión y reservas.')}`;
+        const whatsappLink = `https://wa.me/${restaurantInfo.phone.replace(/\D/g, '')}?text=${encodeURIComponent('¡Hola Rocoto! Deseo información sobre el servicio de pensión.')}`;
         return html`
            <footer class="bg-stone-900 text-white pt-24 pb-12 overflow-hidden relative font-sans">
              <div class="${layout.container} relative z-10">
@@ -779,10 +747,30 @@ export class HomeView {
          <style>
             .scrollbar-hide::-webkit-scrollbar { display: none; }
             .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+            
+            @keyframes loading-dash {
+                0% { stroke-dashoffset: 283; transform: rotate(0deg); }
+                50% { stroke-dashoffset: 70; transform: rotate(180deg); }
+                100% { stroke-dashoffset: 283; transform: rotate(360deg); }
+            }
+
+            @keyframes shimmer {
+                0% { transform: translateX(-100%); }
+                100% { transform: translateX(200%); }
+            }
+
+            @keyframes float {
+                0%, 100% { transform: translateY(0) scale(1); }
+                50% { transform: translateY(-20px) scale(1.05); }
+            }
+
+            .animate-float {
+                animation: float 8s ease-in-out infinite;
+            }
          </style>`;
     }
 
-    // --- Inicialización de Swipers y Scroll ---
+    // --- Inicialización de Swipers ---
 
     initHeroSwiper() {
         if (this.swiper) this.swiper.destroy(true, true);
@@ -807,20 +795,5 @@ export class HomeView {
                 1024: { slidesPerView: 3, spaceBetween: 40 },
             }
         });
-    }
-
-    _handleInitialScroll() {
-        if (!this._initialScrollDone) {
-            this._initialScrollDone = true;
-            setTimeout(() => {
-                const hash = window.location.hash;
-                if (hash && hash !== '#/' && hash !== '#') {
-                    const el = document.getElementById(hash.substring(1));
-                    if (el) el.scrollIntoView({ behavior: 'smooth' });
-                } else {
-                    window.scrollTo(0, 0);
-                }
-            }, 500);
-        }
     }
 }

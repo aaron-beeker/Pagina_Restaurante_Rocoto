@@ -371,7 +371,7 @@ export class HomeController {
     if (state.activeCategory === "Inicio") {
         this.menuView.renderCategoryGrid(uniqueCats, (cat) => { 
             appStore.setState({ activeCategory: cat });
-            document.getElementById("menu")?.scrollIntoView({ behavior: 'smooth' }); 
+            // Eliminado scrollIntoView para permitir que el usuario permanezca en la sección
         });
     } else {
         const items = this.menuRepository.getByCategory(state.activeCategory);
