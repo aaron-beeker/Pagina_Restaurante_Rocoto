@@ -4,6 +4,7 @@ import { ManageWorkersView } from "../views/ManageWorkersView.js";
 import { ManageCompaniesView } from "../views/ManageCompaniesView.js";
 import { getLocalDateString } from "../utils/dateUtils.js";
 import { toast, dialog } from "../utils/notifications.js";
+import { appStore } from "../utils/Store.js";
 
 export class AttendanceController {
     constructor(dependencies) {
@@ -40,14 +41,22 @@ export class AttendanceController {
             window.scrollTo({ top: 0, behavior: 'smooth' });
           },
             onSave: async (id, data) => {
+                const currentUser = appStore.getState().user;
+                const metadata = {
+                    updatedBy: currentUser?.email || "sistema",
+                    updatedAt: new Date()
+                };
+
                 if (id) {
-                    if (await this.attendanceRepository.updateAttendance(id, data)) {
+                    if (await this.attendanceRepository.updateAttendance(id, { ...data, ...metadata, registroStatus: "editado" })) {
                         toast.success("Asistencia actualizada");
                         acciones.onRefresh(document.getElementById("filter-date").value);
                         manageView.resetForm();
                     }
                 } else {
-                    if (await this.attendanceRepository.addAttendance(data)) {
+                    metadata.createdBy = currentUser?.email || "sistema";
+                    metadata.createdAt = new Date();
+                    if (await this.attendanceRepository.addAttendance({ ...data, ...metadata, registroStatus: "manual" })) {
                         toast.success("Asistencia registrada");
                         acciones.onRefresh(document.getElementById("filter-date").value);
                         manageView.resetForm();
@@ -169,27 +178,80 @@ export class AttendanceController {
     }
 
     async procesarRegistroWorker(worker, tipo, today, refreshCb) {
-        let cantidadCampo = 0;
-        if (worker.esEncargadoCampo) {
-            if (await dialog.confirm("Raciones a Campo", `¿${worker.nombre}, lleva comidas a campo?`)) {
-                const input = await dialog.prompt("Cantidad Raciones", "Ingrese la CANTIDAD de raciones que lleva a campo (sin incluir la suya):", "0");
-                const cant = parseInt(input);
-                if (!isNaN(cant) && cant > 0) cantidadCampo = cant;
-                if (cantidadCampo > 0) {
-                    const tambienCome = await dialog.confirm("Consumo Individual", "¿Usted también consumirá su ración en el local?");
-                    if (!tambienCome) return await this.registrarAsistencia(worker, tipo, today, refreshCb, cantidadCampo, false);
+        // Consultar estado previo del trabajador (Consumo Local específicamente)
+        const existing = await this.attendanceRepository.getDetailedAttendance(worker.dni, today, tipo);
+        const hasLocal = existing && existing.soloCampo === false;
+
+        // --- CASO 1: TRABAJADOR NORMAL ---
+        if (!worker.esEncargadoCampo) {
+            if (hasLocal) return { success: false, error: "Ya registrado hoy" };
+            return await this.registrarAsistencia(worker, tipo, today, refreshCb, 0, true);
+        }
+
+        // --- CASO 2: TRABAJADOR ENCARGADO ---
+        // 1. Consulta raciones a campo
+        const input = await dialog.prompt("Raciones a Campo", `¿${worker.nombre}, cuántas raciones lleva a campo?`, "0");
+        const wasCancelled = (input === null);
+        const cantidadCampo = parseInt(input) || 0;
+
+        if (!wasCancelled) {
+            // SUB-CASO: Ingresó monto y dio ACEPTAR
+            if (hasLocal) {
+                // Camino A: Existe local -> Se genera solo registro de raciones a campo (Independiente)
+                return await this.registrarAsistencia(worker, tipo, today, refreshCb, cantidadCampo, false);
+            } else {
+                // Camino B: No existe local -> Consultar consumo individual
+                const tambienCome = await dialog.confirm("Consumo Individual", "¿Usted también consumirá su ración en el local?");
+                if (tambienCome) {
+                    // Camino B1: SÍ -> Generación de reporte ÚNICO (Consumo Local + Consumo Campo)
+                    return await this.registrarAsistencia(worker, tipo, today, refreshCb, cantidadCampo, true);
+                } else {
+                    // Camino B2: NO -> Registro solo raciones a campo
+                    return await this.registrarAsistencia(worker, tipo, today, refreshCb, cantidadCampo, false);
+                }
+            }
+        } else {
+            // SUB-CASO: Dio a CANCELAR
+            if (hasLocal) {
+                // Camino A: Existe local -> Fin
+                return { success: true, workerName: worker.nombre };
+            } else {
+                // Camino B: No existe local -> Consultar consumo individual
+                const tambienCome = await dialog.confirm("Consumo Individual", "¿Usted también consumirá su ración en el local?");
+                if (tambienCome) {
+                    // Camino B1: SÍ -> Genera solo consumo local
+                    return await this.registrarAsistencia(worker, tipo, today, refreshCb, 0, true);
+                } else {
+                    // Camino B2: NO -> Fin (ningún reporte)
+                    return { success: true, workerName: worker.nombre };
                 }
             }
         }
-        return await this.registrarAsistencia(worker, tipo, today, refreshCb, cantidadCampo, true);
     }
 
     async registrarAsistencia(worker, tipo, today, refreshCb, cantidadCampo = 0, esConsumoPropio = true) {
-        const alreadyExists = await this.attendanceRepository.checkIfExists(worker.dni, today, tipo);
-        if (alreadyExists && esConsumoPropio && cantidadCampo === 0) return { success: false, error: "Ya registrado hoy" };
-        const data = { dni: worker.dni, nombreCompleto: `${worker.apellidos}, ${worker.nombre}`, empresa: worker.empresa || "Particular", tipo, fecha: today, esEncargadoCampo: !!worker.esEncargadoCampo };
-        if (cantidadCampo > 0) data.cantidadCampo = cantidadCampo;
-        if (!esConsumoPropio) data.soloCampo = true;
+        const currentUser = appStore.getState().user;
+        
+        // Bloqueo de duplicado de CONSUMO LOCAL (Ración individual)
+        if (esConsumoPropio) {
+            const existing = await this.attendanceRepository.getDetailedAttendance(worker.dni, today, tipo);
+            if (existing && existing.soloCampo === false) return { success: false, error: "Ya registrado hoy" };
+        }
+
+        const data = { 
+            dni: worker.dni, 
+            nombreCompleto: `${worker.apellidos}, ${worker.nombre}`, 
+            empresa: worker.empresa || "Particular", 
+            tipo, 
+            fecha: today, 
+            esEncargadoCampo: !!worker.esEncargadoCampo,
+            createdBy: currentUser?.email || "sistema",
+            createdAt: new Date(),
+            registroStatus: "sistema",
+            soloCampo: !esConsumoPropio,
+            cantidadCampo: cantidadCampo
+        };
+        
         if (await this.attendanceRepository.registerAttendance(data)) {
             await refreshCb();
             return { success: true, workerName: worker.nombre };

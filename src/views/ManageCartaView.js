@@ -30,26 +30,7 @@ export class ManageCartaView {
           ${this._renderHeader(acciones.onBack)}
 
           <div class="space-y-24 sm:space-y-32">
-            <!-- BLOQUE 1: Gestión de Categorías -->
-            <section class="space-y-10">
-                <div class="flex items-center gap-4">
-                    
-                    <h3 class="text-xs sm:text-sm font-black uppercase tracking-[0.4em] sm:tracking-[0.5em]">Categorías y Orden</h3>
-                </div>
-                
-                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
-                    <!-- Listado Izquierda -->
-                    <div class="lg:col-span-7 lg:max-h-[450px] lg:overflow-y-auto lg:pr-4 custom-scrollbar">
-                        ${this._renderCategoriesGrid(categorias, acciones)}
-                    </div>
-                    <!-- Formulario Derecha -->
-                    <div class="lg:col-span-5">
-                        ${this._renderCategoryForm(acciones)}
-                    </div>
-                </div>
-            </section>
-
-            <!-- BLOQUE 2: Gestión de Inventario de Productos -->
+            <!-- BLOQUE 1: Gestión de Inventario de Productos -->
             <section class="space-y-10 sm:space-y-12 scroll-mt-24" id="form-editor-section">
                 <div class="flex items-center gap-4">
                     
@@ -84,6 +65,25 @@ export class ManageCartaView {
                              </div>
                             ${this._renderProductForm(categorias, acciones)}
                         </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- BLOQUE 2: Gestión de Categorías -->
+            <section class="space-y-10">
+                <div class="flex items-center gap-4">
+                    
+                    <h3 class="text-xs sm:text-sm font-black uppercase tracking-[0.4em] sm:tracking-[0.5em]">Categorías y Orden</h3>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+                    <!-- Listado Izquierda -->
+                    <div class="lg:col-span-7 lg:max-h-[450px] lg:overflow-y-auto lg:pr-4 custom-scrollbar">
+                        ${this._renderCategoriesGrid(categorias, acciones)}
+                    </div>
+                    <!-- Formulario Derecha -->
+                    <div class="lg:col-span-5">
+                        ${this._renderCategoryForm(acciones)}
                     </div>
                 </div>
             </section>

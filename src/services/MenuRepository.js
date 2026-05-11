@@ -41,7 +41,15 @@ export class MenuRepository {
   async getDailyMenuConfig() {
     const docRef = doc(db, "configuracion", "menu_ejecutivo");
     const docSnap = await getDoc(docRef);
-    return docSnap.exists() ? docSnap.data() : null;
+    return docSnap.exists() ? docSnap.data() : { activo: true, entradas: [], segundos: [], refrescos: [] };
+  }
+
+  async saveDailyMenuVisibility(activo) {
+    try {
+      const docRef = doc(db, "configuracion", "menu_ejecutivo");
+      await setDoc(docRef, { activo }, { merge: true });
+      return true;
+    } catch (error) { return false; }
   }
 
   async saveDailyMenu(nuevaConfig) {
@@ -77,6 +85,7 @@ export class MenuRepository {
             ...platoData,
             category: Array.isArray(platoData.category) ? platoData.category : [platoData.category],
         });
+        await this.loadAllPlatos(); // Refrescar caché
         return true;
     } catch (error) { return false; }
   }
@@ -84,6 +93,7 @@ export class MenuRepository {
   async deletePlato(id) {
     try {
         await deleteDoc(doc(db, "platos_carta", id));
+        await this.loadAllPlatos(); // Refrescar caché
         return true;
     } catch (error) { return false; }
   }
@@ -94,6 +104,7 @@ export class MenuRepository {
         ...updatedData,
         category: Array.isArray(updatedData.category) ? updatedData.category : [updatedData.category],
       }, { merge: true });
+      await this.loadAllPlatos(); // Refrescar caché
       return true;
     } catch (error) { return false; }
   }

@@ -70,8 +70,8 @@ export class ManageAttendanceView {
                         </div>
                     </div>
 
-                    <!-- Tabla/Grid de Asistencia -->
-                    <div id="table-container" class="space-y-4">
+                    <!-- Tabla/Grid de Asistencia con Scroll -->
+                    <div id="table-container" class="lg:max-h-[850px] lg:overflow-y-auto lg:pr-4 custom-scrollbar">
                         ${this._renderAttendanceTable(this.allAttendances)}
                     </div>
                 </div>
@@ -275,42 +275,122 @@ export class ManageAttendanceView {
     const hasField = (a.cantidadCampo || 0) > 0;
     const isManager = a.esEncargadoCampo;
 
+    // Lógica de Trazabilidad (Manual, Sistema, Editado)
+    const status = a.registroStatus || (a.updatedBy ? "editado" : (a.createdBy ? "manual" : "sistema"));
+    const statusLabel = status === "editado" ? "Editado" : (status === "manual" ? "Manual" : "Sistema");
+    const statusColor = status === "editado" ? "bg-blue-50 text-blue-600 border-blue-100" : 
+                       (status === "manual" ? "bg-amber-50 text-amber-600 border-amber-100" : "bg-emerald-50 text-emerald-600 border-emerald-100");
+    
+    // Formatear Timestamps de Creación y Edición
+    const formatFullTimestamp = (val) => {
+        if (!val) return null;
+        const dateObj = val.toDate ? val.toDate() : new Date(val);
+        return {
+            time: dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+            date: dateObj.toLocaleDateString([], { day: '2-digit', month: '2-digit', year: '2-digit' }),
+            shortUser: (a.updatedBy || a.createdBy || "").split('@')[0] || "Sistema"
+        };
+    };
+
+    const createdInfo = formatFullTimestamp(a.createdAt || a.timestamp);
+    const updatedInfo = a.updatedBy ? formatFullTimestamp(a.updatedAt) : null;
+
     return html`
-        <div class="group relative overflow-hidden rounded-[2rem] sm:rounded-[2.5rem] border-2 border-stone-50 bg-white p-5 sm:p-6 shadow-sm hover:shadow-2xl transition-all duration-700 flex flex-col sm:flex-row items-center gap-6"
+        <div class="group relative overflow-hidden rounded-[2.5rem] border-2 border-stone-100 bg-white p-6 shadow-sm hover:shadow-2xl transition-all duration-700 flex flex-col xl:flex-row items-center gap-8"
              data-attendance-card data-name="${a.nombreCompleto.toLowerCase()}" data-dni="${a.dni}" data-company="${(a.empresa || '').toLowerCase()}">
             
-            <div class="flex-1 min-w-0 w-full sm:w-auto">
-                <div class="flex items-center gap-4 mb-2">
-                    <div class="h-2 w-2 rounded-full ${a.tipo === 'Almuerzo' ? 'bg-primary' : a.tipo === 'Desayuno' ? 'bg-amber-500' : 'bg-indigo-600'} animate-pulse"></div>
-                    <h4 class="text-sm sm:text-base font-sans font-bold text-stone-900 uppercase truncate">${a.nombreCompleto}</h4>
+            <!-- SECCIÓN 1: Trabajador y Servicio -->
+            <div class="flex-1 min-w-0 w-full">
+                <div class="flex flex-wrap items-center gap-4 mb-4">
+                    <div class="h-3 w-3 rounded-full ${a.tipo === 'Almuerzo' ? 'bg-primary' : a.tipo === 'Desayuno' ? 'bg-amber-500' : 'bg-indigo-600'} shadow-[0_0_15px_rgba(var(--primary-rgb),0.4)]"></div>
+                    <h4 class="text-base sm:text-lg font-sans font-black text-stone-900 uppercase tracking-tight">${a.nombreCompleto}</h4>
+                    <span class="px-4 py-1.5 rounded-full bg-stone-950 text-white text-[9px] font-black uppercase tracking-[0.2em] ml-auto xl:ml-0">${a.tipo}</span>
                 </div>
-                <div class="flex flex-wrap items-center gap-x-3 gap-y-1 ml-6">
-                    <span class="text-[10px] font-mono text-stone-400 font-bold">${a.dni}</span>
-                    <span class="h-1 w-1 rounded-full bg-stone-200"></span>
+                
+                <div class="flex flex-wrap items-center gap-x-5 gap-y-2 ml-7">
                     <div class="flex items-center gap-2">
-                        <span class="text-[9px] font-black uppercase text-primary/60 tracking-widest">${a.empresa || 'Particular'}</span>
-                        ${isManager ? html`<span class="px-2 py-0.5 rounded-md bg-amber-100 text-[7px] font-black text-amber-700 border border-amber-200 uppercase tracking-tighter">Encargado</span>` : ''}
+                        <svg class="h-4 w-4 text-stone-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0" stroke-width="2"/></svg>
+                        <span class="text-xs font-mono text-stone-500 font-bold">${a.dni}</span>
                     </div>
-                    <span class="h-1 w-1 rounded-full bg-stone-200"></span>
-                    <span class="text-[9px] font-bold text-stone-400 uppercase tracking-tighter">${a.fecha}</span>
+                    <div class="flex items-center gap-2">
+                        <svg class="h-4 w-4 text-stone-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" stroke-width="2"/></svg>
+                        <span class="text-[10px] font-black uppercase text-primary/70 tracking-widest">${a.empresa || 'Particular'}</span>
+                    </div>
+                    ${isManager ? html`
+                        <div class="flex items-center gap-2 px-3 py-1 rounded-lg bg-amber-50 border border-amber-100">
+                            <span class="text-[9px] font-black text-amber-700 uppercase tracking-tighter italic">Encargado de Campo</span>
+                        </div>
+                    ` : ''}
                 </div>
             </div>
 
-            <div class="flex items-center gap-6 w-full sm:w-auto justify-between sm:justify-end border-t sm:border-t-0 sm:border-l border-stone-50 pt-4 sm:pt-0 sm:pl-8">
-                <div class="flex flex-col items-end gap-1">
-                    <span class="px-3 py-1 rounded-lg bg-stone-50 text-[8px] font-black uppercase text-stone-500 border border-stone-100">${a.tipo}</span>
-                    <div class="flex gap-1.5 mt-1">
-                        ${hasLocal ? html`<span class="px-2 py-0.5 rounded-md bg-emerald-50 text-[7px] font-black text-emerald-600 border border-emerald-100 uppercase">Local</span>` : ''}
-                        ${hasField ? html`<span class="px-2 py-0.5 rounded-md bg-amber-50 text-[7px] font-black text-amber-600 border border-amber-100 uppercase">Campo (${a.cantidadCampo})</span>` : ''}
+            <!-- SECCIÓN 2: Trazabilidad Detallada -->
+            <div class="flex flex-col gap-3 min-w-[280px] w-full xl:w-auto bg-stone-50/50 p-5 rounded-[1.5rem] border border-stone-100">
+                <div class="flex items-center gap-3 mb-1">
+                    <span class="px-2.5 py-1 rounded-md ${statusColor} text-[8px] font-black uppercase border tracking-widest shadow-sm">
+                        ${statusLabel}
+                    </span>
+                    <span class="h-1 w-1 rounded-full bg-stone-200"></span>
+                    <span class="text-[9px] text-stone-400 font-bold uppercase tracking-widest italic">${a.fecha}</span>
+                </div>
+
+                <!-- Bloque Creación -->
+                ${createdInfo ? html`
+                    <div class="flex items-start gap-3">
+                        <div class="flex flex-col items-center gap-1 mt-1">
+                            <div class="h-1.5 w-1.5 rounded-full bg-stone-300"></div>
+                            <div class="w-[1px] h-4 bg-stone-200"></div>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-[7px] text-stone-400 font-black uppercase tracking-widest">Creado por</span>
+                            <div class="flex items-center gap-2">
+                                <span class="text-[10px] font-bold text-stone-700">${createdInfo.shortUser}</span>
+                                <span class="text-[10px] font-mono text-stone-400">@ ${createdInfo.time}</span>
+                            </div>
+                        </div>
+                    </div>
+                ` : ''}
+
+                <!-- Bloque Edición -->
+                ${updatedInfo ? html`
+                    <div class="flex items-start gap-3">
+                        <div class="h-1.5 w-1.5 rounded-full bg-blue-400 mt-1"></div>
+                        <div class="flex flex-col">
+                            <span class="text-[7px] text-blue-400 font-black uppercase tracking-widest">Editado por</span>
+                            <div class="flex items-center gap-2">
+                                <span class="text-[10px] font-bold text-stone-700">${updatedInfo.shortUser}</span>
+                                <span class="text-[10px] font-mono text-stone-400">@ ${updatedInfo.time}</span>
+                            </div>
+                        </div>
+                    </div>
+                ` : ''}
+            </div>
+
+            <!-- SECCIÓN 3: Consumo y Acciones -->
+            <div class="flex items-center gap-6 w-full xl:w-auto justify-between border-t xl:border-t-0 xl:border-l border-stone-100 pt-6 xl:pt-0 xl:pl-8">
+                <div class="flex flex-col items-end gap-2">
+                    <div class="flex flex-col gap-1.5">
+                        ${hasLocal ? html`
+                            <div class="flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100">
+                                <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" stroke-width="3"/></svg>
+                                <span class="text-[9px] font-black uppercase tracking-tighter">Consumo Local</span>
+                            </div>
+                        ` : ''}
+                        ${hasField ? html`
+                            <div class="flex items-center gap-2 px-3 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-100">
+                                <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" stroke-width="3"/></svg>
+                                <span class="text-[9px] font-black uppercase tracking-tighter">Campo: ${a.cantidadCampo} Raciones</span>
+                            </div>
+                        ` : ''}
                     </div>
                 </div>
 
                 <div class="flex gap-2">
-                    <button @click=${() => this.acciones.onEdit(a.id)} class="p-3.5 rounded-2xl bg-stone-50 text-stone-400 hover:bg-stone-950 hover:text-white transition-all active:scale-90 border border-stone-100 shadow-sm">
-                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                    <button @click=${() => this.acciones.onEdit(a.id)} class="p-4 rounded-[1.25rem] bg-stone-50 text-stone-400 hover:bg-stone-950 hover:text-white transition-all active:scale-90 border border-stone-100 shadow-sm group/btn">
+                        <svg class="h-5 w-5 transform group-hover/btn:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
                     </button>
-                    <button @click=${() => this._handleDelete(a.id)} class="p-3.5 rounded-2xl bg-red-50 text-red-400 hover:bg-red-500 hover:text-white transition-all active:scale-90 border border-red-100 shadow-sm">
-                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                    <button @click=${() => this._handleDelete(a.id)} class="p-4 rounded-[1.25rem] bg-red-50 text-red-400 hover:bg-red-500 hover:text-white transition-all active:scale-90 border border-red-100 shadow-sm group/btn">
+                        <svg class="h-5 w-5 transform group-hover/btn:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                     </button>
                 </div>
             </div>

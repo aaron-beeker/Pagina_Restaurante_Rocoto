@@ -18,7 +18,7 @@ export class AdminMenuController {
         if (searchInput) this.lastAdminSearch = searchInput.value;
 
         const [platosOriginales, categoriasReales] = await Promise.all([
-            this.menuRepository.getAllFromFirestore(), 
+            this.menuRepository.loadAllPlatos(), 
             this.menuRepository.getCategoriesFromFirestore()
         ]);
 
@@ -116,27 +116,28 @@ export class AdminMenuController {
         });
     }
 async abrirGestionMenuDiario(currentDailyMenu, onUpdateDailyMenu) {
-    // Si no se pasan argumentos, intentamos obtener el estado actual (opcional pero recomendado)
-    const opc = await this.menuRepository.getOpcionesParaAdmin();
+    const [opc, configActual] = await Promise.all([
+        this.menuRepository.getOpcionesParaAdmin(),
+        this.menuRepository.getDailyMenuConfig()
+    ]);
     const av = new AdminMenuView(document.getElementById("admin-layer"));
 
-    av.render(opc.segundos, opc.entradas, opc.refrescos, {
+    // Marcar seleccionados según la config actual para que el admin vea qué está activo
+    const marcarSeleccionados = (lista, seleccionados) => {
+        return lista.map(p => ({ ...p, selected: (seleccionados || []).includes(p.name) }));
+    };
+
+    const entradas = marcarSeleccionados(opc.entradas, configActual?.entradas);
+    const segundos = marcarSeleccionados(opc.segundos, configActual?.segundos);
+    const refrescos = marcarSeleccionados(opc.refrescos, configActual?.refrescos);
+
+    av.render(segundos, entradas, refrescos, {
       onSave: async (n) => { 
-          // 1. Intentar guardar en Firebase
-          if (await this.menuRepository.saveDailyMenu(n)) { 
-              // 2. Notificar al store/padre
+          if (await this.menuRepository.saveDailyMenu({ ...configActual, ...n })) { 
               if (onUpdateDailyMenu) onUpdateDailyMenu(n);
-
-              // 3. Mostrar aviso de ÉXITO
               toast.success("El menú público ha sido actualizado correctamente.", 3000);
-
-              // 4. LIMPIAR EL FORMULARIO (Resetea los checks físicamente)
               document.getElementById("admin-menu-form")?.reset();
-
-              // 5. RECARGAR la vista para sincronizar datos
               await this.abrirGestionMenuDiario(n, onUpdateDailyMenu);
-
-              // 6. SUBIR AL INICIO (Afectando al contenedor de admin que tiene el scroll)
               const adminLayer = document.getElementById("admin-layer");
               if (adminLayer) adminLayer.scrollTo({ top: 0, behavior: 'smooth' });
           } else {
@@ -146,8 +147,16 @@ async abrirGestionMenuDiario(currentDailyMenu, onUpdateDailyMenu) {
       onBack: () => {
           this.navigateTo('#/');
           window.scrollTo({ top: 0, behavior: 'smooth' });
+      },
+      onToggleVisibility: async (activo) => {
+          if (await this.menuRepository.saveDailyMenuVisibility(activo)) {
+              const updatedConfig = { ...configActual, activo };
+              if (onUpdateDailyMenu) onUpdateDailyMenu(updatedConfig);
+              toast.success(activo ? "Menú activado en la web" : "Menú ocultado de la web");
+              this.abrirGestionMenuDiario(updatedConfig, onUpdateDailyMenu);
+          }
       }
-    });        const handleDownloadPdf = async () => {
+    }, configActual?.activo);        const handleDownloadPdf = async () => {
             if (currentDailyMenu) {
                 await this.pdfService.generarMenuDiarioPdf(currentDailyMenu);
             } else {

@@ -7,8 +7,8 @@ export class AdminMenuView {
     this.data = { segundos: [], entradas: [], refrescos: [] };
   }
 
-  render(segundos, entradas, refrescos, acciones) {
-    const { onSave, onBack } = acciones;
+  render(segundos, entradas, refrescos, acciones, activo = true) {
+    const { onSave, onBack, onToggleVisibility } = acciones;
     
     const sortFn = (a, b) => a.name.localeCompare(b.name);
     this.data = {
@@ -37,6 +37,15 @@ export class AdminMenuView {
             </div>
             
             <div class="flex items-center gap-4 w-full sm:w-auto">
+                <!-- Toggle de Visibilidad -->
+                <button @click=${() => onToggleVisibility(!activo)} 
+                        class="h-14 px-6 flex items-center gap-3 rounded-2xl transition-all shadow-xl group border-2 ${activo ? 'bg-emerald-50 border-emerald-100 text-emerald-700 hover:bg-emerald-100' : 'bg-stone-100 border-stone-200 text-stone-400 hover:bg-stone-200'}">
+                    <div class="relative w-10 h-6 bg-stone-200 rounded-full p-1 transition-colors ${activo ? 'bg-emerald-500' : ''}">
+                        <div class="w-4 h-4 bg-white rounded-full shadow-sm transform transition-transform ${activo ? 'translate-x-4' : ''}"></div>
+                    </div>
+                    <span class="text-[10px] font-black uppercase tracking-[0.2em]">${activo ? 'Visible en Web' : 'Oculto en Web'}</span>
+                </button>
+
                 <div class="relative flex-1 sm:w-72 group">
                     <input type="text" id="menu-search" @input=${(e) => this._handleSearch(e)} 
                            placeholder="Buscar plato..." 

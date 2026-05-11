@@ -17,8 +17,54 @@ export class AttendanceRepository {
     this.collectionName = "asistencia_fasal";
   }
 
+  async getDetailedAttendance(dni, fecha, tipo) {
+    try {
+      const q = query(
+        collection(db, this.collectionName),
+        where("dni", "==", dni),
+        where("fecha", "==", fecha),
+        where("tipo", "==", tipo),
+        limit(1)
+      );
+      const snapshot = await getDocs(q);
+      if (snapshot.empty) return null;
+      return { id: snapshot.docs[0].id, ...snapshot.docs[0].data() };
+    } catch (error) { return null; }
+  }
+
   async registerAttendance(attendanceData) {
     try {
+      // Intentar unificar con un registro previo del mismo servicio para el mismo trabajador
+      const q = query(
+        collection(db, this.collectionName),
+        where("dni", "==", attendanceData.dni),
+        where("fecha", "==", attendanceData.fecha),
+        where("tipo", "==", attendanceData.tipo),
+        limit(1)
+      );
+      const snapshot = await getDocs(q);
+
+      if (!snapshot.empty) {
+        const docRef = snapshot.docs[0].ref;
+        const existingData = snapshot.docs[0].data();
+
+        // REGLA DE UNIFICACIÓN:
+        // 1. Si el nuevo registro es de consumo local (soloCampo: false), unificamos SIEMPRE.
+        // 2. Si el registro existente ya era local, bloqueamos (esto se valida en el controller también).
+        if (attendanceData.soloCampo === false || existingData.soloCampo === false) {
+          await updateDoc(docRef, {
+            ...attendanceData,
+            // Sumamos las raciones si ambos tienen montos, o mantenemos el mayor
+            cantidadCampo: (existingData.cantidadCampo || 0) + (attendanceData.cantidadCampo || 0),
+            soloCampo: false, // Si cualquiera de los dos es consumo local, el resultado es consumo local
+            updatedAt: new Date(),
+            updatedBy: "sistema_unificar"
+          });
+          return true;
+        }
+      }
+
+      // Si no hay nada que unificar o son registros de campo totalmente independientes
       const timestamp = new Date();
       await addDoc(collection(db, this.collectionName), {
         ...attendanceData,

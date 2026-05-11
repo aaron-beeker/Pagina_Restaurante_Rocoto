@@ -155,6 +155,25 @@ export class HomeView {
 
     updateDailyMenuUI(dailyMenu) {
         if (!this.elements.dailyMenu) return;
+        
+        // Si el menú no está activo según la configuración de admin, ocultar la sección completa
+        if (dailyMenu && dailyMenu.activo === false) {
+            this.elements.dailyMenu.classList.add("hidden");
+            // También ocultar el link del nav
+            const navLink = document.querySelector('a[href="#menu-del-dia"]');
+            if (navLink) navLink.classList.add("hidden");
+            const mobileNavLink = document.querySelector('a.mobile-nav-link[href="#menu-del-dia"]');
+            if (mobileNavLink) mobileNavLink.classList.add("hidden");
+            return;
+        }
+
+        // Asegurar que sea visible si está activo
+        this.elements.dailyMenu.classList.remove("hidden");
+        const navLink = document.querySelector('a[href="#menu-del-dia"]');
+        if (navLink) navLink.classList.remove("hidden");
+        const mobileNavLink = document.querySelector('a.mobile-nav-link[href="#menu-del-dia"]');
+        if (mobileNavLink) mobileNavLink.classList.remove("hidden");
+
         render(this._renderDailyMenu(dailyMenu), this.elements.dailyMenu);
     }
 
