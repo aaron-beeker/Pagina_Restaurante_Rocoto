@@ -56,7 +56,7 @@ export class HeroPromoAdminView {
                                 <p class="text-[9px] text-stone-400 uppercase tracking-widest mt-1">Configura las imágenes del inicio</p>
                              </div>
                             
-                            <form id="hero-promo-form" @submit=${(e) => this._handleSubmit(e)} class="space-y-10 sm:space-y-14">
+                            <form id="hero-promo-form" @submit=${(e) => this._handleSubmit(e)} @input=${() => this._updateCancelVisibility()} class="space-y-10 sm:space-y-14">
                                 <input type="hidden" id="edit-banner-index" value="" />
                                 
                                 <div class="space-y-8">
@@ -89,8 +89,9 @@ export class HeroPromoAdminView {
                                     <button type="submit" id="submit-banner-btn" class="w-full bg-stone-950 text-white py-8 sm:py-7 rounded-[2rem] sm:rounded-3xl text-sm sm:text-base uppercase tracking-[0.5em] font-black shadow-2xl hover:bg-primary transition-all duration-500 active:scale-[0.97] transform">
                                         Guardar Banner
                                     </button>
-                                    <button type="button" id="cancel-banner-edit" @click=${() => this._cancelEdit()} class="hidden w-full text-stone-400 py-4 text-xs sm:text-sm uppercase tracking-widest font-bold hover:text-stone-900 transition-all italic text-center">
-                                        Descartar Cambios
+                                    <button type="button" id="cancel-banner-edit" @click=${() => this._cancelEdit()} class="hidden w-full text-stone-400 py-4 text-xs sm:text-sm uppercase tracking-widest font-bold hover:text-red-500 transition-all italic text-center flex items-center justify-center gap-2 group/cancel">
+                                        <svg class="h-4 w-4 opacity-0 group-hover/cancel:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+                                        <span id="cancel-text">Limpiar Formulario</span>
                                     </button>
                                 </div>
                             </form>
@@ -137,6 +138,11 @@ export class HeroPromoAdminView {
                 </div>
 
                 <div class="flex gap-3 w-full sm:w-auto">
+                    <!-- Botón Toggle Rápido -->
+                    <button @click=${() => this._handleToggle(index)} class="flex-1 sm:flex-none px-5 py-3 rounded-xl border-2 transition-all active:scale-95 text-[9px] font-black uppercase tracking-widest ${b.activo ? 'bg-amber-50 border-amber-100 text-amber-600 hover:bg-amber-100' : 'bg-emerald-50 border-emerald-100 text-emerald-600 hover:bg-emerald-100'}">
+                        ${b.activo ? 'Desactivar' : 'Activar'}
+                    </button>
+                    
                     <button @click=${() => this._prepareEdit(b, index)} class="flex-1 sm:flex-none px-8 py-3 rounded-xl bg-stone-50 text-stone-600 text-[10px] font-black uppercase tracking-widest hover:bg-stone-950 hover:text-white transition-all active:scale-95">
                         Editar
                     </button>
@@ -152,7 +158,18 @@ export class HeroPromoAdminView {
 
   // --- Handlers de Lógica ---
 
-  _handleSubmit(e) {
+  async _handleToggle(index) {
+      const banner = this.banners[index];
+      banner.activo = !banner.activo;
+      
+      // Feedback inmediato local
+      this.render({ banners: this.banners }, this.acciones);
+      
+      // Persistir
+      await this.acciones.onSave({ banners: this.banners });
+  }
+
+  async _handleSubmit(e) {
       e.preventDefault();
       const index = document.getElementById("edit-banner-index").value;
       const bannerData = { 
@@ -163,15 +180,32 @@ export class HeroPromoAdminView {
           mobileImageUrl: document.getElementById("hero-promo-mobile-image-url").value.trim() || document.getElementById("hero-promo-image-url").value.trim() 
       };
 
+      let newBanners = [...this.banners];
       if (index !== "") {
-          this.banners[index] = bannerData;
+          newBanners[index] = bannerData;
       } else {
-          this.banners.push(bannerData);
+          newBanners.push(bannerData);
       }
 
-      this.acciones.onSave({ banners: this.banners });
+      await this.acciones.onSave({ banners: newBanners });
       this._cancelEdit();
-      this.render({ banners: this.banners }, this.acciones);
+  }
+
+  _updateCancelVisibility() {
+      const index = document.getElementById("edit-banner-index").value;
+      const titulo = document.getElementById("hero-promo-titulo").value.trim();
+      const img = document.getElementById("hero-promo-image-url").value.trim();
+      const mobileImg = document.getElementById("hero-promo-mobile-image-url").value.trim();
+      const cancelBtn = document.getElementById("cancel-banner-edit");
+      
+      const hasContent = titulo !== "" || img !== "" || mobileImg !== "";
+      const isEditing = index !== "";
+      
+      if (hasContent || isEditing) {
+          cancelBtn.classList.remove("hidden");
+      } else {
+          cancelBtn.classList.add("hidden");
+      }
   }
 
   _prepareEdit(b, index) {
@@ -184,7 +218,8 @@ export class HeroPromoAdminView {
       
       document.getElementById("form-title").textContent = "Editar Banner #" + (index + 1);
       document.getElementById("submit-banner-btn").textContent = "Actualizar Banner";
-      document.getElementById("cancel-banner-edit").classList.remove("hidden");
+      document.getElementById("cancel-text").textContent = "Cancelar Edición";
+      this._updateCancelVisibility();
       
       // Alineación Superior Directa
       formContainer.scrollIntoView({ behavior: "smooth", block: "start", inline: "nearest" });
@@ -201,7 +236,8 @@ export class HeroPromoAdminView {
       document.getElementById("edit-banner-index").value = "";
       document.getElementById("form-title").textContent = "Añadir Banner";
       document.getElementById("submit-banner-btn").textContent = "Guardar Banner";
-      document.getElementById("cancel-banner-edit").classList.add("hidden");
+      document.getElementById("cancel-text").textContent = "Limpiar Formulario";
+      this._updateCancelVisibility();
       if (container) container.classList.remove("ring-8", "ring-primary/10");
   }
 

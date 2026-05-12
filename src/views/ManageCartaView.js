@@ -60,7 +60,7 @@ export class ManageCartaView {
                     <div class="lg:col-span-5 order-1 lg:order-2">
                         <div class="bg-white rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-8 border border-stone-100 shadow-xl lg:sticky lg:top-8">
                              <div class="mb-5 sm:mb-6 border-b border-stone-50 pb-5">
-                                <h4 class="text-stone-900 font-display italic text-base sm:text-lg">Editor de Producto</h4>
+                                <h4 class="text-stone-900 font-display italic text-base sm:text-lg">Añadir o Editar Producto</h4>
                                 <p class="text-[7px] sm:text-[8px] text-stone-400 uppercase tracking-widest mt-0.5">Completa los campos para guardar</p>
                              </div>
                             ${this._renderProductForm(categorias, acciones)}
@@ -165,7 +165,7 @@ export class ManageCartaView {
       return html`
         <form id="add-category-form" @submit=${(e) => this._handleCatSubmit(e, acciones)} class="bg-white p-6 sm:p-8 rounded-[2rem] sm:rounded-[2.5rem] border border-stone-100 shadow-xl space-y-6 lg:sticky lg:top-8">
             <div class="space-y-1 border-b border-stone-50 pb-5">
-                <h4 class="text-stone-900 font-display italic text-base sm:text-lg">Editor de Categoría</h4>
+                <h4 class="text-stone-900 font-display italic text-base sm:text-lg">Añadir o Editar Categoría</h4>
                 <p class="text-[7px] sm:text-[8px] text-stone-400 uppercase tracking-widest mt-0.5">Gestión de grupos</p>
             </div>
             <input type="hidden" id="edit-cat-id" value="" />
@@ -275,11 +275,29 @@ export class ManageCartaView {
 
   _renderCategoryCheckboxes(categorias) {
     return categorias.map(cat => html`
-      <label class="flex cursor-pointer items-center justify-between px-5 py-3 rounded-xl border-2 border-stone-50 bg-white hover:border-primary/20 transition-all active:scale-95 has-[:checked]:border-primary has-[:checked]:bg-primary/[0.02]">
+      <label class="flex cursor-pointer items-center justify-between px-5 py-3 rounded-xl border-2 border-stone-50 bg-white hover:border-primary/20 transition-all active:scale-95 has-[:checked]:border-primary has-[:checked]:bg-primary/[0.02] has-[:disabled]:opacity-40 has-[:disabled]:cursor-not-allowed has-[:disabled]:hover:border-stone-50">
         <span class="text-[11px] sm:text-xs font-bold text-stone-600 uppercase tracking-tight truncate">${cat.nombre}</span>
-        <input type="checkbox" name="product-category" value="${cat.nombre}" class="w-5 h-5 rounded border-stone-200 text-primary focus:ring-0" @change=${() => this._togglePriceInput()} />
+        <input type="checkbox" name="product-category" value="${cat.nombre}" class="w-5 h-5 rounded border-stone-200 text-primary focus:ring-0 disabled:pointer-events-none" @change=${(e) => this._handleCategoryChange(e)} />
       </label>
     `);
+  }
+
+  _handleCategoryChange(e) {
+    const checkboxes = document.querySelectorAll('input[name="product-category"]');
+    const isChecked = e.target.checked;
+    
+    if (isChecked) {
+        checkboxes.forEach(cb => {
+            if (cb !== e.target) {
+                cb.disabled = true;
+            }
+        });
+    } else {
+        checkboxes.forEach(cb => {
+            cb.disabled = false;
+        });
+    }
+    this._togglePriceInput();
   }
 
   // --- Lógica de Filtro ---
@@ -376,6 +394,11 @@ export class ManageCartaView {
       document.getElementById("edit-id").value = "";
       document.getElementById("submit-product-btn").textContent = "Guardar Producto";
       document.getElementById("cancel-product-edit").classList.add("hidden");
+      
+      // Re-habilitar todas las categorías al cancelar
+      const checkboxes = document.querySelectorAll('input[name="product-category"]');
+      checkboxes.forEach(cb => cb.disabled = false);
+
       this._togglePriceInput();
   }
 
@@ -397,9 +420,23 @@ export class ManageCartaView {
     document.getElementById("new-description").value = plato.description || "";
     document.getElementById("new-image-url").value = plato.imageUrl || "";
     const checkboxes = document.querySelectorAll('input[name="product-category"]');
+    
+    let anyChecked = false;
     checkboxes.forEach(cb => {
-      cb.checked = Array.isArray(plato.category) ? plato.category.includes(cb.value) : plato.category === cb.value;
+      const isChecked = Array.isArray(plato.category) ? plato.category.includes(cb.value) : plato.category === cb.value;
+      cb.checked = isChecked;
+      if (isChecked) anyChecked = true;
     });
+
+    // Aplicar bloqueo de categorías si hay una seleccionada
+    if (anyChecked) {
+        checkboxes.forEach(cb => {
+            if (!cb.checked) cb.disabled = true;
+        });
+    } else {
+        checkboxes.forEach(cb => cb.disabled = false);
+    }
+
     this._togglePriceInput();
     document.getElementById("submit-product-btn").textContent = "Actualizar Producto";
     document.getElementById("cancel-product-edit").classList.remove("hidden");

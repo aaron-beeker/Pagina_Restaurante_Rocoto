@@ -180,7 +180,8 @@ export class HomeView {
     updateHeroUI(heroPromo) {
         if (!this.elements.hero) return;
         render(this._renderHero(heroPromo), this.elements.hero);
-        if (heroPromo?.banners?.length > 0) this.initHeroSwiper();
+        // Siempre intentar inicializar si existe el elemento, para que el placeholder se vea bien
+        this.initHeroSwiper();
     }
 
     updateMobileNavUI() {
@@ -793,14 +794,31 @@ export class HomeView {
     // --- Inicialización de Swipers ---
 
     initHeroSwiper() {
-        if (this.swiper) this.swiper.destroy(true, true);
-        if (!document.querySelector('.hero-swiper')) return;
-        this.swiper = new Swiper('.hero-swiper', {
-            modules: [Navigation, Pagination, Autoplay],
-            loop: true, speed: 1000, autoplay: { delay: 6000, disableOnInteraction: false },
-            pagination: { el: '.swiper-pagination', clickable: true },
-            navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
-        });
+        if (this.swiper) {
+            this.swiper.destroy(true, true);
+            this.swiper = null;
+        }
+        
+        // Pequeño delay para asegurar que el DOM de Lit-html esté listo y las imágenes cargando
+        setTimeout(() => {
+            const swiperEl = document.querySelector('.hero-swiper');
+            if (!swiperEl) return;
+
+            const slidesCount = swiperEl.querySelectorAll('.swiper-slide').length;
+            if (slidesCount === 0) return;
+
+            this.swiper = new Swiper('.hero-swiper', {
+                modules: [Navigation, Pagination, Autoplay],
+                loop: slidesCount > 1, 
+                speed: 1000, 
+                autoplay: slidesCount > 1 ? { delay: 6000, disableOnInteraction: false } : false,
+                pagination: { el: '.swiper-pagination', clickable: true },
+                navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
+                observer: true,
+                observeParents: true,
+                watchOverflow: true
+            });
+        }, 100);
     }
 
     initCompaniesSwiper() {

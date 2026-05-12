@@ -99,14 +99,16 @@ export class AdminMenuController {
         }
     }
 
-    async abrirGestionHero() {
+    async abrirGestionHero(onUpdateHero) {
         let d = null; 
         try { d = await this.menuRepository.getHeroPromo(); } catch (e) {}
         const v = new HeroPromoAdminView(document.getElementById("admin-layer"));
         v.render(d, {
             onSave: async (p) => { 
                 if (await this.menuRepository.saveHeroPromo(p)) { 
+                    if (onUpdateHero) onUpdateHero(p);
                     toast.success("Banners guardados correctamente"); 
+                    await this.abrirGestionHero(onUpdateHero); // Refrescar vista completa
                 }
             },
             onBack: () => {

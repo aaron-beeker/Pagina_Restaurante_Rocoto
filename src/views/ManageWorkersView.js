@@ -203,7 +203,7 @@ export class ManageWorkersView {
                 <div class="flex flex-wrap items-center justify-center md:justify-start gap-3 mb-2">
                     <h4 class="text-base sm:text-lg font-sans font-bold text-stone-900 uppercase tracking-tight truncate">${nombreCompleto}</h4>
                     ${w.esEncargadoCampo 
-                        ? html`<span class="text-[7px] font-black text-amber-600 uppercase bg-amber-50 px-2 py-0.5 rounded-full border border-amber-100 tracking-tighter">Campo</span>` 
+                        ? html`<span class="text-[7px] font-black text-amber-600 uppercase bg-amber-50 px-2 py-0.5 rounded-full border border-amber-100 tracking-tighter">Encargado de Campo</span>` 
                         : ''
                     }
                 </div>
@@ -264,6 +264,7 @@ export class ManageWorkersView {
             if (result) {
                 this.capturedTemplates.push(result);
                 this.updateStepDots(i);
+                //ajustar velocidad de huellero
                 if (i < 3) await new Promise(resolve => setTimeout(resolve, 2000));
             }
         }
@@ -283,18 +284,22 @@ export class ManageWorkersView {
   }
 
   _handleFilter() {
-    const company = document.getElementById("filter-company").value.toLowerCase();
-    const query = document.getElementById("search-worker").value.toLowerCase().trim();
-    const cards = this.rootElement.querySelectorAll("[data-worker-card]");
-    
-    cards.forEach(card => {
-        const name = card.getAttribute("data-name");
-        const dni = card.getAttribute("data-dni");
-        const comp = card.getAttribute("data-company");
-        const matchesQuery = !query || name.includes(query) || dni.includes(query);
-        const matchesCompany = !company || comp === company;
-        card.classList.toggle("hidden", !(matchesQuery && matchesCompany));
-    });
+    const company = document.getElementById("filter-company").value;
+    const query = document.getElementById("search-worker").value;
+    this.acciones.onSearch(query, company);
+  }
+
+  renderListOnly(workers) {
+    const container = document.getElementById("workers-list-container");
+    if (container) {
+        render(this._renderWorkerList(workers), container);
+    }
+  }
+
+  async _handleDelete(id) {
+    if (this.acciones && this.acciones.onDelete) {
+        await this.acciones.onDelete(id);
+    }
   }
 
   _handleFormSubmit(e) {

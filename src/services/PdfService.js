@@ -147,7 +147,6 @@ export class PdfService {
     async generarReporteAsistenciaGrupal(companyName, startDate, endDate, attendanceList, allWorkers, prices = {d:10, a:10, c:10}) {
         const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
         const width = doc.internal.pageSize.getWidth();
-        const height = doc.internal.pageSize.getHeight();
         
         // 1. Encabezado Estilizado
         doc.setFillColor(...this.primary);
@@ -163,9 +162,7 @@ export class PdfService {
         doc.text(`PERIODO: ${startDate} AL ${endDate}`, width - 15, 30, { align: 'right' });
 
         // 2. Procesamiento de Datos
-        let grandTotalD = 0;
-        let grandTotalA = 0;
-        let grandTotalC = 0;
+        let grandTotalD = 0, grandTotalA = 0, grandTotalC = 0;
 
         const tableBody = allWorkers.map((worker, index) => {
             let workerTotalD = 0, workerTotalA = 0, workerTotalC = 0;
@@ -180,18 +177,15 @@ export class PdfService {
             });
 
             const workerCost = (workerTotalD * prices.d) + (workerTotalA * prices.a) + (workerTotalC * prices.c);
-            
-            grandTotalD += workerTotalD;
-            grandTotalA += workerTotalA;
-            grandTotalC += workerTotalC;
+            grandTotalD += workerTotalD; grandTotalA += workerTotalA; grandTotalC += workerTotalC;
 
             return [
                 index + 1,
                 worker.dni,
                 `${worker.apellidos}, ${worker.nombre}`.toUpperCase(),
-                workerTotalD,
-                workerTotalA,
-                workerTotalC,
+                workerTotalD || "",
+                workerTotalA || "",
+                workerTotalC || "",
                 `S/ ${workerCost.toFixed(2)}`
             ];
         });
@@ -212,15 +206,13 @@ export class PdfService {
             allWorkers.length + 1,
             "-",
             "TOTAL RACIONES A CAMPO (GRUPALES)",
-            fieldTotalD,
-            fieldTotalA,
-            fieldTotalC,
+            fieldTotalD || "",
+            fieldTotalA || "",
+            fieldTotalC || "",
             `S/ ${fieldCost.toFixed(2)}`
         ]);
 
-        grandTotalD += fieldTotalD;
-        grandTotalA += fieldTotalA;
-        grandTotalC += fieldTotalC;
+        grandTotalD += fieldTotalD; grandTotalA += fieldTotalA; grandTotalC += fieldTotalC;
         const grandTotalCost = (grandTotalD * prices.d) + (grandTotalA * prices.a) + (grandTotalC * prices.c);
 
         // 3. Renderizar Tabla Principal

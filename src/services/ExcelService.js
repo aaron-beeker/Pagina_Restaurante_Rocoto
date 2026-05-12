@@ -87,7 +87,7 @@ export class ExcelService {
             headers[6].push(date.split('-')[2], "", ""); 
         });
 
-        // "TOTAL" en cabecera (Se combinará luego)
+        // "TOTAL" en cabecera
         headers[5].push("TOTAL", "", "", ""); 
         headers[6].push("", "", "", ""); 
 
@@ -100,23 +100,43 @@ export class ExcelService {
         // 3. Procesar Filas de Datos
         let grandTotalD = 0, grandTotalA = 0, grandTotalC = 0;
         const rows = allWorkers.map((worker, index) => {
-            const row = [index + 1, worker.dni, `${worker.apellidos.toUpperCase()}, ${worker.nombre.toUpperCase()}`];
-            let wD = 0, wA = 0, wC = 0;
-            dates.forEach((date) => {
-                const dayRecords = attendanceList.filter(a => String(a.dni).trim() === String(worker.dni).trim() && a.fecha === date);
-                const hasD = dayRecords.some(r => r.tipo.toLowerCase().includes('desayuno') && !r.soloCampo) ? 1 : "";
-                const hasA = dayRecords.some(r => r.tipo.toLowerCase().includes('almuerzo') && !r.soloCampo) ? 1 : "";
-                const hasC = dayRecords.some(r => r.tipo.toLowerCase().includes('cena') && !r.soloCampo) ? 1 : "";
-                row.push(hasD, hasA, hasC);
-                if (hasD) wD++; if (hasA) wA++; if (hasC) wC++;
-            });
-            const workerCost = (wD * prices.d) + (wA * prices.a) + (wC * prices.c);
-            row.push(wD, wA, wC, workerCost);
-            grandTotalD += wD; grandTotalA += wA; grandTotalC += wC;
-            return row;
-        });
+    const row = [index + 1, worker.dni, `${worker.apellidos.toUpperCase()}, ${worker.nombre.toUpperCase()}`];
+    let wD = 0, wA = 0, wC = 0;
 
-        // Fila de Campo
+    dates.forEach((date) => {
+        // Filtramos todos los registros del trabajador para esta fecha específica
+        const dayRecords = attendanceList.filter(a => 
+            String(a.dni).trim() === String(worker.dni).trim() && 
+            a.fecha === date
+        );
+
+        // En lugar de .some() (que devuelve true/false), usamos .filter().length para contar raciones
+        const countD = dayRecords.filter(r => r.tipo.toLowerCase().includes('desayuno') && !r.soloCampo).length;
+        const countA = dayRecords.filter(r => r.tipo.toLowerCase().includes('almuerzo') && !r.soloCampo).length;
+        const countC = dayRecords.filter(r => r.tipo.toLowerCase().includes('cena') && !r.soloCampo).length;
+
+        // Agregamos el número de raciones a la fila del Excel (o vacío si es 0)
+        row.push(countD || "", countA || "", countC || "");
+
+        // Sumamos las cantidades reales a los acumuladores del trabajador
+        wD += countD; 
+        wA += countA; 
+        wC += countC;
+    });
+
+    // El costo ahora se calcula basándose en el total de raciones consumidas
+    const workerCost = (wD * prices.d) + (wA * prices.a) + (wC * prices.c);
+    row.push(wD, wA, wC, workerCost);
+
+    // Actualizamos los totales generales del reporte
+    grandTotalD += wD; 
+    grandTotalA += wA; 
+    grandTotalC += wC;
+
+    return row;
+});
+
+        // Fila de Campo (Raciones enviadas)
         const fieldRow = [allWorkers.length + 1, "-", "TOTAL RACIONES A CAMPO (GRUPALES)"];
         let fD = 0, fA = 0, fC = 0;
         dates.forEach(date => {
@@ -132,7 +152,7 @@ export class ExcelService {
 
         grandTotalD += fD; grandTotalA += fA; grandTotalC += fC;
         
-        // 4. Footer de Liquidación (Alineado y Combinado 6 celdas)
+        // 4. Footer de Liquidación
         const footerStartRow = headers.length + rows.length;
         const labelCol = totalsColsStart - 6;
         
@@ -150,7 +170,7 @@ export class ExcelService {
         // 1. Estilos Títulos de Cabecera
         for (let r = 0; r <= 3; r++) {
             const cell = XLSX.utils.encode_cell({ r, c: 0 });
-            ws[cell].s = {
+            if (ws[cell]) ws[cell].s = {
                 font: { bold: true, size: r === 0 ? 18 : 11, color: { rgb: r === 0 ? this.primaryColor : "000000" } },
                 alignment: { horizontal: "center" }
             };
@@ -188,19 +208,17 @@ export class ExcelService {
             }
         });
 
-        // 4. Footer (Combinar 6 celdas y Alinear Derecha)
+        // 4. Footer
         for (let r = 1; r <= 3; r++) {
             const rowIdx = footerStartRow + r;
-            // Estilo etiqueta (Combinada de 6)
             const labelRef = XLSX.utils.encode_cell({ r: rowIdx, c: labelCol });
-            ws[labelRef].s = { 
+            if (ws[labelRef]) ws[labelRef].s = { 
                 font: { bold: true, size: 9 }, 
                 alignment: { horizontal: "right", vertical: "center" }, 
                 fill: { fgColor: { rgb: "f8fafc" } },
                 border: this.borderStyle 
             };
             
-            // Estilo valores footer
             for (let c = totalsColsStart; c < totalCols; c++) {
                 const valRef = XLSX.utils.encode_cell({ r: rowIdx, c });
                 if (ws[valRef]) ws[valRef].s = { 
@@ -217,24 +235,22 @@ export class ExcelService {
         for (let i = 3; i < totalCols; i++) ws['!cols'].push({ wch: 4 });
 
         ws['!merges'] = [
-            { s: { r: 0, c: 0 }, e: { r: 0, c: totalCols - 1 } }, // Título 1
-            { s: { r: 1, c: 0 }, e: { r: 1, c: totalCols - 1 } }, // Título 2
-            { s: { r: 2, c: 0 }, e: { r: 2, c: totalCols - 1 } }, // Título 3
-            { s: { r: 3, c: 0 }, e: { r: 3, c: totalCols - 1 } }, // Título 4
-            { s: { r: 5, c: 0 }, e: { r: 7, c: 0 } }, // ITEM
-            { s: { r: 5, c: 1 }, e: { r: 7, c: 1 } }, // DNI
-            { s: { r: 5, c: 2 }, e: { r: 7, c: 2 } }, // NOMBRES
-            { s: { r: 5, c: totalsColsStart }, e: { r: 6, c: totalCols - 1 } } // EL "TOTAL" CENTRADO EN CABECERA
+            { s: { r: 0, c: 0 }, e: { r: 0, c: totalCols - 1 } },
+            { s: { r: 1, c: 0 }, e: { r: 1, c: totalCols - 1 } },
+            { s: { r: 2, c: 0 }, e: { r: 2, c: totalCols - 1 } },
+            { s: { r: 3, c: 0 }, e: { r: 3, c: totalCols - 1 } },
+            { s: { r: 5, c: 0 }, e: { r: 7, c: 0 } },
+            { s: { r: 5, c: 1 }, e: { r: 7, c: 1 } },
+            { s: { r: 5, c: 2 }, e: { r: 7, c: 2 } },
+            { s: { r: 5, c: totalsColsStart }, e: { r: 6, c: totalCols - 1 } }
         ];
 
-        // Merges de Días
         dates.forEach((_, i) => {
             const startCol = 3 + (i * 3);
             ws['!merges'].push({ s: { r: 5, c: startCol }, e: { r: 5, c: startCol + 2 } });
             ws['!merges'].push({ s: { r: 6, c: startCol }, e: { r: 6, c: startCol + 2 } });
         });
 
-        // Merges de Footer (Combinar 6 celdas para cada etiqueta)
         for (let r = 1; r <= 3; r++) {
             ws['!merges'].push({ s: { r: footerStartRow + r, c: labelCol }, e: { r: footerStartRow + r, c: totalsColsStart - 1 } });
         }

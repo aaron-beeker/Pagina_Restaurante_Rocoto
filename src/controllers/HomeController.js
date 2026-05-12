@@ -331,7 +331,9 @@ export class HomeController {
     } else if (hash === '#/admin/carta') {
       await this.adminMenuController.abrirGestionCarta();
     } else if (hash === '#/admin/hero') {
-      await this.adminMenuController.abrirGestionHero();
+      await this.adminMenuController.abrirGestionHero((newHero) => {
+          appStore.setState({ heroPromo: newHero });
+      });
     } else if (hash === '#/admin/asistencia') {
       await this.attendanceController.abrirRegistroAsistencia();
     } else if (hash === '#/admin/reportes') {
