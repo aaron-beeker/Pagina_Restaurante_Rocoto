@@ -268,14 +268,14 @@ export class HomeController {
     manageView.render(users, {
       onBack: () => this.navigateTo("#/"),
       onSave: async (userData, oldEmail) => {
-        const { email, nombre, role } = userData;
+        const { email } = userData;
         
         // Si hay oldEmail y es diferente al nuevo, borrar el viejo primero
         if (oldEmail && oldEmail !== email) {
             await this.userRepository.deleteUser(oldEmail);
         }
 
-        if (await this.userRepository.saveUser(email, { nombre, role })) {
+        if (await this.userRepository.saveUser(email, userData)) {
           toast.success(oldEmail ? "Usuario actualizado" : "Usuario creado");
           const updatedUsers = await this.userRepository.getAllUsers();
           manageView.render(updatedUsers, manageView.acciones);

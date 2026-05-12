@@ -121,7 +121,7 @@ export class AttendanceController {
         
         const refreshLastRegistrations = async () => {
             const list = await this.attendanceRepository.getAttendanceByDate(today);
-            attendanceView.renderLastRegistrations(list.filter(a => !a.soloCampo));
+            attendanceView.renderLastRegistrations(list);
         };
 
         const acciones = {

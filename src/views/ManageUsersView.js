@@ -48,14 +48,14 @@ export class ManageUsersView {
 
                                 <!-- EDITOR DERECHA (Card para Editar - Sticky) -->
                                 <div class="lg:col-span-5 order-1 lg:order-2">
-                                    <div class="bg-stone-950 p-8 sm:p-12 rounded-[2.5rem] sm:rounded-[3rem] shadow-2xl lg:sticky lg:top-10 overflow-hidden" id="user-editor-container">
-                                        <!-- Decoración -->
-                                        <div class="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -mr-32 -mt-32"></div>
+                                    <div class="bg-white p-8 sm:p-10 rounded-[3rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.05)] border border-stone-100 lg:sticky lg:top-10 overflow-hidden" id="user-editor-container">
+                                        <!-- Decoración Suave -->
+                                        <div class="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -mr-32 -mt-32 opacity-60"></div>
                                         
                                         <div class="relative z-10">
-                                            <div class="mb-10 border-b border-white/10 pb-6">
-                                                <h4 class="text-white font-display italic text-xl sm:text-2xl" id="user-form-title">Gestionar Acceso</h4>
-                                                <p class="text-[9px] text-stone-500 uppercase tracking-widest mt-2">Completa los datos del administrador</p>
+                                            <div class="mb-10 border-b border-stone-100 pb-6">
+                                                <h4 class="text-stone-900 font-display italic text-2xl" id="user-form-title">Gestionar Acceso</h4>
+                                                <p class="text-[9px] text-stone-400 uppercase tracking-[0.2em] font-black mt-2">Seguridad de administrador</p>
                                             </div>
 
                                             <form id="user-manage-form" @submit=${(e) => this._handleSubmit(e)} class="space-y-8">
@@ -63,45 +63,45 @@ export class ManageUsersView {
                                                 
                                                 <div class="space-y-6">
                                                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                                        <div>
-                                                            <label class="text-[10px] uppercase tracking-[0.3em] text-stone-500 font-bold mb-3 block">Nombres</label>
-                                                            <input type="text" id="user-nombre" placeholder="Nombre" class="w-full bg-stone-900 border-b-2 border-stone-800 py-3 text-white text-base focus:border-primary transition-all outline-none" required />
+                                                        <div class="space-y-2">
+                                                            <label class="text-[9px] uppercase tracking-[0.2em] text-primary/40 font-black px-1">Nombres</label>
+                                                            <input type="text" id="user-nombre" placeholder="Ej. Roberto" class="w-full bg-stone-50/50 border border-stone-100 rounded-2xl py-4 px-5 text-stone-900 text-sm focus:border-primary/30 focus:bg-white transition-all outline-none shadow-inner" required />
                                                         </div>
-                                                        <div>
-                                                            <label class="text-[10px] uppercase tracking-[0.3em] text-stone-500 font-bold mb-3 block">Apellidos</label>
-                                                            <input type="text" id="user-apellido" placeholder="Apellido" class="w-full bg-stone-900 border-b-2 border-stone-800 py-3 text-white text-base focus:border-primary transition-all outline-none" required />
+                                                        <div class="space-y-2">
+                                                            <label class="text-[9px] uppercase tracking-[0.2em] text-primary/40 font-black px-1">Apellidos</label>
+                                                            <input type="text" id="user-apellido" placeholder="Ej. Valdez" class="w-full bg-stone-50/50 border border-stone-100 rounded-2xl py-4 px-5 text-stone-900 text-sm focus:border-primary/30 focus:bg-white transition-all outline-none shadow-inner" required />
                                                         </div>
                                                     </div>
 
-                                                    <div>
-                                                        <label class="text-[10px] uppercase tracking-[0.3em] text-stone-500 font-bold mb-3 block">Correo de Google</label>
-                                                        <input type="email" id="user-email" placeholder="usuario@gmail.com" class="w-full bg-stone-900 border-b-2 border-stone-800 py-3 text-white text-base focus:border-primary transition-all outline-none" required />
+                                                    <div class="space-y-2">
+                                                        <label class="text-[9px] uppercase tracking-[0.2em] text-primary/40 font-black px-1">Correo Electrónico</label>
+                                                        <input type="email" id="user-email" placeholder="usuario@gmail.com" class="w-full bg-stone-50/50 border border-stone-100 rounded-2xl py-4 px-5 text-stone-900 text-sm focus:border-primary/30 focus:bg-white transition-all outline-none shadow-inner" required />
                                                     </div>
 
-                                                    <div>
-                                                        <label class="text-[10px] uppercase tracking-[0.3em] text-stone-500 font-bold mb-3 block">Rango de Seguridad</label>
-                                                        <div class="flex gap-4">
+                                                    <div class="space-y-3">
+                                                        <label class="text-[9px] uppercase tracking-[0.2em] text-primary/40 font-black px-1">Nivel de Acceso</label>
+                                                        <div class="flex gap-3">
                                                             <label class="flex-1 cursor-pointer group">
                                                                 <input type="radio" name="user-role" value="admin" checked class="sr-only peer" />
-                                                                <div class="p-4 rounded-2xl border-2 border-stone-800 bg-stone-900 text-stone-500 peer-checked:border-primary peer-checked:text-white transition-all text-center">
-                                                                    <span class="text-[10px] font-black uppercase tracking-widest">Admin</span>
+                                                                <div class="p-4 rounded-2xl border border-stone-100 bg-stone-50/50 text-stone-400 peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:text-primary transition-all text-center">
+                                                                    <span class="text-[9px] font-black uppercase tracking-widest leading-none">Admin</span>
                                                                 </div>
                                                             </label>
                                                             <label class="flex-1 cursor-pointer group">
                                                                 <input type="radio" name="user-role" value="client" class="sr-only peer" />
-                                                                <div class="p-4 rounded-2xl border-2 border-stone-800 bg-stone-900 text-stone-500 peer-checked:border-primary peer-checked:text-white transition-all text-center">
-                                                                    <span class="text-[10px] font-black uppercase tracking-widest">Cliente</span>
+                                                                <div class="p-4 rounded-2xl border border-stone-100 bg-stone-50/50 text-stone-400 peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:text-primary transition-all text-center">
+                                                                    <span class="text-[9px] font-black uppercase tracking-widest leading-none">Cliente</span>
                                                                 </div>
                                                             </label>
                                                         </div>
                                                     </div>
                                                 </div>
 
-                                                <div class="flex flex-col gap-4 pt-6 border-t border-white/5">
-                                                    <button type="submit" id="submit-user-btn" class="w-full bg-primary text-white py-8 rounded-3xl text-sm uppercase tracking-[0.5em] font-black shadow-2xl hover:bg-primary/90 active:scale-[0.97] transition-all transform">
+                                                <div class="flex flex-col gap-4 pt-6">
+                                                    <button type="submit" id="submit-user-btn" class="w-full bg-primary text-white py-6 rounded-3xl text-[10px] uppercase tracking-[0.4em] font-black shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all">
                                                         Guardar Acceso
                                                     </button>
-                                                    <button type="button" id="cancel-user-edit" @click=${() => this._resetForm()} class="hidden w-full text-stone-500 py-3 text-xs font-bold uppercase tracking-widest hover:text-white transition-all italic text-center">
+                                                    <button type="button" id="cancel-user-edit" @click=${() => this._resetForm()} class="hidden w-full text-stone-400 py-2 text-[9px] font-black uppercase tracking-widest hover:text-primary transition-all text-center italic">
                                                         Cancelar Edición
                                                     </button>
                                                 </div>
@@ -126,32 +126,34 @@ export class ManageUsersView {
         const nombreCompleto = `${u.nombre || ''} ${u.apellido || ''}`.trim() || 'Usuario sin nombre';
         
         return html`
-            <div class="group relative overflow-hidden rounded-[2.5rem] border-2 border-stone-50 bg-white p-6 sm:p-8 shadow-sm hover:shadow-2xl transition-all duration-700 flex flex-col md:flex-row items-center gap-6">
-                <!-- Avatar -->
-                <div class="h-16 w-16 rounded-full bg-stone-950 flex items-center justify-center text-white font-display italic text-xl shadow-xl shrink-0 group-hover:bg-primary transition-all duration-500">
+            <div class="group relative overflow-hidden rounded-[2.5rem] border-2 border-stone-50 bg-white p-6 sm:p-7 shadow-[0_8px_30px_rgb(0,0,0,0.02)] hover:shadow-2xl hover:border-primary/10 transition-all duration-700 flex flex-col md:flex-row items-center gap-6">
+                <!-- Avatar Editorial -->
+                <div class="h-14 w-14 rounded-2xl bg-gradient-to-br from-stone-900 to-stone-800 flex items-center justify-center text-white font-display italic text-xl shadow-lg shrink-0 group-hover:scale-105 group-hover:rotate-3 transition-all duration-500 ring-4 ring-stone-50">
                     ${nombreCompleto.charAt(0).toUpperCase()}
                 </div>
 
                 <!-- Info -->
-                <div class="flex-1 min-w-0">
-                    <h4 class="text-base sm:text-lg font-sans font-bold text-stone-900 uppercase tracking-tight truncate mb-1">${nombreCompleto}</h4>
-                    <p class="text-[10px] sm:text-xs text-stone-400 truncate lowercase font-medium">${u.email}</p>
+                <div class="flex-1 min-w-0 text-center md:text-left">
+                    <h4 class="text-base font-bold text-stone-900 uppercase tracking-tight truncate mb-1 group-hover:text-primary transition-colors">${nombreCompleto}</h4>
+                    <p class="text-[10px] text-stone-400 truncate lowercase font-black tracking-widest opacity-60">${u.email}</p>
                 </div>
 
-                <!-- Rol -->
+                <!-- Rol Badge -->
                 <div class="shrink-0">
-                    <span class="inline-flex px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest ${u.role === 'admin' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-stone-50 text-stone-600 border border-stone-100'}">
+                    <span class="inline-flex px-4 py-2 rounded-xl text-[8px] font-black uppercase tracking-[0.2em] ${u.role === 'admin' ? 'bg-primary/5 text-primary border border-primary/10' : 'bg-stone-50 text-stone-400 border border-stone-100'}">
                         ${u.role}
                     </span>
                 </div>
 
-                <!-- Acciones -->
+                <!-- Acciones Modernas -->
                 <div class="flex gap-2">
-                    <button @click=${() => this._prepareEdit(u)} class="p-3.5 rounded-2xl bg-stone-50 text-stone-500 hover:bg-stone-950 hover:text-white transition-all active:scale-90">
-                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                    <button @click=${() => this._prepareEdit(u)} class="group/btn flex items-center gap-2 px-4 py-3 rounded-2xl bg-stone-50 text-stone-400 hover:bg-primary hover:text-white transition-all active:scale-95 shadow-sm border border-stone-100/50">
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                        <span class="text-[8px] font-black uppercase tracking-[0.2em] hidden sm:inline">Editar</span>
                     </button>
-                    <button @click=${() => this._handleDelete(u.email, actions.onDelete)} class="p-3.5 rounded-2xl bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition-all active:scale-90">
-                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                    <button @click=${() => this._handleDelete(u.email, actions.onDelete)} class="group/btn flex items-center gap-2 px-4 py-3 rounded-2xl bg-stone-50 text-stone-400 hover:bg-red-500 hover:text-white transition-all active:scale-95 shadow-sm border border-stone-100/50">
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                        <span class="text-[8px] font-black uppercase tracking-[0.2em] hidden sm:inline">Eliminar</span>
                     </button>
                 </div>
             </div>
