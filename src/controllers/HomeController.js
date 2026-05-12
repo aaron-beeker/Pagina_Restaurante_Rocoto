@@ -7,7 +7,7 @@ import { WorkerRepository } from "../services/WorkerRepository.js";
 import { CompanyRepository } from "../services/CompanyRepository.js";
 import { AttendanceRepository } from "../services/AttendanceRepository.js";
 import { SupremaService } from "../services/SupremaService.js";
-import { toast } from "../utils/notifications.js";
+import { toast, preloader } from "../utils/notifications.js";
 import { appStore } from "../utils/Store.js";
 
 // Nuevos Controladores y Vistas
@@ -257,41 +257,63 @@ export class HomeController {
     }
   }
 
-  async abrirGestionUsuarios() {
-    this.navigateTo("#/admin/users");
-    const users = await this.userRepository.getAllUsers();
-    
-    this.homeView.hide(); 
-    const adminLayer = this._getCleanAdminLayer();
-    const manageView = new ManageUsersView(adminLayer);
-    
-    manageView.render(users, {
-      onBack: () => this.navigateTo("#/"),
-      onSave: async (userData, oldEmail) => {
-        const { email } = userData;
-        
-        // Si hay oldEmail y es diferente al nuevo, borrar el viejo primero
-        if (oldEmail && oldEmail !== email) {
-            await this.userRepository.deleteUser(oldEmail);
-        }
 
-        if (await this.userRepository.saveUser(email, userData)) {
-          toast.success(oldEmail ? "Usuario actualizado" : "Usuario creado");
-          const updatedUsers = await this.userRepository.getAllUsers();
-          manageView.render(updatedUsers, manageView.acciones);
-        } else {
-          toast.error("Error al procesar el usuario");
-        }
-      },
-      onDelete: async (email) => {
-        if (await this.userRepository.deleteUser(email)) {
-          toast.success("Usuario eliminado");
-          const updatedUsers = await this.userRepository.getAllUsers();
-          manageView.render(updatedUsers, manageView.acciones);
-        }
-      }
-    });
+
+  async abrirGestionUsuarios() {
+    preloader.show("Cargando Usuarios...");
+    try {
+        const users = await this.userRepository.getAllUsers();
+        
+        this.homeView.hide(); 
+        const adminLayer = this._getCleanAdminLayer();
+        const manageView = new ManageUsersView(adminLayer);
+        
+        manageView.render(users, {
+          onBack: () => this.navigateTo("#/"),
+          onSave: async (userData, oldEmail) => {
+            preloader.show(oldEmail ? "Actualizando..." : "Creando...");
+            try {
+                const { email } = userData;
+                
+                if (oldEmail && oldEmail !== email) {
+                    await this.userRepository.deleteUser(oldEmail);
+                }
+
+                if (await this.userRepository.saveUser(email, userData)) {
+                  toast.success(oldEmail ? "Usuario actualizado" : "Usuario creado");
+                  const updatedUsers = await this.userRepository.getAllUsers();
+                  manageView.render(updatedUsers, manageView.acciones);
+                } else {
+                  toast.error("Error al procesar el usuario");
+                }
+            } finally {
+                preloader.hide();
+            }
+          },
+          onDelete: async (email) => {
+            preloader.show("Eliminando...");
+            try {
+                if (await this.userRepository.deleteUser(email)) {
+                  toast.success("Usuario eliminado");
+                  const updatedUsers = await this.userRepository.getAllUsers();
+                  manageView.render(updatedUsers, manageView.acciones);
+                }
+            } finally {
+                preloader.hide();
+            }
+          }
+        });
+    } catch (error) {
+        console.error("Error al abrir gestión de usuarios:", error);
+        toast.error("No se pudieron cargar los usuarios");
+    } finally {
+        preloader.hide();
+    }
   }
+
+
+
+
 
   navigateTo(hash) {
     if (window.location.hash === hash) {

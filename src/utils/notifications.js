@@ -1,3 +1,5 @@
+import logoSolo from "../assets/img/logo_small_restaurante_rocoto.png";
+
 /**
  * Sistema de Notificaciones y Diálogos Centrados para Rocoto Restaurante
  * Reemplaza los alerts, confirms y prompts nativos por componentes elegantes.
@@ -110,6 +112,56 @@ export const dialog = {
             overlay.querySelector('#modal-cancel').onclick = () => cleanup(null);
             input.onkeydown = (e) => { if (e.key === 'Enter') cleanup(input.value); if (e.key === 'Escape') cleanup(null); };
         });
+    }
+};
+
+// --- PRELOADER GLOBAL ---
+export const preloader = {
+    show: (message = "Cargando...") => {
+        let overlay = document.getElementById('global-preloader');
+        if (overlay) return;
+
+        overlay = document.createElement('div');
+        overlay.id = 'global-preloader';
+        overlay.className = "fixed inset-0 z-[4000] bg-black flex flex-col items-center justify-center animate-fade-in backdrop-blur-sm";
+        overlay.innerHTML = `
+            <div class="relative flex flex-col items-center gap-8">
+                <!-- Diseño Identitario Rocoto (Igual al Main Preloader) -->
+                <div class="relative flex flex-col items-center gap-6 animate-pulse" style="animation-duration: 3s">
+                    <div class="relative h-20 w-20 sm:h-24 sm:w-24 flex items-center justify-center">
+                        <img src="${logoSolo}" class="h-full w-full object-contain opacity-80 select-none" alt="Rocoto" />
+                        <div class="absolute inset-0 -m-2 border-t border-primary/20 rounded-full animate-[spin_6s_linear_infinite]"></div>
+                    </div>
+                    <div class="flex flex-col items-center gap-4">
+                        <span class="text-stone-700 font-medium uppercase tracking-[1.5em] text-[8px] sm:text-[10px] select-none translate-x-[0.75em]">Rocoto</span>
+                        
+                        <!-- Mensaje Dinámico -->
+                        <div class="flex flex-col items-center gap-2">
+                            <p class="text-[9px] font-black uppercase tracking-[0.4em] text-primary/60 italic">${message}</p>
+                            <div class="h-[1px] w-8 bg-primary/20 rounded-full overflow-hidden">
+                                <div class="h-full bg-primary w-full animate-[shimmer_2s_infinite]"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+        document.body.style.overflow = "hidden";
+    },
+    hide: () => {
+        const overlay = document.getElementById('global-preloader');
+        if (!overlay) return;
+        
+        overlay.classList.add('animate-fade-out');
+        setTimeout(() => {
+            overlay.remove();
+            // Solo restaurar overflow si no hay admin-layer visible (que maneja su propio scroll)
+            const adminLayer = document.getElementById('admin-layer');
+            if (!adminLayer || adminLayer.classList.contains('hidden')) {
+                document.body.style.overflow = "auto";
+            }
+        }, 400);
     }
 };
 

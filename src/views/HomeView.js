@@ -29,6 +29,7 @@ export class HomeView {
      */
     show() {
         this.rootElement.classList.remove("hidden");
+        document.body.style.overflow = "auto";
         const adminLayer = document.getElementById("admin-layer");
         if (adminLayer) {
             adminLayer.classList.add("hidden");
@@ -42,6 +43,7 @@ export class HomeView {
      */
     hide() {
         this.rootElement.classList.add("hidden");
+        document.body.style.overflow = "hidden";
         const adminLayer = document.getElementById("admin-layer");
         if (adminLayer) adminLayer.classList.remove("hidden");
     }

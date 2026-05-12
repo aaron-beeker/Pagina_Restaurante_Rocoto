@@ -48,9 +48,9 @@ export class ManageUsersView {
 
                                 <!-- EDITOR DERECHA (Card para Editar - Sticky) -->
                                 <div class="lg:col-span-5 order-1 lg:order-2">
-                                    <div class="bg-white p-8 sm:p-10 rounded-[3rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.05)] border border-stone-100 lg:sticky lg:top-10 overflow-hidden" id="user-editor-container">
+                                    <div class="bg-white p-8 sm:p-10 rounded-[3rem] shadow-xl border border-stone-100 lg:sticky lg:top-10 overflow-hidden" id="user-editor-container">
                                         <!-- Decoración Suave -->
-                                        <div class="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -mr-32 -mt-32 opacity-60"></div>
+                                        <div class="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full -mr-32 -mt-32 opacity-40"></div>
                                         
                                         <div class="relative z-10">
                                             <div class="mb-10 border-b border-stone-100 pb-6">
@@ -126,15 +126,15 @@ export class ManageUsersView {
         const nombreCompleto = `${u.nombre || ''} ${u.apellido || ''}`.trim() || 'Usuario sin nombre';
         
         return html`
-            <div class="group relative overflow-hidden rounded-[2.5rem] border-2 border-stone-50 bg-white p-6 sm:p-7 shadow-[0_8px_30px_rgb(0,0,0,0.02)] hover:shadow-2xl hover:border-primary/10 transition-all duration-700 flex flex-col md:flex-row items-center gap-6">
+            <div class="group relative overflow-hidden rounded-[2.5rem] border-2 border-stone-50 bg-white p-6 sm:p-7 shadow-sm hover:shadow-md hover:border-primary/20 transition-all duration-300 flex flex-col md:flex-row items-center gap-6">
                 <!-- Avatar Editorial -->
-                <div class="h-14 w-14 rounded-2xl bg-gradient-to-br from-stone-900 to-stone-800 flex items-center justify-center text-white font-display italic text-xl shadow-lg shrink-0 group-hover:scale-105 group-hover:rotate-3 transition-all duration-500 ring-4 ring-stone-50">
+                <div class="h-14 w-14 rounded-2xl bg-gradient-to-br from-stone-900 to-stone-800 flex items-center justify-center text-white font-display italic text-xl shadow-md shrink-0 group-hover:scale-105 transition-transform duration-300 ring-4 ring-stone-50">
                     ${nombreCompleto.charAt(0).toUpperCase()}
                 </div>
 
                 <!-- Info -->
                 <div class="flex-1 min-w-0 text-center md:text-left">
-                    <h4 class="text-base font-bold text-stone-900 uppercase tracking-tight truncate mb-1 group-hover:text-primary transition-colors">${nombreCompleto}</h4>
+                    <h4 class="text-base font-bold text-stone-900 uppercase tracking-tight truncate mb-1 group-hover:text-primary transition-colors duration-300">${nombreCompleto}</h4>
                     <p class="text-[10px] text-stone-400 truncate lowercase font-black tracking-widest opacity-60">${u.email}</p>
                 </div>
 
