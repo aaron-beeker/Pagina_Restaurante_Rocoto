@@ -18,6 +18,26 @@ export class AttendanceController {
         
         // Estado persistente
         this.lastWorkerSearch = "";
+        this._cachedTemplates = null;
+    }
+
+    /**
+     * Obtiene y cachea la lista plana de templates para una búsqueda ultrarrápida.
+     */
+    _getWorkerTemplates(workers) {
+        if (this._cachedTemplates && this._cachedTemplates.version === workers.length) {
+            return this._cachedTemplates.list;
+        }
+        const list = [];
+        for (let i = 0; i < workers.length; i++) {
+            const w = workers[i];
+            const ts = w.huellas || (w.huella ? [w.huella] : []);
+            for (let j = 0; j < ts.length; j++) {
+                if (ts[j]) list.push({ worker: w, template: ts[j] });
+            }
+        }
+        this._cachedTemplates = { list, version: workers.length };
+        return list;
     }
 
     async abrirGestionAsistencia() {
@@ -161,22 +181,33 @@ export class AttendanceController {
                 this.navigateTo("#/");
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               },
-                onScanFingerprint: async (tipo) => {
+                onCheckConnection: async () => {
+                    return await this.supremaService.checkConnection();
+                },
+                onScanFingerprint: async (tipo, onStep) => {
                     try {
-                        await this.supremaService.init();
-                        const captureResult = await this.supremaService.capture();
-                        if (captureResult.retCode !== 0) return { success: false, error: "Lector no activado" };
+                        const captureResult = await this.supremaService.capture(onStep);
+                        if (captureResult.retCode !== 0) return { success: false, error: captureResult.error };
+                        
                         const capturedTemplate = captureResult.template;
-                        let matchedWorker = null;
-                        for (const worker of workers) {
-                            const templates = worker.huellas || (worker.huella ? [worker.huella] : []);
-                            for (const saved of templates) {
-                                const isMatch = await this.supremaService.verify(saved, capturedTemplate);
-                                if (isMatch) { matchedWorker = worker; break; }
-                            }
-                            if (matchedWorker) break;
+                        const templateList = this._getWorkerTemplates(workers);
+                        const justTemplates = templateList.map(item => item.template);
+
+                        // PASO 1: Intentar identificación masiva (1:N) en una sola llamada (Súper rápido)
+                        const idResult = await this.supremaService.identify(capturedTemplate, justTemplates);
+                        if (idResult && idResult.match) {
+                            const matchedWorker = templateList[idResult.index]?.worker;
+                            if (matchedWorker) return await this.procesarRegistroWorker(matchedWorker, tipo, today, refreshLastRegistrations);
                         }
-                        if (matchedWorker) return await this.procesarRegistroWorker(matchedWorker, tipo, today, refreshLastRegistrations);
+
+                        // PASO 2: Fallback a comparación secuencial offline
+                        for (let i = 0; i < templateList.length; i++) {
+                            const item = templateList[i];
+                            if (await this.supremaService.match(item.template, capturedTemplate)) {
+                                return await this.procesarRegistroWorker(item.worker, tipo, today, refreshLastRegistrations);
+                            }
+                        }
+                        
                         return { success: false, error: "Huella no reconocida" };
                     } catch (e) { return { success: false, error: "Error de conexión" }; }
                 },
@@ -187,19 +218,23 @@ export class AttendanceController {
                         return await this.procesarRegistroWorker(worker, tipo, today, refreshLastRegistrations);
                     } catch (e) { return { success: false, error: "Error al validar DNI" }; }
                 },
-                onVerify: async (dni, tipo) => {
+                onVerify: async (dni, tipo, onStep) => {
                     try {
                         const worker = await this.workerRepository.getWorkerByDni(dni);
                         if (!worker) return { success: false, error: "DNI no registrado" };
-                        await this.supremaService.init();
+                        
+                        const captureResult = await this.supremaService.capture(onStep);
+                        if (captureResult.retCode !== 0) return { success: false, error: captureResult.error };
+
+                        const capturedTemplate = captureResult.template;
                         const templates = worker.huellas || (worker.huella ? [worker.huella] : []);
-                        if (templates.length === 0) return { success: false, error: "No tiene huellas registradas" };
-                        let matched = false;
-                        for (const saved of templates) {
-                            const isMatch = await this.supremaService.verify(saved);
-                            if (isMatch) { matched = true; break; }
+                        
+                        // Verificación OFFLINE
+                        for (const t of templates) {
+                            if (await this.supremaService.match(t, capturedTemplate)) {
+                                return await this.procesarRegistroWorker(worker, tipo, today, refreshLastRegistrations);
+                            }
                         }
-                        if (matched) return await this.procesarRegistroWorker(worker, tipo, today, refreshLastRegistrations);
                         return { success: false, error: "Huella no coincide" };
                     } catch (e) { return { success: false, error: "Error de conexión" }; }
                 }
@@ -383,7 +418,6 @@ export class AttendanceController {
                     if (w) manageView.prepareEdit(w);
                 },
                 onCapture: async (onStep) => {
-                    await this.supremaService.init();
                     const result = await this.supremaService.capture();
                     if (result.retCode === 0) {
                         if (onStep) onStep('captured');
