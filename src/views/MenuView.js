@@ -27,7 +27,7 @@ export class MenuView {
     }
 
     const template = html`
-        <div class="col-span-full py-6 animate-fade-in overflow-hidden w-full relative">
+        <div class="col-span-full py-12 animate-fade-in w-full relative">
             ${this._renderCategoryMobile(categories)}
             ${this._renderCategoryDesktop(categories)}
         </div>
@@ -42,11 +42,11 @@ export class MenuView {
   _renderCategoryMobile(categories) {
     return html`
         <!-- VISTA MÓVIL: Carrusel Premium -->
-        <div class="block md:!hidden swiper category-swiper pb-14 w-full relative">
+        <div class="block md:!hidden swiper category-swiper pt-10 pb-14 w-full relative">
             <div class="swiper-wrapper">
                 ${categories.map(cat => html`
-                    <div class="swiper-slide flex justify-center">
-                        ${this.renderCategoryItem(cat, "w-full")}
+                    <div class="swiper-slide flex justify-center py-4">
+                        ${this.renderCategoryItem(cat, "w-[85%]")}
                     </div>
                 `)}
             </div>
@@ -60,7 +60,7 @@ export class MenuView {
         <div class="hidden md:!grid grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12 w-full px-4 sm:px-0">
             ${categories.map(cat => html`
                 <div class="flex justify-center w-full">
-                    ${this.renderCategoryItem(cat, "w-full")}
+                    ${this.renderCategoryItem(cat, "w-[85%]")}
                 </div>
             `)}
         </div>`;
@@ -197,11 +197,9 @@ export class MenuView {
     
     this.categorySwiper = new Swiper('.category-swiper', {
         modules: [Navigation, Pagination, Autoplay],
-        slidesPerView: 2.1,
-        centeredSlides: false,
-        spaceBetween: 12,
-        slidesOffsetBefore: 16,
-        slidesOffsetAfter: 16,
+        slidesPerView: 1,
+        centeredSlides: true,
+        spaceBetween: 20,
         loop: false,
         grabCursor: true,
         watchSlidesProgress: true,
