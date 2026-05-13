@@ -42,15 +42,15 @@ export class MenuView {
   _renderCategoryMobile(categories) {
     return html`
         <!-- VISTA MÓVIL: Carrusel Premium -->
-        <div class="block md:!hidden swiper category-swiper pt-10 pb-14 w-full relative">
+        <div class="block md:!hidden swiper category-swiper pt-10 pb-16 w-full relative">
             <div class="swiper-wrapper">
                 ${categories.map(cat => html`
                     <div class="swiper-slide flex justify-center py-4">
-                        ${this.renderCategoryItem(cat, "w-[85%]")}
+                        ${this.renderCategoryItem(cat, "w-48")}
                     </div>
                 `)}
             </div>
-            <div class="swiper-pagination absolute !bottom-0 left-1/2 -translate-x-1/2 flex justify-center gap-2"></div>
+            <div class="swiper-pagination absolute !bottom-2 left-1/2 -translate-x-1/2 flex justify-center gap-2"></div>
         </div>`;
   }
 
@@ -60,7 +60,7 @@ export class MenuView {
         <div class="hidden md:!grid grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12 w-full px-4 sm:px-0">
             ${categories.map(cat => html`
                 <div class="flex justify-center w-full">
-                    ${this.renderCategoryItem(cat, "w-[85%]")}
+                    ${this.renderCategoryItem(cat, "w-full")}
                 </div>
             `)}
         </div>`;
@@ -157,7 +157,7 @@ export class MenuView {
     return html`
         <button type="button" class="group flex flex-col items-center gap-6 transition-all active:scale-95 bg-transparent w-full" data-category="${cat.nombre}">
             <!-- Forma circular mantenida con efecto premium -->
-            <div class="relative ${sizeClass} max-w-[200px] aspect-square flex items-center justify-center transition-all duration-1000">
+            <div class="relative ${sizeClass} max-w-[200px] aspect-square flex items-center justify-center">
                 <div class="absolute inset-0 bg-stone-50 rounded-full group-hover:bg-primary/[0.03] group-hover:scale-110 transition-all duration-1000 shadow-inner"></div>
                 
                 <img src="${cat.imageUrl || CAT_IMG_FALLBACK}" 
@@ -204,7 +204,7 @@ export class MenuView {
         grabCursor: true,
         watchSlidesProgress: true,
         autoplay: { delay: 5000, disableOnInteraction: false },
-        pagination: { el: '.swiper-pagination', clickable: true, dynamicBullets: true },
+        pagination: { el: '.swiper-pagination', clickable: true },
     });
   }
 
