@@ -220,6 +220,17 @@ export class HomeView {
         }
     }
 
+    /**
+     * Maneja el clic en el logo para recargar la página y volver arriba.
+     */
+    _handleLogoClick(e) {
+        e.preventDefault();
+        // Cambiar hash al inicio y recargar inmediatamente.
+        // El preloader y el constructor ya manejan el scroll manual al inicio.
+        window.location.hash = '#/';
+        window.location.reload();
+    }
+
     // --- Componentes Privados ---
 
     _renderNav(user) {
@@ -228,7 +239,7 @@ export class HomeView {
         return html`
          <nav class="fixed top-0 z-50 w-full border-b border-surface-variant bg-surface/90 backdrop-blur-md shadow-sm font-sans">
            <div class="${layout.container} flex h-16 items-center justify-between">
-              <a href="#/" class="flex shrink-0 items-center">
+              <a href="#/" class="flex shrink-0 items-center" @click=${(e) => this._handleLogoClick(e)}>
                  <img alt="Logo" class="h-10 w-auto" src="${LOGO_HORIZONTAL}" />
               </a>
               <div class="hidden items-center gap-8 md:flex">${this._renderNavLinks()}</div>
@@ -263,7 +274,9 @@ export class HomeView {
             <div class="absolute inset-0 bg-stone-900/40 backdrop-blur-sm" onclick="document.getElementById('mobile-nav-panel').classList.add('hidden')"></div>
             <div class="relative h-full w-80 bg-white shadow-2xl flex flex-col z-[110] animate-slide-in-left">
                 <div class="flex items-center justify-between p-8 border-b border-stone-100 bg-white shrink-0">
-                  <img src="${LOGO_HORIZONTAL}" class="h-10 w-auto brightness-0">
+                  <a href="#/" @click=${(e) => this._handleLogoClick(e)}>
+                    <img src="${LOGO_HORIZONTAL}" class="h-10 w-auto brightness-0">
+                  </a>
                   <button class="close-nav p-2 text-stone-300 hover:text-primary transition-colors">
                     <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
                   </button>
@@ -721,7 +734,9 @@ export class HomeView {
                <div class="grid grid-cols-1 md:grid-cols-12 gap-16 lg:gap-20">
                  <div class="md:col-span-5 space-y-10">
                    <div class="space-y-6">
-                      <img alt="Logo" class="h-14 w-auto brightness-0 invert" src="${LOGO_HORIZONTAL}" />
+                      <a href="#/" @click=${(e) => this._handleLogoClick(e)}>
+                        <img alt="Logo" class="h-14 w-auto brightness-0 invert" src="${LOGO_HORIZONTAL}" />
+                      </a>
                       <p class="text-stone-400 text-sm leading-relaxed max-w-sm italic">Fusión de tradición chifa y vanguardia culinaria en el corazón de la selva central. Sabores que trascienden el paladar.</p>
                    </div>
                  </div>
