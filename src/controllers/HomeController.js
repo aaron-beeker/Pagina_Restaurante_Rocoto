@@ -231,7 +231,7 @@ export class HomeController {
       const el = document.getElementById(btn.id);
       if (el) el.onclick = () => {
           this.navigateTo(btn.route);
-          document.getElementById("user-menu-panel")?.classList.add("hidden");
+          //document.getElementById("user-menu-panel")?.classList.add("hidden");
       };
     });
   }
