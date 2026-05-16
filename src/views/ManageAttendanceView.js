@@ -157,7 +157,7 @@ export class ManageAttendanceView {
                                 <button type="submit" id="submit-attendance-btn" class="w-full bg-stone-950 text-white py-6 rounded-3xl text-sm uppercase tracking-[0.5em] font-black shadow-2xl hover:bg-primary transition-all active:scale-[0.97]">
                                     Guardar Registro
                                 </button>
-                                <button type="button" @click=${() => this._resetForm()} class="w-full text-stone-400 py-3 text-xs font-bold uppercase tracking-widest hover:text-stone-900 transition-all italic text-center">
+                                <button type="button" @click=${() => this.resetForm()} class="w-full text-stone-400 py-3 text-xs font-bold uppercase tracking-widest hover:text-stone-900 transition-all italic text-center">
                                     Limpiar Formulario
                                 </button>
                             </div>
@@ -342,7 +342,7 @@ export class ManageAttendanceView {
 
   // src/views/ManageAttendanceView.js
 
-_handleFormSubmit(e) {
+async _handleFormSubmit(e) {
     e.preventDefault();
     const dni = document.getElementById("attendance-worker-dni").value;
     const type = document.getElementById("attendance-type").value;
@@ -350,8 +350,6 @@ _handleFormSubmit(e) {
     const qtyCampo = parseInt(document.getElementById("attendance-field-qty").value) || 0;
     const alsoEats = document.getElementById("attendance-also-eats").checked;
 
-    // CORRECCIÓN: Eliminamos la restricción que causaba "Registro Inválido"
-    // Ahora permitimos que se guarde siempre que haya un trabajador seleccionado
     if (!dni) {
         toast.error("Seleccione un trabajador");
         return;
@@ -368,8 +366,7 @@ _handleFormSubmit(e) {
         soloCampo: !alsoEats
     };
 
-    this.acciones.onSave(document.getElementById("edit-attendance-id").value, data);
-    this._resetForm();
+    await this.acciones.onSave(document.getElementById("edit-attendance-id").value, data);
 }
 
   async _handleExport(format) {
@@ -407,7 +404,7 @@ _handleFormSubmit(e) {
     setTimeout(() => container.classList.remove("ring-8", "ring-primary/10"), 2000);
   }
 
-  _resetForm() {
+  resetForm() {
     const form = document.getElementById("attendance-form");
     if (form) form.reset();
     document.getElementById("edit-attendance-id").value = "";

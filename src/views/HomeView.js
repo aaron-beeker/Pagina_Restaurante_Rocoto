@@ -181,9 +181,34 @@ export class HomeView {
 
     updateHeroUI(heroPromo) {
         if (!this.elements.hero) return;
-        render(this._renderHero(heroPromo), this.elements.hero);
-        // Siempre intentar inicializar si existe el elemento, para que el placeholder se vea bien
-        this.initHeroSwiper();
+        
+        try {
+            // Destruir Swiper de forma segura
+            if (this.swiper) {
+                this.swiper.destroy(true, true);
+                this.swiper = null;
+            }
+            
+            // Clonar el contenedor para limpiarlo por completo de las marcas corruptas de Lit-html
+            const newHero = this.elements.hero.cloneNode(false); // Solo el div contenedor
+            if (this.elements.hero.parentNode) {
+                this.elements.hero.parentNode.replaceChild(newHero, this.elements.hero);
+            }
+            this.elements.hero = newHero; // Actualizar la referencia
+            
+            // Renderizar la nueva estructura en el contenedor limpio
+            render(this._renderHero(heroPromo), this.elements.hero);
+            
+            // Inicializar el carrusel
+            this.initHeroSwiper();
+        } catch (error) {
+            console.error("Error updating Hero UI:", error);
+            try {
+                render(this._renderHero(heroPromo), this.elements.hero);
+            } catch (innerError) {
+                this.elements.hero.innerHTML = '<div class="h-40 bg-stone-100 animate-pulse"></div>';
+            }
+        }
     }
 
     updateMobileNavUI() {

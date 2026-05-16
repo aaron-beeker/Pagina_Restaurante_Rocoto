@@ -19,6 +19,25 @@ export class AttendanceController {
         // Estado persistente
         this.lastWorkerSearch = "";
         this._cachedTemplates = null;
+        this.workers = [];
+        this.workerUnsubscribe = null;
+        this.onWorkersUpdate = null; // Callback dinámico para la vista activa
+    }
+
+    /**
+     * Inicia la suscripción en tiempo real a los trabajadores si no existe.
+     * Siempre actualiza el callback para que la vista actual reciba los datos.
+     */
+    subscribeWorkers(onUpdate) {
+        this.onWorkersUpdate = onUpdate;
+        
+        if (this.workerUnsubscribe) return;
+        
+        this.workerUnsubscribe = this.workerRepository.subscribeToWorkers((updatedWorkers) => {
+            this.workers = updatedWorkers;
+            this._cachedTemplates = null;
+            if (this.onWorkersUpdate) this.onWorkersUpdate(updatedWorkers);
+        });
     }
 
     /**
@@ -40,18 +59,22 @@ export class AttendanceController {
         return list;
     }
 
-    async abrirGestionAsistencia() {
-        preloader.show("Cargando Reportes...");
+    async abrirGestionAsistencia(silent = false) {
+        if (!silent) preloader.show("Cargando Reportes...");
         try {
             const today = getLocalDateString();
             const now = new Date();
             const startOfMonth = getLocalDateString(new Date(now.getFullYear(), now.getMonth(), 1));
             const endOfMonth = getLocalDateString(new Date(now.getFullYear(), now.getMonth() + 1, 0));
 
-            const [attendances, monthAttendances, workers, companies] = await Promise.all([
+            // Asegurar que tenemos trabajadores actualizados
+            if (this.workers.length === 0) {
+                this.workers = await this.workerRepository.getAllWorkers();
+            }
+
+            const [attendances, monthAttendances, companies] = await Promise.all([
                 this.attendanceRepository.getAttendanceByDate(today),
                 this.attendanceRepository.getAttendanceByDateRange(startOfMonth, endOfMonth),
-                this.workerRepository.getAllWorkers(),
                 this.companyRepository.getAllCompanies()
             ]);
 
@@ -63,7 +86,6 @@ export class AttendanceController {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               },
                 onSave: async (id, data) => {
-                    preloader.show("Guardando...");
                     try {
                         const currentUser = appStore.getState().user;
                         const metadata = {
@@ -71,34 +93,38 @@ export class AttendanceController {
                             updatedAt: new Date()
                         };
 
+                        let result = false;
                         if (id) {
-                            if (await this.attendanceRepository.updateAttendance(id, { ...data, ...metadata, registroStatus: "editado" })) {
-                                toast.success("Asistencia actualizada");
-                                await acciones.onRefresh(document.getElementById("filter-date").value);
-                                manageView.resetForm();
-                            }
+                            result = await this.attendanceRepository.updateAttendance(id, { ...data, ...metadata, registroStatus: "editado" });
                         } else {
                             metadata.createdBy = currentUser?.email || "sistema";
                             metadata.createdAt = new Date();
-                            if (await this.attendanceRepository.addAttendance({ ...data, ...metadata, registroStatus: "manual" })) {
-                                toast.success("Asistencia registrada");
-                                await acciones.onRefresh(document.getElementById("filter-date").value);
-                                manageView.resetForm();
-                            }
+                            result = await this.attendanceRepository.addAttendance({ ...data, ...metadata, registroStatus: "manual" });
                         }
-                    } finally {
-                        preloader.hide();
+
+                        if (result) {
+                            const currentFilterDate = document.getElementById("filter-date")?.value || today;
+                            await acciones.onRefresh(currentFilterDate, true);
+                            manageView.resetForm();
+                            toast.success(id ? "Asistencia actualizada" : "Asistencia registrada");
+                        } else {
+                            toast.error("No se pudo guardar la asistencia en la base de datos");
+                        }
+                    } catch (error) {
+                        console.error("Error al guardar asistencia:", error);
+                        toast.error("Error al guardar asistencia");
                     }
                 },
                 onDelete: async (id) => {
                     if (await dialog.confirm("Eliminar Asistencia", "¿Está seguro de eliminar este registro de asistencia?")) {
-                        preloader.show("Eliminando...");
                         try {
                             if (await this.attendanceRepository.deleteAttendance(id)) {
-                                await acciones.onRefresh(document.getElementById("filter-date").value);
+                                toast.success("Registro eliminado");
+                                await acciones.onRefresh(document.getElementById("filter-date").value, true);
                             }
-                        } finally {
-                            preloader.hide();
+                        } catch (error) {
+                            console.error("Error al eliminar asistencia:", error);
+                            toast.error("Error al eliminar asistencia");
                         }
                     }
                 },
@@ -106,8 +132,8 @@ export class AttendanceController {
                     const a = manageView.allAttendances.find(x => x.id === id);
                     if (a) manageView.prepareEdit(a);
                 },
-                onRefresh: async (date) => {
-                    preloader.show("Actualizando lista...");
+                onRefresh: async (date, silentRefresh = false) => {
+                    if (!silentRefresh) preloader.show("Actualizando lista...");
                     try {
                         const [dayList, monthList] = await Promise.all([
                             this.attendanceRepository.getAttendanceByDate(date),
@@ -115,7 +141,7 @@ export class AttendanceController {
                         ]);
                         manageView.updateList(dayList, monthList);
                     } finally {
-                        preloader.hide();
+                        if (!silentRefresh) preloader.hide();
                     }
                 },
                 onDownloadGroupPdf: async (company, start, end, prices = {d:10, a:10, c:10}) => {
@@ -123,12 +149,12 @@ export class AttendanceController {
                     try {
                         const list = await this.attendanceRepository.getAttendanceByDateRange(start, end);
                         let filteredAttendances = list;
-                        let filteredWorkers = workers;
+                        let filteredWorkers = this.workers;
 
                         if (company) {
                             const searchCompany = company.trim().toLowerCase();
                             filteredAttendances = list.filter(a => (a.empresa || "Particular").trim().toLowerCase() === searchCompany);
-                            filteredWorkers = workers.filter(w => (w.empresa || "Particular").trim().toLowerCase() === searchCompany);
+                            filteredWorkers = this.workers.filter(w => (w.empresa || "Particular").trim().toLowerCase() === searchCompany);
                         }
 
                         if (filteredAttendances.length === 0) return toast.info("No hay datos para el rango y empresa seleccionados.");
@@ -142,12 +168,12 @@ export class AttendanceController {
                     try {
                         const list = await this.attendanceRepository.getAttendanceByDateRange(start, end);
                         let filteredAttendances = list;
-                        let filteredWorkers = workers;
+                        let filteredWorkers = this.workers;
 
                         if (company) {
                             const searchCompany = company.trim().toLowerCase();
                             filteredAttendances = list.filter(a => (a.empresa || "Particular").trim().toLowerCase() === searchCompany);
-                            filteredWorkers = workers.filter(w => (w.empresa || "Particular").trim().toLowerCase() === searchCompany);
+                            filteredWorkers = this.workers.filter(w => (w.empresa || "Particular").trim().toLowerCase() === searchCompany);
                         }
 
                         if (filteredAttendances.length === 0) return toast.info("No hay datos para el rango y empresa seleccionados.");
@@ -158,97 +184,128 @@ export class AttendanceController {
                 }
             };
 
-            manageView.render({ day: attendances, month: monthAttendances }, workers, companies, acciones);
+            manageView.render({ day: attendances, month: monthAttendances }, this.workers, companies, acciones);
         } finally {
-            preloader.hide();
+            if (!silent) preloader.hide();
         }
     }
 
-    async abrirRegistroAsistencia() {
-        preloader.show("Cargando Lector...");
-        try {
-            const attendanceView = new AttendanceView(document.getElementById("admin-layer"));
-            const workers = await this.workerRepository.getAllWorkers();
-            const today = getLocalDateString();
-            
-            const refreshLastRegistrations = async () => {
+    async abrirRegistroAsistencia(silent = false) {
+        const attendanceView = new AttendanceView(document.getElementById("admin-layer"));
+        const today = getLocalDateString();
+        
+        const refreshLastRegistrations = async () => {
+            try {
                 const list = await this.attendanceRepository.getAttendanceByDate(today);
                 attendanceView.renderLastRegistrations(list);
-            };
+            } catch (error) {
+                console.error("Error al refrescar registros recientes:", error);
+            }
+        };
 
-            const acciones = {
-              onBack: () => {
-                this.navigateTo("#/");
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              },
-                onCheckConnection: async () => {
-                    return await this.supremaService.checkConnection();
-                },
-                onScanFingerprint: async (tipo, onStep) => {
-                    try {
-                        const captureResult = await this.supremaService.capture(onStep);
-                        if (captureResult.retCode !== 0) return { success: false, error: captureResult.error };
-                        
-                        const capturedTemplate = captureResult.template;
-                        const templateList = this._getWorkerTemplates(workers);
-                        const justTemplates = templateList.map(item => item.template);
-
-                        // PASO 1: Intentar identificación masiva (1:N) en una sola llamada (Súper rápido)
-                        const idResult = await this.supremaService.identify(capturedTemplate, justTemplates);
-                        if (idResult && idResult.match) {
-                            const matchedWorker = templateList[idResult.index]?.worker;
-                            if (matchedWorker) return await this.procesarRegistroWorker(matchedWorker, tipo, today, refreshLastRegistrations);
-                        }
-
-                        // PASO 2: Fallback a comparación secuencial offline
-                        for (let i = 0; i < templateList.length; i++) {
-                            const item = templateList[i];
-                            if (await this.supremaService.match(item.template, capturedTemplate)) {
-                                return await this.procesarRegistroWorker(item.worker, tipo, today, refreshLastRegistrations);
-                            }
-                        }
-                        
-                        return { success: false, error: "Huella no reconocida" };
-                    } catch (e) { return { success: false, error: "Error de conexión" }; }
-                },
-                onManualDni: async (dni, tipo) => {
-                    try {
-                        const worker = await this.workerRepository.getWorkerByDni(dni);
-                        if (!worker) return { success: false, error: "DNI no registrado" };
-                        return await this.procesarRegistroWorker(worker, tipo, today, refreshLastRegistrations);
-                    } catch (e) { return { success: false, error: "Error al validar DNI" }; }
-                },
-                onVerify: async (dni, tipo, onStep) => {
-                    try {
-                        const worker = await this.workerRepository.getWorkerByDni(dni);
-                        if (!worker) return { success: false, error: "DNI no registrado" };
-                        
-                        const captureResult = await this.supremaService.capture(onStep);
-                        if (captureResult.retCode !== 0) return { success: false, error: captureResult.error };
-
-                        const capturedTemplate = captureResult.template;
-                        const templates = worker.huellas || (worker.huella ? [worker.huella] : []);
-                        
-                        // Verificación OFFLINE
-                        for (const t of templates) {
-                            if (await this.supremaService.match(t, capturedTemplate)) {
-                                return await this.procesarRegistroWorker(worker, tipo, today, refreshLastRegistrations);
-                            }
-                        }
-                        return { success: false, error: "Huella no coincide" };
-                    } catch (e) { return { success: false, error: "Error de conexión" }; }
+        const acciones = {
+          onBack: () => {
+            this.navigateTo("#/");
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          },
+            onCheckConnection: async () => {
+                return await this.supremaService.checkConnection();
+            },
+            onScanFingerprint: async (tipo, onStep) => {
+                if (this.workers.length === 0) {
+                    toast.info("Sincronizando base de datos de huellas... espere un segundo.");
+                    return { success: false, error: "Cargando..." };
                 }
-            };
+                try {
+                    const captureResult = await this.supremaService.capture(onStep);
+                    if (captureResult.retCode !== 0) return { success: false, error: captureResult.error };
+                    
+                    const capturedTemplate = captureResult.template;
+                    const templateList = this._getWorkerTemplates(this.workers);
+                    const justTemplates = templateList.map(item => item.template);
 
-            attendanceView.render(acciones);
-            await refreshLastRegistrations();
-        } finally {
-            preloader.hide();
-        }
+                    // PASO 1: Intentar identificación masiva (1:N) en una sola llamada (Súper rápido)
+                    const idResult = await this.supremaService.identify(capturedTemplate, justTemplates);
+                    if (idResult && idResult.match) {
+                        const matchedWorker = templateList[idResult.index]?.worker;
+                        if (matchedWorker) return await this.procesarRegistroWorker(matchedWorker, tipo, today, refreshLastRegistrations);
+                    }
+
+                    // PASO 2: Fallback a comparación secuencial offline
+                    for (let i = 0; i < templateList.length; i++) {
+                        const item = templateList[i];
+                        if (await this.supremaService.match(item.template, capturedTemplate)) {
+                            return await this.procesarRegistroWorker(item.worker, tipo, today, refreshLastRegistrations);
+                        }
+                    }
+                    
+                    return { success: false, error: "Huella no reconocida" };
+                } catch (e) { return { success: false, error: "Error de conexión" }; }
+            },
+            onManualDni: async (dni, tipo) => {
+                if (this.workers.length === 0) {
+                    toast.info("Cargando datos... reintente.");
+                    return { success: false, error: "Cargando..." };
+                }
+                try {
+                    const worker = this.workers.find(w => w.dni === dni);
+                    if (!worker) return { success: false, error: "DNI no registrado" };
+                    return await this.procesarRegistroWorker(worker, tipo, today, refreshLastRegistrations);
+                } catch (e) { return { success: false, error: "Error al validar DNI" }; }
+            },
+            onVerify: async (dni, tipo, onStep) => {
+                if (this.workers.length === 0) {
+                    toast.info("Cargando datos... reintente.");
+                    return { success: false, error: "Cargando..." };
+                }
+                try {
+                    const worker = this.workers.find(w => w.dni === dni);
+                    if (!worker) return { success: false, error: "DNI no registrado" };
+                    
+                    const captureResult = await this.supremaService.capture(onStep);
+                    if (captureResult.retCode !== 0) return { success: false, error: captureResult.error };
+
+                    const capturedTemplate = captureResult.template;
+                    const templates = worker.huellas || (worker.huella ? [worker.huella] : []);
+                    
+                    // Verificación OFFLINE
+                    for (const t of templates) {
+                        if (await this.supremaService.match(t, capturedTemplate)) {
+                            return await this.procesarRegistroWorker(worker, tipo, today, refreshLastRegistrations);
+                        }
+                    }
+                    return { success: false, error: "Huella no coincide" };
+                } catch (e) { return { success: false, error: "Error de conexión" }; }
+            }
+        };
+
+        // Renderizado inmediato de la estructura UI
+        attendanceView.render(acciones);
+
+        // Carga de datos en segundo plano (Pesado)
+        (async () => {
+            if (!silent) preloader.show("Sincronizando Lector...");
+            try {
+                this.subscribeWorkers(() => {
+                    // Actualización automática al recibir cambios
+                });
+
+                // Carga inicial si no hay datos persistentes
+                if (this.workers.length === 0) {
+                    this.workers = await this.workerRepository.getAllWorkers();
+                }
+
+                await refreshLastRegistrations();
+            } catch (error) {
+                console.error("Error en la carga de asistencia:", error);
+            } finally {
+                if (!silent) preloader.hide();
+            }
+        })();
     }
 
     async procesarRegistroWorker(worker, tipo, today, refreshCb) {
-        preloader.show("Procesando...");
+        // Removido preloader intrusivo para registro rápido
         try {
             // Consultar estado previo del trabajador (Consumo Local específicamente)
             const existing = await this.attendanceRepository.getDetailedAttendance(worker.dni, today, tipo);
@@ -299,8 +356,9 @@ export class AttendanceController {
                     }
                 }
             }
-        } finally {
-            preloader.hide();
+        } catch (error) {
+            console.error("Error al procesar registro:", error);
+            return { success: false, error: "Error interno al procesar" };
         }
     }
 
@@ -334,8 +392,8 @@ export class AttendanceController {
         return { success: false, error: "Error al guardar registro" };
     }
 
-    async abrirGestionEmpresas() {
-        preloader.show("Cargando Empresas...");
+    async abrirGestionEmpresas(silent = false) {
+        if (!silent) preloader.show("Cargando Empresas...");
         try {
             const companies = await this.companyRepository.getAllCompanies();
             const manageView = new ManageCompaniesView(document.getElementById("admin-layer"));
@@ -345,23 +403,26 @@ export class AttendanceController {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               },
                 onSave: async (id, data) => {
-                    preloader.show("Guardando...");
                     try {
                         if (id ? await this.companyRepository.updateCompany(id, data) : await this.companyRepository.addCompany(data)) {
                             toast.success("Empresa guardada");
-                            await this.abrirGestionEmpresas();
+                            await this.abrirGestionEmpresas(true);
                         }
-                    } finally {
-                        preloader.hide();
+                    } catch (error) {
+                        console.error("Error al guardar empresa:", error);
+                        toast.error("Error al guardar empresa");
                     }
                 },
                 onDelete: async (id) => {
                     if (await dialog.confirm("Eliminar Empresa", "¿Está seguro de eliminar esta empresa?")) {
-                        preloader.show("Eliminando...");
                         try {
-                            if (await this.companyRepository.deleteCompany(id)) await this.abrirGestionEmpresas();
-                        } finally {
-                            preloader.hide();
+                            if (await this.companyRepository.deleteCompany(id)) {
+                                toast.success("Empresa eliminada");
+                                await this.abrirGestionEmpresas(true);
+                            }
+                        } catch (error) {
+                            console.error("Error al eliminar empresa:", error);
+                            toast.error("Error al eliminar empresa");
                         }
                     }
                 },
@@ -372,49 +433,51 @@ export class AttendanceController {
             };
             manageView.render(companies, acciones);
         } finally {
-            preloader.hide();
+            if (!silent) preloader.hide();
         }
     }
 
-    async abrirGestionTrabajadores() {
-        preloader.show("Cargando Personal...");
+    async abrirGestionTrabajadores(silent = false) {
+        if (!silent) preloader.show("Cargando Personal...");
         try {
-            const [workers, companies] = await Promise.all([this.workerRepository.getAllWorkers(), this.companyRepository.getAllCompanies()]);
+            const companies = await this.companyRepository.getAllCompanies();
             const manageView = new ManageWorkersView(document.getElementById("admin-layer"));
+
             const acciones = {
               onBack: () => {
                 this.navigateTo("#/");
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               },
                 onSave: async (id, data) => {
-                    preloader.show("Guardando...");
                     try {
                         if (id) {
                             if (await this.workerRepository.updateWorker(id, data)) {
                                 toast.success("Trabajador actualizado");
-                                await this.abrirGestionTrabajadores();
                             }
                         } else {
                             if (await this.workerRepository.addWorker(data)) {
                                 toast.success("Trabajador registrado");
-                                await this.abrirGestionTrabajadores();
                             }
                         }
-                    } catch (e) { toast.error(e.message); }
-                    finally { preloader.hide(); }
+                    } catch (error) { 
+                        console.error("Error al guardar trabajador:", error);
+                        toast.error(error.message || "Error al guardar trabajador"); 
+                    }
                 },
                 onDelete: async (id) => {
                     if (await dialog.confirm("Eliminar Trabajador", "¿Está seguro de eliminar a este trabajador?")) {
-                        preloader.show("Eliminando...");
                         try {
-                            if (await this.workerRepository.deleteWorker(id)) await this.abrirGestionTrabajadores();
-                        } finally {
-                            preloader.hide();
+                            if (await this.workerRepository.deleteWorker(id)) {
+                                toast.success("Trabajador eliminado");
+                            }
+                        } catch (error) {
+                            console.error("Error al eliminar trabajador:", error);
+                            toast.error("Error al eliminar trabajador");
                         }
                     }
                 },
                 onEdit: (id) => {
-                    const w = workers.find(x => x.id === id);
+                    const w = this.workers.find(x => x.id === id);
                     if (w) manageView.prepareEdit(w);
                 },
                 onCapture: async (onStep) => {
@@ -425,19 +488,14 @@ export class AttendanceController {
                     } else throw new Error(result.error || "Error al capturar");
                 },
                 onSearch: (q, company) => {
+                    // El filtrado ahora ocurre internamente en la vista
                     this.lastWorkerSearch = q;
-                    const query = q.toLowerCase().trim();
-                    const filtrados = workers.filter(w => {
-                        const coincideBusqueda = w.dni.includes(query) || w.nombre.toLowerCase().includes(query) || w.apellidos.toLowerCase().includes(query);
-                        const coincideEmpresa = !company || w.empresa === company;
-                        return coincideBusqueda && coincideEmpresa;
-                    });
-                    manageView.renderListOnly(filtrados, acciones.onEdit, acciones.onDelete, acciones.onViewDetails);
+                    manageView.render(this.workers, acciones, companies);
                 },
                 onViewDetails: async (id) => {
                     preloader.show("Cargando detalles...");
                     try {
-                        const w = workers.find(x => x.id === id);
+                        const w = this.workers.find(x => x.id === id);
                         if (!w) return;
                         const attendance = (await this.attendanceRepository.getAttendanceByDni(w.dni)).filter(a => !a.soloCampo);
                         manageView.showWorkerDetails(w, attendance, {
@@ -457,13 +515,31 @@ export class AttendanceController {
                     }
                 }
             };
-            manageView.render(workers, acciones, companies);
+
+            this.subscribeWorkers(() => {
+                // Si el contenedor de la lista existe en el DOM, refrescamos la vista completa
+                if (document.getElementById("workers-list-container")) {
+                    manageView.render(this.workers, acciones, companies);
+                }
+            });
+
+            // Carga inicial rápida
+            if (this.workers.length === 0) {
+                this.workers = await this.workerRepository.getAllWorkers();
+            }
+            
+            manageView.render(this.workers, acciones, companies);
+
             if (this.lastWorkerSearch) {
                 const searchInput = document.getElementById("search-worker");
-                if (searchInput) { searchInput.value = this.lastWorkerSearch; acciones.onSearch(this.lastWorkerSearch, ""); }
+                if (searchInput) { 
+                    searchInput.value = this.lastWorkerSearch; 
+                    manageView.filters.query = this.lastWorkerSearch;
+                    manageView.render(this.workers, acciones, companies);
+                }
             }
         } finally {
-            preloader.hide();
+            if (!silent) preloader.hide();
         }
     }
 }

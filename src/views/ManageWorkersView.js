@@ -4,8 +4,6 @@ import { escapeHtml } from "../utils/html.js";
 import { getLocalDateString } from "../utils/dateUtils.js";
 import { toast, dialog } from "../utils/notifications.js";
 
-const PLACEHOLDER_ICON = "https://cdn-icons-png.flaticon.com/512/662/662244.png";
-
 export class ManageWorkersView {
   constructor(rootElement) {
     this.rootElement = rootElement;
@@ -13,16 +11,23 @@ export class ManageWorkersView {
     this.companies = [];
     this.allWorkers = [];
     this.acciones = null;
-    this.currentSearchQuery = "";
+    
+    // Estado interno de filtros para persistencia durante re-renders de tiempo real
+    this.filters = {
+        query: "",
+        company: ""
+    };
   }
 
   /**
-   * Renderizado principal siguiendo el estilo Editorial Premium.
+   * Renderizado principal - Reconstruye la estructura base.
    */
   render(workers, acciones, companies = []) {
-    this.allWorkers = workers;
+    this.allWorkers = workers || [];
     this.acciones = acciones;
-    this.companies = companies;
+    this.companies = companies || [];
+
+    const filteredWorkers = this._getFilteredWorkers();
 
     const template = html`
       <div class="min-h-screen bg-[#fafafa] font-sans pb-32 text-stone-900">
@@ -46,7 +51,8 @@ export class ManageWorkersView {
                         <!-- Buscador -->
                         <div class="relative w-full group">
                             <input type="search" id="search-worker" 
-                                   @input=${(e) => this._handleFilter()} 
+                                   .value=${this.filters.query}
+                                   @input=${(e) => this._handleFilterChange('query', e.target.value)} 
                                    placeholder="Buscar por nombre, DNI o empresa..." 
                                    class="w-full bg-white border-2 border-stone-100 rounded-2xl py-4 pl-12 pr-4 text-sm focus:border-primary outline-none transition-all shadow-sm placeholder:text-stone-300" />
                             <svg class="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-stone-300 group-focus-within:text-primary transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-width="2.5"/></svg>
@@ -55,22 +61,22 @@ export class ManageWorkersView {
                         <div class="flex items-center justify-between px-2">
                             <div class="flex items-center gap-4">
                                 <div class="h-1.5 w-1.5 rounded-full bg-primary animate-pulse"></div>
-                                <span class="text-[10px] font-black uppercase tracking-[0.3em] text-stone-900">Personal Registrado (${workers.length})</span>
+                                <span class="text-[10px] font-black uppercase tracking-[0.3em] text-stone-900">Personal Registrado (${this.allWorkers.length})</span>
                             </div>
                             
-                            <select id="filter-company" @change=${() => this._handleFilter()} 
+                            <select id="filter-company" @change=${(e) => this._handleFilterChange('company', e.target.value)} 
                                     class="bg-transparent border-none text-[10px] font-black uppercase tracking-widest text-stone-400 focus:ring-0 cursor-pointer hover:text-primary transition-colors">
-                                <option value="">Todas las empresas</option>
-                                ${this.companies.map(c => html`<option value="${c.nombre}">${c.nombre}</option>`)}
+                                <option value="" ?selected=${this.filters.company === ""}>Todas las empresas</option>
+                                ${this.companies.map(c => html`<option value="${c.nombre}" ?selected=${this.filters.company === c.nombre}>${c.nombre}</option>`)}
                             </select>
                         </div>
                         
                         <div id="workers-list-container" class="space-y-4">
-                            ${this._renderWorkerList(workers)}
+                            ${this._renderWorkerList(filteredWorkers)}
                         </div>
                     </div>
 
-                    <!-- Editor Derecha (Sticky - Limpio y Claro) -->
+                    <!-- Editor Derecha (Sticky) -->
                     <div class="lg:col-span-5 order-1 lg:order-2">
                         <div class="bg-white p-8 sm:p-10 rounded-[2.5rem] sm:rounded-[3rem] border border-stone-100 shadow-xl lg:sticky lg:top-10 overflow-hidden" id="worker-editor-container">
                             <div class="relative z-10">
@@ -117,7 +123,7 @@ export class ManageWorkersView {
                                             </div>
                                         </label>
 
-                                        <!-- REGISTRO DE HUELLA (REDISEÑADO A CLARO) -->
+                                        <!-- CONTROL BIOMÉTRICO -->
                                         <div class="p-6 bg-stone-50 rounded-[2rem] border border-stone-100 space-y-6 text-center shadow-inner">
                                             <p class="text-[10px] font-black uppercase text-primary tracking-[0.3em]">Control Biométrico</p>
                                             
@@ -179,6 +185,41 @@ export class ManageWorkersView {
     this._safeRender(template);
   }
 
+  // --- LÓGICA DE FILTRADO UNIFICADA ---
+
+  _getFilteredWorkers() {
+    const q = String(this.filters.query || "").toLowerCase().trim();
+    const c = String(this.filters.company || "").trim();
+
+    return this.allWorkers.filter(w => {
+        const workerDni = String(w.dni || "").toLowerCase();
+        const workerName = String(w.nombre || "").toLowerCase();
+        const workerLastName = String(w.apellidos || "").toLowerCase();
+        const workerEmpresa = String(w.empresa || "").trim();
+
+        const matchesQuery = !q || 
+                           workerDni.includes(q) || 
+                           workerName.includes(q) || 
+                           workerLastName.includes(q);
+                           
+        const matchesCompany = !c || workerEmpresa === c;
+        
+        return matchesQuery && matchesCompany;
+    });
+  }
+
+  _handleFilterChange(type, value) {
+    this.filters[type] = value;
+    
+    // Sincronizar con el controlador para persistencia entre cambios de vista
+    if (this.acciones && this.acciones.onSearch && type === 'query') {
+        this.acciones.onSearch(value, this.filters.company);
+    }
+    
+    // Re-renderizar (lit-html actualizará solo lo necesario)
+    this.render(this.allWorkers, this.acciones, this.companies);
+  }
+
   _renderWorkerList(workers) {
     if (workers.length === 0) {
         return html`<div class="py-24 text-center border-2 border-dashed border-stone-100 rounded-[3rem] text-stone-300 uppercase tracking-[0.4em] text-[10px] font-bold italic bg-white">Sin trabajadores encontrados</div>`;
@@ -188,15 +229,19 @@ export class ManageWorkersView {
 
   _renderWorkerRow(w) {
     const huellaCount = w.huellas ? w.huellas.length : (w.huella ? 1 : 0);
-    const nombreCompleto = `${w.apellidos}, ${w.nombre}`;
+    const nombreStr = String(w.nombre || "").trim();
+    const apellidosStr = String(w.apellidos || "").trim();
+    const nombreCompleto = `${apellidosStr}${apellidosStr && nombreStr ? ', ' : ''}${nombreStr}` || "Sin Nombre";
+    const inicial = nombreStr ? nombreStr.charAt(0).toUpperCase() : "?";
+    const empresaStr = String(w.empresa || "Particular");
+    const dniStr = String(w.dni || "---");
 
     return html`
         <div class="group relative overflow-hidden rounded-[2.5rem] border-2 border-stone-50 bg-white p-6 sm:p-8 shadow-sm hover:shadow-2xl transition-all duration-700 flex flex-col md:flex-row items-center gap-6 cursor-pointer"
-             @click=${() => this.acciones.onViewDetails(w.id)}
-             data-worker-card data-name="${nombreCompleto.toLowerCase()}" data-dni="${w.dni}" data-company="${(w.empresa || '').toLowerCase()}">
+             @click=${() => this.acciones.onViewDetails(w.id)}>
             
             <div class="h-16 w-16 sm:h-20 sm:w-20 rounded-full bg-stone-950 flex items-center justify-center text-white font-display italic text-2xl shadow-xl shrink-0 group-hover:bg-primary transition-all duration-500">
-                ${w.nombre.charAt(0).toUpperCase()}
+                ${inicial}
             </div>
 
             <div class="flex-1 min-w-0 text-center md:text-left">
@@ -208,8 +253,8 @@ export class ManageWorkersView {
                     }
                 </div>
                 <div class="flex flex-wrap justify-center md:justify-start items-center gap-x-4 gap-y-1">
-                    <span class="text-[9px] font-black uppercase text-primary tracking-widest">${w.empresa || 'Particular'}</span>
-                    <span class="text-[10px] font-mono text-stone-400">DNI: ${w.dni}</span>
+                    <span class="text-[9px] font-black uppercase text-primary tracking-widest">${empresaStr}</span>
+                    <span class="text-[10px] font-mono text-stone-400">DNI: ${dniStr}</span>
                 </div>
             </div>
 
@@ -230,7 +275,7 @@ export class ManageWorkersView {
     `;
   }
 
-  // --- Lógica de Interacción ---
+  // --- Lógica de Interacción Biométrica ---
 
   async _handleCapture() {
     const { onCapture } = this.acciones;
@@ -264,7 +309,6 @@ export class ManageWorkersView {
             if (result) {
                 this.capturedTemplates.push(result);
                 this.updateStepDots(i);
-                //ajustar velocidad de huellero
                 if (i < 3) await new Promise(resolve => setTimeout(resolve, 2000));
             }
         }
@@ -283,26 +327,13 @@ export class ManageWorkersView {
     }
   }
 
-  _handleFilter() {
-    const company = document.getElementById("filter-company").value;
-    const query = document.getElementById("search-worker").value;
-    this.acciones.onSearch(query, company);
-  }
-
-  renderListOnly(workers) {
-    const container = document.getElementById("workers-list-container");
-    if (container) {
-        render(this._renderWorkerList(workers), container);
-    }
-  }
-
   async _handleDelete(id) {
     if (this.acciones && this.acciones.onDelete) {
         await this.acciones.onDelete(id);
     }
   }
 
-  _handleFormSubmit(e) {
+  async _handleFormSubmit(e) {
     e.preventDefault();
     const huellasStr = document.getElementById("worker-huellas").value;
     const data = {
@@ -314,9 +345,11 @@ export class ManageWorkersView {
         huellas: huellasStr ? JSON.parse(huellasStr) : []
     };
     data.huella = data.huellas.length > 0 ? data.huellas[0] : null;
-    this.acciones.onSave(document.getElementById("edit-worker-id").value, data);
+    await this.acciones.onSave(document.getElementById("edit-worker-id").value, data);
     this.resetForm();
   }
+
+  // --- Helpers de UI ---
 
   _renderHeader(onBack) {
     return html`
@@ -337,15 +370,6 @@ export class ManageWorkersView {
     `;
   }
 
-  _renderWorkerOptions(workers) {
-    return html`
-        <option value="">Seleccionar Trabajador</option>
-        ${workers.sort((a,b) => a.apellidos.localeCompare(b.apellidos)).map(w => html`
-            <option value="${w.dni}">${w.apellidos}, ${w.nombre} (${w.dni})</option>
-        `)}
-    `;
-  }
-
   updateStepDots(count) {
     for (let i = 1; i <= 3; i++) {
         const dot = document.getElementById(`step-dot-${i}`); if (!dot) continue;
@@ -355,6 +379,7 @@ export class ManageWorkersView {
 
   updateFingerprintStatus(hasHuellas) {
     const dot = document.getElementById("status-dot"), text = document.getElementById("status-text");
+    if (!dot || !text) return;
     if (hasHuellas) { dot.className = "h-3 w-3 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"; text.textContent = "Huellas Listas (3/3)"; }
     else { dot.className = "h-3 w-3 rounded-full bg-red-400"; text.textContent = "Sin huellas"; }
   }
@@ -410,9 +435,6 @@ export class ManageWorkersView {
     const { onDownloadPdf, onDownloadExcel } = reportActions;
     this.toggleModal(true);
     const content = document.getElementById("worker-detail-content");
-    const now = new Date(), startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1), startOfWeek = new Date(now);
-    startOfWeek.setDate(now.getDate() - now.getDay());
-
     const stats = {
         total: attendance.length,
         desayunos: attendance.filter(a => a.tipo === "Desayuno").length,
@@ -458,3 +480,4 @@ export class ManageWorkersView {
       callback(worker, f);
   }
 }
+

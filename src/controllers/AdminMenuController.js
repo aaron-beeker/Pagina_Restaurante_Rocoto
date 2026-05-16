@@ -13,8 +13,8 @@ export class AdminMenuController {
         this.lastAdminSearch = "";
     }
 
-    async abrirGestionCarta() {
-        preloader.show("Cargando Carta...");
+    async abrirGestionCarta(silent = false) {
+        if (!silent) preloader.show("Cargando Carta...");
         try {
             const searchInput = document.getElementById("search-product");
             if (searchInput) this.lastAdminSearch = searchInput.value;
@@ -32,36 +32,36 @@ export class AdminMenuController {
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 },
                 onAdd: async (data) => {
-                    preloader.show("Guardando...");
                     try {
                         const id = document.getElementById("edit-id").value;
                         if (id) {
                             if (await this.menuRepository.updatePlato(id, data)) {
                                 toast.success("Producto actualizado correctamente");
-                                await this.abrirGestionCarta();
+                                await this.abrirGestionCarta(true);
                                 document.getElementById("form-editor-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
                             }
                         } else {
                             if (await this.menuRepository.addPlato(data)) {
                                 toast.success("Nuevo producto guardado");
-                                await this.abrirGestionCarta();
+                                await this.abrirGestionCarta(true);
                                 document.getElementById("form-editor-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
                             }
                         }
-                    } finally {
-                        preloader.hide();
+                    } catch (error) {
+                        console.error("Error al guardar plato:", error);
+                        toast.error("Error al guardar el producto");
                     }
                 },
                 onDelete: async (id) => { 
-                    preloader.show("Eliminando...");
                     try {
                         if (await this.menuRepository.deletePlato(id)) {
                             toast.success("Producto eliminado");
-                            await this.abrirGestionCarta();
+                            await this.abrirGestionCarta(true);
                             document.getElementById("form-editor-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
                         }
-                    } finally {
-                        preloader.hide();
+                    } catch (error) {
+                        console.error("Error al eliminar plato:", error);
+                        toast.error("Error al eliminar el producto");
                     }
                 },
                 onSearch: (q) => {
@@ -75,47 +75,47 @@ export class AdminMenuController {
                     } 
                 },
                 onAddCategory: async (n, u, a) => { 
-                    preloader.show("Añadiendo categoría...");
                     try {
                         if (await this.menuRepository.addCategory(n, u, a)) {
                             toast.success("Categoría añadida con éxito");
-                            this.abrirGestionCarta();
+                            this.abrirGestionCarta(true);
                         }
-                    } finally {
-                        preloader.hide();
+                    } catch (error) {
+                        console.error("Error al añadir categoría:", error);
+                        toast.error("Error al añadir la categoría");
                     }
                 },
                 onUpdateCategory: async (id, n, an, u, a) => { 
-                    preloader.show("Actualizando categoría...");
                     try {
                         if (await this.menuRepository.updateCategory(id, n, an, u, a)) {
                             toast.success("Categoría actualizada");
-                            this.abrirGestionCarta();
+                            this.abrirGestionCarta(true);
                         }
-                    } finally {
-                        preloader.hide();
+                    } catch (error) {
+                        console.error("Error al actualizar categoría:", error);
+                        toast.error("Error al actualizar la categoría");
                     }
                 },
                 onDeleteCategory: async (id) => { 
-                    preloader.show("Eliminando categoría...");
                     try {
                         if (await this.menuRepository.deleteCategory(id)) {
                             toast.success("Categoría eliminada");
-                            this.abrirGestionCarta(); 
+                            this.abrirGestionCarta(true); 
                         }
-                    } finally {
-                        preloader.hide();
+                    } catch (error) {
+                        console.error("Error al eliminar categoría:", error);
+                        toast.error("Error al eliminar la categoría");
                     }
                 },
                 onReorderCategories: async (list) => { 
-                    preloader.show("Reordenando...");
                     try {
                         if (await this.menuRepository.saveCategoriesOrder(list)) {
                             toast.success("Orden actualizado");
-                            this.abrirGestionCarta(); 
+                            this.abrirGestionCarta(true); 
                         }
-                    } finally {
-                        preloader.hide();
+                    } catch (error) {
+                        console.error("Error al reordenar:", error);
+                        toast.error("Error al reordenar");
                     }
                 }
             };
@@ -130,27 +130,27 @@ export class AdminMenuController {
                 }
             }
         } finally {
-            preloader.hide();
+            if (!silent) preloader.hide();
         }
     }
 
-    async abrirGestionHero(onUpdateHero) {
-        preloader.show("Cargando Banner...");
+    async abrirGestionHero(onUpdateHero, silent = false) {
+        if (!silent) preloader.show("Cargando Banner...");
         try {
             let d = null; 
             try { d = await this.menuRepository.getHeroPromo(); } catch (e) {}
             const v = new HeroPromoAdminView(document.getElementById("admin-layer"));
             v.render(d, {
                 onSave: async (p) => { 
-                    preloader.show("Guardando Banners...");
                     try {
                         if (await this.menuRepository.saveHeroPromo(p)) { 
                             if (onUpdateHero) onUpdateHero(p);
                             toast.success("Banners guardados correctamente"); 
-                            await this.abrirGestionHero(onUpdateHero); // Refrescar vista completa
+                            await this.abrirGestionHero(onUpdateHero, true); 
                         }
-                    } finally {
-                        preloader.hide();
+                    } catch (error) {
+                        console.error("Error al guardar banners:", error);
+                        toast.error("Error al guardar los banners");
                     }
                 },
                 onBack: () => {
@@ -159,12 +159,12 @@ export class AdminMenuController {
                 }
             });
         } finally {
-            preloader.hide();
+            if (!silent) preloader.hide();
         }
     }
 
-    async abrirGestionMenuDiario(currentDailyMenu, onUpdateDailyMenu) {
-        preloader.show("Cargando Menú del Día...");
+    async abrirGestionMenuDiario(currentDailyMenu, onUpdateDailyMenu, silent = false) {
+        if (!silent) preloader.show("Cargando Menú del Día...");
         try {
             const [opc, configActual] = await Promise.all([
                 this.menuRepository.getOpcionesParaAdmin(),
@@ -183,20 +183,20 @@ export class AdminMenuController {
 
             av.render(segundos, entradas, refrescos, {
               onSave: async (n) => { 
-                  preloader.show("Actualizando Menú Público...");
                   try {
                       if (await this.menuRepository.saveDailyMenu({ ...configActual, ...n })) { 
                           if (onUpdateDailyMenu) onUpdateDailyMenu(n);
                           toast.success("El menú público ha sido actualizado correctamente.", 3000);
                           document.getElementById("admin-menu-form")?.reset();
-                          await this.abrirGestionMenuDiario(n, onUpdateDailyMenu);
+                          await this.abrirGestionMenuDiario(n, onUpdateDailyMenu, true);
                           const adminLayer = document.getElementById("admin-layer");
                           if (adminLayer) adminLayer.scrollTo({ top: 0, behavior: 'smooth' });
                       } else {
                           toast.error("Error al intentar guardar el menú");
                       }
-                  } finally {
-                      preloader.hide();
+                  } catch (error) {
+                      console.error("Error al guardar menú diario:", error);
+                      toast.error("Error al guardar el menú");
                   }
               },
               onBack: () => {
@@ -204,16 +204,16 @@ export class AdminMenuController {
                   window.scrollTo({ top: 0, behavior: 'smooth' });
               },
               onToggleVisibility: async (activo) => {
-                  preloader.show(activo ? "Activando menú..." : "Ocultando menú...");
                   try {
                       if (await this.menuRepository.saveDailyMenuVisibility(activo)) {
                           const updatedConfig = { ...configActual, activo };
                           if (onUpdateDailyMenu) onUpdateDailyMenu(updatedConfig);
                           toast.success(activo ? "Menú activado en la web" : "Menú ocultado de la web");
-                          this.abrirGestionMenuDiario(updatedConfig, onUpdateDailyMenu);
+                          this.abrirGestionMenuDiario(updatedConfig, onUpdateDailyMenu, true);
                       }
-                  } finally {
-                      preloader.hide();
+                  } catch (error) {
+                      console.error("Error al cambiar visibilidad:", error);
+                      toast.error("Error al actualizar visibilidad");
                   }
               }
             }, configActual?.activo);
@@ -238,7 +238,7 @@ export class AdminMenuController {
             const pdfBtnMobile = document.getElementById("download-pdf-carta-mobile");
             if (pdfBtnMobile) pdfBtnMobile.onclick = handleDownloadPdf;
         } finally {
-            preloader.hide();
+            if (!silent) preloader.hide();
         }
     }
 }

@@ -9,12 +9,28 @@ import {
   deleteDoc, 
   query,      
   where,
-  orderBy
+  orderBy,
+  onSnapshot
 } from "firebase/firestore";
 
 export class WorkerRepository {
   constructor() {
     this.collectionName = "trabajadores_fasal";
+  }
+
+  /**
+   * Suscribe a cambios en tiempo real en la colección de trabajadores.
+   * @param {Function} callback Función que recibe la lista actualizada.
+   * @returns {Function} Función para cancelar la suscripción (unsubscribe).
+   */
+  subscribeToWorkers(callback) {
+    const q = query(collection(db, this.collectionName), orderBy("apellidos", "asc"));
+    return onSnapshot(q, (snapshot) => {
+        const workers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        callback(workers);
+    }, (error) => {
+        console.error("Error en suscripción de trabajadores:", error);
+    });
   }
 
   async getAllWorkers() {
@@ -23,7 +39,7 @@ export class WorkerRepository {
       const querySnapshot = await getDocs(q);
       return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     } catch (error) {
-      console.error("Error getting workers:", error);
+      console.error("Error getting all workers:", error);
       return [];
     }
   }
