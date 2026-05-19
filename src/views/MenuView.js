@@ -147,17 +147,15 @@ export class MenuView {
       class="group flex flex-col h-full animate-scale-in"
       style="animation-delay: ${index * 50}ms"
     >
-      <div
-        class="relative aspect-[16/11] rounded-[2.5rem] overflow-hidden mb-6 bg-gradient-to-br from-emerald-50 to-white shadow-sm transition-all duration-700 group-hover:shadow-2xl group-hover:-translate-y-2 border border-emerald-100/30"
-      >
+      <div class="relative mb-6">
         <img
           src="${item.imageUrl || CAT_IMG_FALLBACK}"
-          class="h-full w-full object-cover transition-transform duration-[3s] group-hover:scale-110"
+          class="w-full h-auto max-h-[280px] object-contain transition-transform duration-[3s] group-hover:scale-110 drop-shadow-[0_8px_20px_rgba(0,0,0,0.08)]"
           loading="lazy"
         />
 
         <div
-          class="absolute bottom-4 right-4 bg-primary/95 backdrop-blur-xl px-4 py-2 rounded-2xl shadow-xl border border-white/20"
+          class="absolute bottom-0 right-0 bg-primary/95 backdrop-blur-xl px-4 py-2 rounded-2xl shadow-xl border border-white/20"
         >
           <span class="text-sm sm:text-base font-display italic text-white font-black"
             >S/ ${Number(item.price).toFixed(2)}</span
@@ -165,7 +163,7 @@ export class MenuView {
         </div>
       </div>
 
-      <div class="px-2 flex flex-col flex-1 space-y-2">
+      <div class="flex flex-col flex-1 space-y-2">
         <h3
           class="text-sm sm:text-lg font-display italic text-stone-900 group-hover:text-primary transition-colors leading-tight uppercase tracking-tight"
         >
