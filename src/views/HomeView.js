@@ -756,10 +756,13 @@ export class HomeView {
           <div class="lg:col-span-5 order-2 lg:order-1">
             <div class="relative group">
               <div
-                class="absolute -inset-4 border border-stone-100 rounded-[3rem] -z-10 group-hover:scale-[1.02] transition-transform duration-1000"
+                class="absolute -inset-8 bg-gradient-to-br from-amber-300/20 via-orange-300/10 to-transparent rounded-full blur-3xl"
               ></div>
               <div
-                class="relative aspect-[4/5] bg-stone-100 rounded-[2.5rem] overflow-hidden shadow-2xl"
+                class="absolute -inset-4 border border-amber-200/30 rounded-[4rem] -z-10 group-hover:scale-[1.02] transition-transform duration-1000 shadow-2xl shadow-amber-900/10"
+              ></div>
+              <div
+                class="relative aspect-[4/5] bg-gradient-to-br from-amber-50 via-white to-amber-100 rounded-[2.5rem] overflow-hidden shadow-2xl shadow-stone-900/10"
               >
                 <img
                   src="https://res.cloudinary.com/dhcgrkrdc/image/upload/v1778388097/FB_IMG_1542216440936-removebg-preview_icr9pc.png"
@@ -767,12 +770,22 @@ export class HomeView {
                   alt="Alicia Mattos"
                 />
                 <div
-                  class="absolute bottom-8 left-8 right-8 p-6 bg-white/90 backdrop-blur-md rounded-2xl border border-white/50 shadow-sm translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-700"
+                  class="absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-amber-900/20 to-transparent pointer-events-none"
+                ></div>
+                <div
+                  class="absolute bottom-6 left-6 right-6 p-5 bg-primary/95 backdrop-blur-md rounded-2xl border border-white/20 shadow-lg shadow-primary/30"
                 >
-                  <p class="text-[9px] uppercase tracking-[0.4em] text-primary font-bold mb-1">
-                    El Corazón de Rocoto
-                  </p>
-                  <h4 class="text-xl font-display italic text-stone-900">Alicia Mattos</h4>
+                  <div class="flex items-center gap-3">
+                    <svg class="w-5 h-5 text-amber-300 shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M17 8C8 10 5.9 16.17 3.82 21.34L5.71 22L6.66 19.7C7.14 19.87 7.64 20 8 20C19 20 22 3 22 3C21 5 14 5.25 9 6.25C4 7.25 2 11.5 2 13.5C2 15.5 3.75 17.25 3.75 17.25C7 8 17 8 17 8Z"/>
+                    </svg>
+                    <div>
+                      <p class="text-[9px] uppercase tracking-[0.4em] text-amber-300 font-bold mb-0.5">
+                        El Corazón de Rocoto
+                      </p>
+                      <h4 class="text-lg font-display italic text-white">Alicia Mattos</h4>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
