@@ -769,29 +769,80 @@ export class HomeView {
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-24 items-center mb-32">
           <!-- Lado Imagen -->
           <div class="lg:col-span-5 order-2 lg:order-1">
-            <div class="relative group flex justify-center">
-              <!-- Sticker: ligeramente rotado, como pegado a la pared -->
+            <div class="relative group">
+              <!-- Elemento decorativo de fondo (Aura sutil) -->
               <div
-                class="relative -rotate-[1.5deg] sm:-rotate-[2deg] group-hover:rotate-0 transition-all duration-700 ease-out"
-              >
-                <!-- Cuerpo del sticker (base blanca + sombra realista) -->
+                class="absolute -inset-10 bg-primary/5 blur-[100px] rounded-full group-hover:bg-primary/10 transition-colors duration-1000"
+              ></div>
+
+              <div class="relative">
+                <!-- Marco posterior decorativo -->
                 <div
-                  class="relative bg-white rounded-2xl shadow-[8px_8px_30px_rgba(0,0,0,0.08),0_0_0_1px_rgba(0,0,0,0.03)] group-hover:shadow-[14px_14px_45px_rgba(0,0,0,0.14)] transition-shadow duration-700"
+                  class="absolute inset-0 border border-primary/20 rounded-[3rem] translate-x-6 translate-y-6 -z-10 group-hover:translate-x-0 group-hover:translate-y-0 transition-transform duration-1000"
+                ></div>
+
+                <!-- Contenedor Principal -->
+                <div
+                  class="relative aspect-[4/5] sm:aspect-[3/4] overflow-hidden rounded-[2.5rem] bg-stone-50 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.12)] border border-stone-100"
                 >
-                  <!-- La imagen PNG sin fondo sobre fondo blanco -->
+                  <!-- Patrón de fondo sutil -->
+                  <div
+                    class="absolute inset-0 opacity-[0.03]"
+                    style="background-image: radial-gradient(#000 1px, transparent 0); background-size: 20px 20px;"
+                  ></div>
+
+                  <!-- Imagen de Alicia Mattos -->
                   <img
-                    src="https://res.cloudinary.com/dhcgrkrdc/image/upload/v1778388097/FB_IMG_1542216440936-removebg-preview_icr9pc.png"
-                    class="block w-full max-w-[320px] h-auto object-contain select-none group-hover:scale-[1.02] transition-transform duration-700"
+                    src="https://res.cloudinary.com/dhcgrkrdc/image/upload/v1779163437/FB_IMG_1542216440936-removebg-preview_icr9pc.png"
+                    class="absolute inset-0 w-full h-full object-contain scale-[1.1] translate-y-8 group-hover:scale-[1.18] group-hover:translate-y-4 transition-all duration-[4s] ease-out drop-shadow-[0_20px_40px_rgba(0,0,0,0.2)]"
                     alt="Alicia Mattos"
                   />
-                  <!-- Texto impreso en el sticker -->
-                  <div class="py-3 px-4 text-center border-t border-stone-100">
-                    <p
-                      class="text-[7px] uppercase tracking-[0.4em] text-primary font-bold"
+
+                  <!-- Badge de "Chef Fundadora" -->
+                  <div class="absolute top-8 left-8">
+                    <div
+                      class="bg-white/90 backdrop-blur-md px-4 py-2 rounded-full border border-white/50 shadow-sm"
                     >
-                      El Corazón de Rocoto
-                    </p>
-                    <h4 class="text-sm font-display italic text-stone-900">Alicia Mattos</h4>
+                      <p class="text-[8px] uppercase tracking-[0.3em] text-primary font-black">
+                        Chef Fundadora
+                      </p>
+                    </div>
+                  </div>
+
+                  <!-- Sello Circular Flotante (SVG) -->
+                  <div
+                    class="absolute top-8 right-8 w-24 h-24 group-hover:rotate-12 transition-transform duration-1000 hidden sm:block"
+                  >
+                    <svg class="w-full h-full text-primary/10" viewBox="0 0 100 100">
+                      <defs>
+                        <path
+                          id="circlePath"
+                          d="M 50, 50 m -35, 0 a 35,35 0 1,1 70,0 a 35,35 0 1,1 -70,0"
+                        />
+                      </defs>
+                      <text font-size="8.5" font-weight="900" fill="currentColor" letter-spacing="2">
+                        <textPath xlink:href="#circlePath">
+                          TRADICIÓN • PASIÓN • SELVA CENTRAL •
+                        </textPath>
+                      </text>
+                    </svg>
+                  </div>
+
+                  <!-- Bloque de información inferior -->
+                  <div
+                    class="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-black/60 via-black/20 to-transparent pt-20"
+                  >
+                    <div
+                      class="relative translate-y-4 group-hover:translate-y-0 transition-transform duration-700"
+                    >
+                      <div class="h-px w-12 bg-primary mb-4"></div>
+                      <h4 class="text-3xl sm:text-4xl font-display italic text-white drop-shadow-md">
+                        Alicia Mattos
+                      </h4>
+                      <p class="text-[10px] uppercase tracking-[0.5em] text-white/80 font-bold mt-2">
+                        El Corazón de Rocoto
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
