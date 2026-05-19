@@ -1002,15 +1002,22 @@ export class HomeView {
 
   _renderMenuSection() {
     return html` <section
-      class="relative pt-12 pb-24 sm:pt-16 sm:pb-32 overflow-hidden scroll-mt-20 bg-white"
+      class="relative pt-12 pb-24 sm:pt-16 sm:pb-32 overflow-hidden scroll-mt-20 bg-gradient-to-b from-amber-50/50 via-white to-amber-50/30"
       id="menu"
     >
       <div
-        class="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none"
+        class="absolute top-0 left-0 w-full h-48 bg-gradient-to-b from-primary/[0.03] via-amber-100/10 to-transparent pointer-events-none"
       ></div>
+      <div
+        class="absolute -top-6 left-0 w-full overflow-hidden pointer-events-none text-primary/[0.02]"
+      >
+        <svg class="w-full h-20" viewBox="0 0 1440 80" preserveAspectRatio="none">
+          <path d="M0,40 C360,120 1080,-40 1440,40 L1440,80 L0,80 Z" fill="currentColor"/>
+        </svg>
+      </div>
       <div class="${layout.container} relative z-10">
         <div class="max-w-4xl mb-12 text-left">
-          <span class="${layout.label} border-l-4 border-primary pl-4"
+          <span class="${layout.label} border-l-4 border-amber-500 pl-4"
             >Experiencia Gastronómica</span
           >
           <div class="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-10">
@@ -1018,7 +1025,7 @@ export class HomeView {
               Nuestra <span class="text-primary font-black">Carta</span>
             </h2>
             <p
-              class="${typography.bodyLg} italic text-on-surface-variant/40 max-w-sm border-l border-stone-100 pl-6 hidden lg:block leading-tight"
+              class="${typography.bodyLg} italic text-amber-900/40 max-w-sm border-l border-amber-200/40 pl-6 hidden lg:block leading-tight"
             >
               Sabores de la selva central que cuentan nuestra historia en cada bocado.
             </p>

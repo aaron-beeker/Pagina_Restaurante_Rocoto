@@ -95,7 +95,7 @@ export class MenuView {
 
   _renderDetailHeader(categoryName, count) {
     return html` <div
-      class="flex flex-col sm:flex-row sm:items-end justify-between gap-8 mb-16 sm:mb-20 pb-8 border-b border-stone-100"
+      class="flex flex-col sm:flex-row sm:items-end justify-between gap-8 mb-16 sm:mb-20 pb-8 border-b border-amber-200/30"
     >
       <div class="space-y-6">
         <button
@@ -113,7 +113,7 @@ export class MenuView {
           Volver
         </button>
         <div class="flex flex-col gap-2">
-          <span class="text-[9px] uppercase tracking-[0.4em] text-stone-400 font-bold"
+          <span class="text-[9px] uppercase tracking-[0.4em] text-amber-600/60 font-bold"
             >Explorando</span
           >
           <h2
@@ -124,7 +124,7 @@ export class MenuView {
         </div>
       </div>
       <div class="text-right hidden sm:block">
-        <span class="block text-[8px] uppercase tracking-[0.5em] text-stone-300 font-bold mb-1"
+        <span class="block text-[8px] uppercase tracking-[0.5em] text-amber-600/40 font-bold mb-1"
           >Disponibles</span
         >
         <span class="text-2xl font-display italic text-primary leading-none"
@@ -147,9 +147,8 @@ export class MenuView {
       class="group flex flex-col h-full animate-scale-in"
       style="animation-delay: ${index * 50}ms"
     >
-      <!-- Imagen con ratio mantenido y badge refinado -->
       <div
-        class="relative aspect-[16/11] rounded-[2.5rem] overflow-hidden mb-6 bg-stone-100 shadow-sm transition-all duration-700 group-hover:shadow-2xl group-hover:-translate-y-2 border border-stone-50"
+        class="relative aspect-[16/11] rounded-[2.5rem] overflow-hidden mb-6 bg-gradient-to-br from-amber-50 to-white shadow-sm transition-all duration-700 group-hover:shadow-2xl group-hover:-translate-y-2 border border-amber-100/30"
       >
         <img
           src="${item.imageUrl || CAT_IMG_FALLBACK}"
@@ -157,17 +156,15 @@ export class MenuView {
           loading="lazy"
         />
 
-        <!-- Badge de precio minimalista -->
         <div
-          class="absolute bottom-4 right-4 bg-white/95 backdrop-blur-xl px-4 py-2 rounded-2xl shadow-xl border border-white/50"
+          class="absolute bottom-4 right-4 bg-primary/95 backdrop-blur-xl px-4 py-2 rounded-2xl shadow-xl border border-white/20"
         >
-          <span class="text-sm sm:text-base font-display italic text-primary font-black"
+          <span class="text-sm sm:text-base font-display italic text-white font-black"
             >S/ ${Number(item.price).toFixed(2)}</span
           >
         </div>
       </div>
 
-      <!-- Textos con estilo editorial -->
       <div class="px-2 flex flex-col flex-1 space-y-2">
         <h3
           class="text-sm sm:text-lg font-display italic text-stone-900 group-hover:text-primary transition-colors leading-tight uppercase tracking-tight"
@@ -175,20 +172,20 @@ export class MenuView {
           ${item.name}
         </h3>
         <p
-          class="text-[10px] sm:text-xs text-stone-400 font-light italic line-clamp-2 leading-relaxed"
+          class="text-[10px] sm:text-xs text-amber-800/50 font-light italic line-clamp-2 leading-relaxed"
         >
           ${item.description ||
           "Receta artesanal preparada con insumos seleccionados de nuestra selva."}
         </p>
-        <div class="h-[1px] w-8 bg-primary/10 group-hover:w-full transition-all duration-700"></div>
+        <div class="h-[1px] w-8 bg-amber-300/40 group-hover:w-full transition-all duration-700"></div>
       </div>
     </div>`;
   }
 
   _renderEmptyState() {
     return html` <div class="py-32 text-center space-y-4">
-      <div class="h-12 w-[1px] bg-stone-100 mx-auto"></div>
-      <p class="text-[10px] uppercase tracking-[0.6em] text-stone-300 font-bold italic">
+      <div class="h-12 w-[1px] bg-amber-200/30 mx-auto"></div>
+      <p class="text-[10px] uppercase tracking-[0.6em] text-amber-600/40 font-bold italic">
         Próximamente nuevas delicias
       </p>
     </div>`;
@@ -200,17 +197,20 @@ export class MenuView {
       class="group flex flex-col items-center gap-6 transition-all active:scale-95 bg-transparent w-full"
       data-category="${cat.nombre}"
     >
-      <!-- Forma circular mantenida con efecto premium -->
       <div
         class="relative ${sizeClass} max-w-[200px] aspect-square flex items-center justify-center"
       >
         <div
-          class="absolute inset-0 bg-stone-50 rounded-full group-hover:bg-primary/[0.03] group-hover:scale-110 transition-all duration-1000 shadow-inner"
+          class="absolute inset-0 bg-gradient-to-br from-amber-50 to-orange-50/30 rounded-full group-hover:bg-gradient-to-br group-hover:from-amber-100 group-hover:to-orange-100/40 group-hover:scale-110 transition-all duration-1000 shadow-inner"
+        ></div>
+
+        <div
+          class="absolute inset-2 rounded-full bg-gradient-to-br from-amber-200/10 via-transparent to-transparent blur-xl"
         ></div>
 
         <img
           src="${cat.imageUrl || CAT_IMG_FALLBACK}"
-          class="relative z-10 w-[78%] h-[82%] object-contain drop-shadow-[0_15px_30px_rgba(0,0,0,0.1)] group-hover:drop-shadow-[0_25px_45px_rgba(27,94,52,0.2)] group-hover:-translate-y-4 group-hover:scale-105 transition-all duration-700"
+          class="relative z-10 w-[78%] h-[82%] object-contain drop-shadow-[0_15px_30px_rgba(0,0,0,0.1)] group-hover:drop-shadow-[0_25px_45px_rgba(251,191,36,0.2)] group-hover:-translate-y-4 group-hover:scale-105 transition-all duration-700"
           @error=${(e) => {
             e.target.src = CAT_IMG_FALLBACK;
             e.target.classList.remove("object-contain");
@@ -218,9 +218,8 @@ export class MenuView {
           }}
         />
 
-        <!-- Anillo punteado mantenido -->
         <div
-          class="absolute inset-0 border border-dashed border-stone-200 rounded-full -m-2 animate-[spin_60s_linear_infinite] opacity-40 group-hover:opacity-100 group-hover:border-primary/30 transition-all"
+          class="absolute inset-0 border border-dashed border-amber-200/30 rounded-full -m-2 animate-[spin_60s_linear_infinite] opacity-40 group-hover:opacity-100 group-hover:border-amber-400/40 transition-all"
         ></div>
       </div>
 
@@ -231,7 +230,7 @@ export class MenuView {
           ${cat.nombre}
         </span>
         <div
-          class="h-[1px] w-4 bg-stone-200 group-hover:w-12 group-hover:bg-primary/30 transition-all duration-700"
+          class="h-[1px] w-4 bg-amber-300/40 group-hover:w-12 group-hover:bg-primary/30 transition-all duration-700"
         ></div>
       </div>
     </button>`;
