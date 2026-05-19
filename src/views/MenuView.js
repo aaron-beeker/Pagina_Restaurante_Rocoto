@@ -95,7 +95,7 @@ export class MenuView {
 
   _renderDetailHeader(categoryName, count) {
     return html` <div
-      class="flex flex-col sm:flex-row sm:items-end justify-between gap-8 mb-16 sm:mb-20 pb-8 border-b border-amber-200/30"
+      class="flex flex-col sm:flex-row sm:items-end justify-between gap-8 mb-16 sm:mb-20 pb-8 border-b border-primary/10"
     >
       <div class="space-y-6">
         <button
@@ -113,7 +113,7 @@ export class MenuView {
           Volver
         </button>
         <div class="flex flex-col gap-2">
-          <span class="text-[9px] uppercase tracking-[0.4em] text-amber-600/60 font-bold"
+          <span class="text-[9px] uppercase tracking-[0.4em] text-primary/60 font-bold"
             >Explorando</span
           >
           <h2
@@ -124,7 +124,7 @@ export class MenuView {
         </div>
       </div>
       <div class="text-right hidden sm:block">
-        <span class="block text-[8px] uppercase tracking-[0.5em] text-amber-600/40 font-bold mb-1"
+        <span class="block text-[8px] uppercase tracking-[0.5em] text-primary/40 font-bold mb-1"
           >Disponibles</span
         >
         <span class="text-2xl font-display italic text-primary leading-none"
@@ -148,7 +148,7 @@ export class MenuView {
       style="animation-delay: ${index * 50}ms"
     >
       <div
-        class="relative aspect-[16/11] rounded-[2.5rem] overflow-hidden mb-6 bg-gradient-to-br from-amber-50 to-white shadow-sm transition-all duration-700 group-hover:shadow-2xl group-hover:-translate-y-2 border border-amber-100/30"
+        class="relative aspect-[16/11] rounded-[2.5rem] overflow-hidden mb-6 bg-gradient-to-br from-emerald-50 to-white shadow-sm transition-all duration-700 group-hover:shadow-2xl group-hover:-translate-y-2 border border-emerald-100/30"
       >
         <img
           src="${item.imageUrl || CAT_IMG_FALLBACK}"
@@ -172,20 +172,20 @@ export class MenuView {
           ${item.name}
         </h3>
         <p
-          class="text-[10px] sm:text-xs text-amber-800/50 font-light italic line-clamp-2 leading-relaxed"
+          class="text-[10px] sm:text-xs text-primary/50 font-light italic line-clamp-2 leading-relaxed"
         >
           ${item.description ||
           "Receta artesanal preparada con insumos seleccionados de nuestra selva."}
         </p>
-        <div class="h-[1px] w-8 bg-amber-300/40 group-hover:w-full transition-all duration-700"></div>
+        <div class="h-[1px] w-8 bg-primary/20 group-hover:w-full transition-all duration-700"></div>
       </div>
     </div>`;
   }
 
   _renderEmptyState() {
     return html` <div class="py-32 text-center space-y-4">
-      <div class="h-12 w-[1px] bg-amber-200/30 mx-auto"></div>
-      <p class="text-[10px] uppercase tracking-[0.6em] text-amber-600/40 font-bold italic">
+      <div class="h-12 w-[1px] bg-primary/10 mx-auto"></div>
+      <p class="text-[10px] uppercase tracking-[0.6em] text-primary/40 font-bold italic">
         Próximamente nuevas delicias
       </p>
     </div>`;
@@ -201,16 +201,16 @@ export class MenuView {
         class="relative ${sizeClass} max-w-[200px] aspect-square flex items-center justify-center"
       >
         <div
-          class="absolute inset-0 bg-gradient-to-br from-amber-50 to-orange-50/30 rounded-full group-hover:bg-gradient-to-br group-hover:from-amber-100 group-hover:to-orange-100/40 group-hover:scale-110 transition-all duration-1000 shadow-inner"
+          class="absolute inset-0 bg-gradient-to-br from-emerald-50 to-white rounded-full group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-emerald-50 group-hover:scale-110 transition-all duration-1000 shadow-inner"
         ></div>
 
         <div
-          class="absolute inset-2 rounded-full bg-gradient-to-br from-amber-200/10 via-transparent to-transparent blur-xl"
+          class="absolute inset-2 rounded-full bg-gradient-to-br from-emerald-200/10 via-transparent to-transparent blur-xl"
         ></div>
 
         <img
           src="${cat.imageUrl || CAT_IMG_FALLBACK}"
-          class="relative z-10 w-[78%] h-[82%] object-contain drop-shadow-[0_15px_30px_rgba(0,0,0,0.1)] group-hover:drop-shadow-[0_25px_45px_rgba(251,191,36,0.2)] group-hover:-translate-y-4 group-hover:scale-105 transition-all duration-700"
+          class="relative z-10 w-[78%] h-[82%] object-contain drop-shadow-[0_15px_30px_rgba(0,0,0,0.1)] group-hover:drop-shadow-[0_25px_45px_rgba(27,94,52,0.2)] group-hover:-translate-y-4 group-hover:scale-105 transition-all duration-700"
           @error=${(e) => {
             e.target.src = CAT_IMG_FALLBACK;
             e.target.classList.remove("object-contain");
@@ -219,7 +219,7 @@ export class MenuView {
         />
 
         <div
-          class="absolute inset-0 border border-dashed border-amber-200/30 rounded-full -m-2 animate-[spin_60s_linear_infinite] opacity-40 group-hover:opacity-100 group-hover:border-amber-400/40 transition-all"
+          class="absolute inset-0 border border-dashed border-emerald-200/30 rounded-full -m-2 animate-[spin_60s_linear_infinite] opacity-40 group-hover:opacity-100 group-hover:border-primary/40 transition-all"
         ></div>
       </div>
 
@@ -230,7 +230,7 @@ export class MenuView {
           ${cat.nombre}
         </span>
         <div
-          class="h-[1px] w-4 bg-amber-300/40 group-hover:w-12 group-hover:bg-primary/30 transition-all duration-700"
+          class="h-[1px] w-4 bg-primary/20 group-hover:w-12 group-hover:bg-primary/30 transition-all duration-700"
         ></div>
       </div>
     </button>`;

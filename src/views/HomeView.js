@@ -411,13 +411,13 @@ export class HomeView {
       (l) => html`
         <a
           class="mobile-nav-link group flex items-center gap-5 p-5 rounded-[2rem] transition-all ${l.highlight
-            ? "hover:bg-amber-50"
+            ? "hover:bg-emerald-50"
             : "hover:bg-primary/5"}"
           href="${l.href}"
         >
           <span
             class="text-base font-bold text-stone-800 uppercase tracking-tighter ${l.highlight
-              ? "group-hover:text-amber-700"
+              ? "group-hover:text-primary"
               : "group-hover:text-primary"} transition-colors font-sans"
             >${l.label}</span
           >
@@ -633,30 +633,33 @@ export class HomeView {
   _renderDailyMenu(dailyMenu) {
     if (!dailyMenu || (dailyMenu.entradas?.length === 0 && dailyMenu.segundos?.length === 0))
       return html`<div class="max-w-5xl mx-auto py-24 px-4 text-center opacity-30">
-        <div class="h-10 w-64 bg-stone-100 mx-auto rounded-full mb-12 animate-pulse"></div>
+        <div class="h-10 w-64 bg-primary/10 mx-auto rounded-full mb-12 animate-pulse"></div>
         <div
-          class="relative bg-stone-50 rounded-[3rem] p-12 border border-stone-100 overflow-hidden"
+          class="relative bg-gradient-to-br from-emerald-50/80 to-white rounded-[3rem] p-12 border border-primary/10 overflow-hidden"
         >
           <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
             <div class="space-y-4">
-              <div class="h-3 w-20 bg-stone-200 mx-auto rounded-full"></div>
-              <div class="h-6 w-40 bg-stone-200 mx-auto rounded-full animate-pulse"></div>
+              <div class="h-3 w-20 bg-primary/10 mx-auto rounded-full"></div>
+              <div class="h-6 w-40 bg-primary/10 mx-auto rounded-full animate-pulse"></div>
             </div>
             <div class="space-y-4">
-              <div class="h-3 w-20 bg-stone-200 mx-auto rounded-full"></div>
-              <div class="h-6 w-48 bg-stone-200 mx-auto rounded-full animate-pulse"></div>
+              <div class="h-3 w-20 bg-primary/10 mx-auto rounded-full"></div>
+              <div class="h-6 w-48 bg-primary/10 mx-auto rounded-full animate-pulse"></div>
             </div>
             <div class="space-y-4">
-              <div class="h-3 w-20 bg-stone-200 mx-auto rounded-full"></div>
-              <div class="h-6 w-40 bg-stone-200 mx-auto rounded-full animate-pulse"></div>
+              <div class="h-3 w-20 bg-primary/10 mx-auto rounded-full"></div>
+              <div class="h-6 w-40 bg-primary/10 mx-auto rounded-full animate-pulse"></div>
             </div>
           </div>
         </div>
       </div>`;
     return html`<section
-      class="relative pt-10 pb-16 sm:pt-12 sm:pb-24 overflow-hidden border-b border-primary/10 bg-white"
+      class="relative pt-10 pb-16 sm:pt-12 sm:pb-24 overflow-hidden border-b border-primary/10 bg-gradient-to-b from-emerald-50/30 via-white to-emerald-50/20"
       id="menu-del-dia"
     >
+      <div
+        class="absolute top-0 right-0 w-96 h-96 bg-primary/[0.03] rounded-full blur-[120px] -mr-48 -mt-48 pointer-events-none"
+      ></div>
       <div class="${layout.container} relative z-10 text-center">
         <div class="max-w-5xl mx-auto">
           ${this._renderSectionHeader(
@@ -664,15 +667,18 @@ export class HomeView {
             html`Menú del <span class="text-primary font-black">Día</span>`,
             "Sabor de Casa, Todos los Días."
           )}
-          <div class="relative bg-primary rounded-[2rem] p-0.5 shadow-xl overflow-hidden">
+          <div class="relative bg-gradient-to-br from-primary to-emerald-800 rounded-[2rem] p-0.5 shadow-xl overflow-hidden">
             <div class="relative bg-white rounded-[1.9rem] overflow-hidden">
+              <div
+                class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-emerald-200/40 to-transparent"
+              ></div>
               <div class="p-6 sm:p-10 lg:px-12 lg:py-10 text-center">
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 relative items-start">
                   <div
-                    class="hidden lg:block absolute left-1/3 top-0 bottom-0 w-px bg-stone-100"
+                    class="hidden lg:block absolute left-1/3 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-emerald-200/30 to-transparent"
                   ></div>
                   <div
-                    class="hidden lg:block absolute left-2/3 top-0 bottom-0 w-px bg-stone-100"
+                    class="hidden lg:block absolute left-2/3 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-emerald-200/30 to-transparent"
                   ></div>
                   ${this._renderDailyMenuColumn(
                     "Entradas",
@@ -694,15 +700,24 @@ export class HomeView {
 
   _renderDailyMenuColumn(title, items, isSpecial = false) {
     return html`<div class="space-y-6 group">
-      <h3 class="${layout.label} !text-stone-300">${title}</h3>
-      <ul class="space-y-3">
+      <h3 class="${layout.label} !text-primary/70">${title}</h3>
+      <ul class="space-y-4">
         ${items.map(
           (item) =>
-            html`<li class="flex flex-col items-center">
-              <span class="${typography.h3} text-primary italic font-display leading-tight"
-                >${item}</span
-              >${isSpecial
-                ? html`<span class="${layout.label} !text-amber-500">Especialidad</span>`
+            html`<li class="flex flex-col items-center gap-1">
+              <div class="flex items-center gap-3">
+                <span
+                  class="w-1.5 h-1.5 rounded-full bg-primary/30 shrink-0 group-hover:bg-primary transition-colors duration-500"
+                ></span>
+                <span class="${typography.h3} text-primary italic font-display leading-tight"
+                  >${item}</span
+                >
+              </div>
+              ${isSpecial
+                ? html`<span
+                    class="inline-block text-[7px] uppercase tracking-[0.3em] bg-primary/10 text-primary font-bold px-3 py-1 rounded-full"
+                    >Especialidad</span
+                  >`
                 : ""}
             </li>`
         )}
@@ -712,17 +727,17 @@ export class HomeView {
 
   _renderDailyMenuFooter() {
     return html`<div
-      class="mt-10 flex flex-col sm:flex-row items-center justify-between gap-6 border-t border-stone-50 pt-8"
+      class="mt-10 flex flex-col sm:flex-row items-center justify-between gap-6 border-t border-primary/10 pt-8"
     >
       <div class="flex items-center gap-3 text-left font-sans">
         <div
-          class="h-8 w-8 rounded-full bg-primary text-white flex items-center justify-center font-black italic text-[10px]"
+          class="h-8 w-8 rounded-full bg-gradient-to-br from-primary to-emerald-700 text-white flex items-center justify-center font-black italic text-[10px] shadow-sm"
         >
           R
         </div>
         <div>
-          <p class="${layout.label} !mb-0 opacity-40">Atención</p>
-          <p class="text-[10px] font-bold text-on-background">12:00 PM - 03:30 PM</p>
+          <p class="${layout.label} !mb-0 text-primary/40">Atención</p>
+          <p class="text-[10px] font-bold text-stone-700">12:00 PM - 03:30 PM</p>
         </div>
       </div>
       <div class="relative group/price">
@@ -738,7 +753,7 @@ export class HomeView {
           >
         </div>
       </div>
-      <p class="${layout.label} opacity-30 hidden sm:block font-sans">Calidad e Inocuidad</p>
+      <p class="${layout.label} text-primary/30 hidden sm:block font-sans">Calidad e Inocuidad</p>
     </div>`;
   }
 
@@ -838,23 +853,23 @@ export class HomeView {
     ];
     return html` <div class="relative pt-8 mt-8">
       <div class="absolute top-0 left-1/2 -translate-x-1/2 flex items-center gap-3">
-        <div class="h-px w-16 bg-gradient-to-r from-transparent via-amber-300/50 to-transparent"></div>
+        <div class="h-px w-16 bg-gradient-to-r from-transparent via-emerald-200/50 to-transparent"></div>
         <svg class="w-4 h-4 text-primary" fill="currentColor" viewBox="0 0 24 24">
           <path d="M17 8C8 10 5.9 16.17 3.82 21.34L5.71 22L6.66 19.7C7.14 19.87 7.64 20 8 20C19 20 22 3 22 3C21 5 14 5.25 9 6.25C4 7.25 2 11.5 2 13.5C2 15.5 3.75 17.25 3.75 17.25C7 8 17 8 17 8Z"/>
         </svg>
-        <div class="h-px w-16 bg-gradient-to-r from-transparent via-amber-300/50 to-transparent"></div>
+        <div class="h-px w-16 bg-gradient-to-r from-transparent via-emerald-200/50 to-transparent"></div>
       </div>
       <div class="grid grid-cols-3 gap-8 pt-8">
         ${stats.map(
           (s) =>
             html` <div class="space-y-2 text-center">
-              <svg class="w-6 h-6 mx-auto text-amber-600/60" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+              <svg class="w-6 h-6 mx-auto text-primary/40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
                 <path d="${s.icon}" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
             <span class="block text-2xl font-black text-primary italic font-display leading-none"
               >${s.val}</span
             >
-            <span class="block text-[8px] uppercase tracking-widest text-amber-700/60 font-bold"
+            <span class="block text-[8px] uppercase tracking-widest text-primary/60 font-bold"
               >${s.label}</span
             >
           </div>`
@@ -868,7 +883,7 @@ export class HomeView {
       class="bg-gradient-to-br from-emerald-950 via-stone-950 to-emerald-950 rounded-[4rem] p-12 sm:p-20 text-white overflow-hidden relative mb-32"
     >
       <div
-        class="absolute top-0 right-0 w-96 h-96 bg-amber-500/10 rounded-full blur-[120px] -mr-48 -mt-48"
+        class="absolute top-0 right-0 w-96 h-96 bg-primary/10 rounded-full blur-[120px] -mr-48 -mt-48"
       ></div>
       <div
         class="absolute bottom-0 left-0 w-72 h-72 bg-emerald-500/5 rounded-full blur-[100px] -ml-36 -mb-36"
@@ -877,7 +892,7 @@ export class HomeView {
       <div class="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
         <div class="space-y-8">
           <h3 class="text-4xl font-display italic leading-tight">
-            Excelencia en cada <span class="text-amber-400">detalle.</span>
+            Excelencia en cada <span class="text-emerald-300">detalle.</span>
           </h3>
           <p class="text-stone-400 font-light leading-relaxed">
             Nuestro compromiso va más allá del sabor. Implementamos los más altos estándares de
@@ -886,13 +901,13 @@ export class HomeView {
           </p>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-10 border-l border-amber-500/20 pl-10">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-10 border-l border-primary/20 pl-10">
           <div class="space-y-3">
             <div class="flex items-center gap-2">
-              <svg class="w-4 h-4 text-amber-400 shrink-0" fill="currentColor" viewBox="0 0 24 24">
+              <svg class="w-4 h-4 text-emerald-300 shrink-0" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
               </svg>
-              <span class="text-[9px] uppercase tracking-widest text-amber-400 font-bold"
+              <span class="text-[9px] uppercase tracking-widest text-emerald-300 font-bold"
                 >Inocuidad</span
               >
             </div>
@@ -902,10 +917,10 @@ export class HomeView {
           </div>
           <div class="space-y-3">
             <div class="flex items-center gap-2">
-              <svg class="w-4 h-4 text-amber-400 shrink-0" fill="currentColor" viewBox="0 0 24 24">
+              <svg class="w-4 h-4 text-emerald-300 shrink-0" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
               </svg>
-              <span class="text-[9px] uppercase tracking-widest text-amber-400 font-bold"
+              <span class="text-[9px] uppercase tracking-widest text-emerald-300 font-bold"
                 >Dirección</span
               >
             </div>
@@ -944,18 +959,18 @@ export class HomeView {
     return html` <div class="space-y-24 mt-20 sm:mt-40">
       <div class="flex flex-col items-center text-center space-y-4">
         <div class="flex items-center gap-3">
-          <div class="h-px w-12 bg-gradient-to-r from-transparent via-amber-300/50 to-transparent"></div>
+          <div class="h-px w-12 bg-gradient-to-r from-transparent via-emerald-200/50 to-transparent"></div>
           <svg class="w-4 h-4 text-primary" fill="currentColor" viewBox="0 0 24 24">
             <path d="M17 8C8 10 5.9 16.17 3.82 21.34L5.71 22L6.66 19.7C7.14 19.87 7.64 20 8 20C19 20 22 3 22 3C21 5 14 5.25 9 6.25C4 7.25 2 11.5 2 13.5C2 15.5 3.75 17.25 3.75 17.25C7 8 17 8 17 8Z"/>
           </svg>
-          <div class="h-px w-12 bg-gradient-to-r from-transparent via-amber-300/50 to-transparent"></div>
+          <div class="h-px w-12 bg-gradient-to-r from-transparent via-emerald-200/50 to-transparent"></div>
         </div>
         <h2
           class="text-3xl sm:text-4xl font-display italic text-stone-950 uppercase tracking-tighter"
         >
           Platos <span class="text-primary font-black not-italic">Insignia</span>
         </h2>
-        <span class="text-[8px] uppercase tracking-[0.6em] text-amber-700/60 font-bold"
+        <span class="text-[8px] uppercase tracking-[0.6em] text-primary/60 font-bold"
           >Selección de la Casa</span
         >
       </div>
@@ -966,13 +981,13 @@ export class HomeView {
             html` <div class="group relative flex flex-col items-center text-center space-y-8">
               <div class="relative w-64 h-64 sm:w-72 sm:h-72 flex items-center justify-center">
                 <div
-                  class="absolute inset-0 bg-gradient-to-br from-amber-50 to-orange-50/30 rounded-full border border-amber-200/20 group-hover:bg-gradient-to-br group-hover:from-amber-100 group-hover:to-orange-100/30 group-hover:scale-105 group-hover:border-amber-300/30 transition-all duration-1000"
+                  class="absolute inset-0 bg-gradient-to-br from-emerald-50 to-white rounded-full border border-emerald-200/20 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-emerald-50 group-hover:scale-105 group-hover:border-primary/20 transition-all duration-1000"
                 ></div>
                 <div
-                  class="absolute inset-8 border border-dashed border-amber-200/30 rounded-full group-hover:rotate-45 group-hover:border-primary/20 transition-all duration-1000"
+                  class="absolute inset-8 border border-dashed border-emerald-200/30 rounded-full group-hover:rotate-45 group-hover:border-primary/20 transition-all duration-1000"
                 ></div>
                 <div
-                  class="absolute inset-4 bg-gradient-to-br from-amber-200/10 via-transparent to-transparent rounded-full blur-xl"
+                  class="absolute inset-4 bg-gradient-to-br from-emerald-200/10 via-transparent to-transparent rounded-full blur-xl"
                 ></div>
 
                 <img
@@ -987,11 +1002,11 @@ export class HomeView {
                   ${d.name}
                 </h4>
                 <div class="flex items-center justify-center gap-3">
-                  <div class="h-px w-4 bg-amber-300/40"></div>
-                  <p class="text-[9px] uppercase tracking-[0.3em] text-amber-700 font-bold">
+                  <div class="h-px w-4 bg-emerald-200/40"></div>
+                  <p class="text-[9px] uppercase tracking-[0.3em] text-primary font-bold">
                     ${d.desc}
                   </p>
-                  <div class="h-px w-4 bg-amber-300/40"></div>
+                  <div class="h-px w-4 bg-emerald-200/40"></div>
                 </div>
               </div>
             </div>`
@@ -1002,11 +1017,11 @@ export class HomeView {
 
   _renderMenuSection() {
     return html` <section
-      class="relative pt-12 pb-24 sm:pt-16 sm:pb-32 overflow-hidden scroll-mt-20 bg-gradient-to-b from-amber-50/50 via-white to-amber-50/30"
+      class="relative pt-12 pb-24 sm:pt-16 sm:pb-32 overflow-hidden scroll-mt-20 bg-gradient-to-b from-emerald-50/50 via-white to-emerald-50/30"
       id="menu"
     >
       <div
-        class="absolute top-0 left-0 w-full h-48 bg-gradient-to-b from-primary/[0.03] via-amber-100/10 to-transparent pointer-events-none"
+        class="absolute top-0 left-0 w-full h-48 bg-gradient-to-b from-primary/[0.03] via-emerald-100/10 to-transparent pointer-events-none"
       ></div>
       <div
         class="absolute -top-6 left-0 w-full overflow-hidden pointer-events-none text-primary/[0.02]"
@@ -1017,7 +1032,7 @@ export class HomeView {
       </div>
       <div class="${layout.container} relative z-10">
         <div class="max-w-4xl mb-12 text-left">
-          <span class="${layout.label} border-l-4 border-amber-500 pl-4"
+          <span class="${layout.label} border-l-4 border-primary pl-4"
             >Experiencia Gastronómica</span
           >
           <div class="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-10">
@@ -1025,7 +1040,7 @@ export class HomeView {
               Nuestra <span class="text-primary font-black">Carta</span>
             </h2>
             <p
-              class="${typography.bodyLg} italic text-amber-900/40 max-w-sm border-l border-amber-200/40 pl-6 hidden lg:block leading-tight"
+              class="${typography.bodyLg} italic text-primary/40 max-w-sm border-l border-primary/20 pl-6 hidden lg:block leading-tight"
             >
               Sabores de la selva central que cuentan nuestra historia en cada bocado.
             </p>
@@ -1135,7 +1150,7 @@ export class HomeView {
   }
 
   _renderPensionFeature(title, desc, svgPath, color = "primary") {
-    const colors = color === "amber" ? "text-amber-600 bg-amber-50" : "text-primary bg-primary/5";
+    const colors = color === "amber" ? "text-emerald-600 bg-emerald-50" : "text-primary bg-primary/5";
     return html` <div class="flex items-center gap-5">
       <div class="h-10 w-10 rounded-xl ${colors} flex items-center justify-center shrink-0">
         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
