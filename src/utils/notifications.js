@@ -181,16 +181,16 @@ export const preloader = {
                 <!-- Diseño Identitario Rocoto (Igual al Main Preloader) -->
                 <div class="relative flex flex-col items-center gap-6 animate-pulse" style="animation-duration: 3s">
                     <div class="relative h-20 w-20 sm:h-24 sm:w-24 flex items-center justify-center">
-                        <img src="${logoSolo}" class="h-full w-full object-contain opacity-80 select-none" alt="Rocoto" />
-                        <div class="absolute inset-0 -m-2 border-t border-primary/20 rounded-full animate-[spin_6s_linear_infinite]"></div>
+                        <img src="${logoSolo}" class="h-full w-full object-contain opacity-90 brightness-0 invert select-none" alt="Rocoto" />
+                        <div class="absolute inset-0 -m-2 border-t border-white/20 rounded-full animate-[spin_6s_linear_infinite]"></div>
                     </div>
                     <div class="flex flex-col items-center gap-4">
-                        <span class="text-stone-700 font-medium uppercase tracking-[1.5em] text-[8px] sm:text-[10px] select-none translate-x-[0.75em]">Rocoto</span>
+                        <span class="text-stone-300 font-medium uppercase tracking-[1.5em] text-[8px] sm:text-[10px] select-none translate-x-[0.75em]">Rocoto</span>
                         
                         <!-- Mensaje Dinámico -->
                         <div class="flex flex-col items-center gap-2">
-                            <p class="text-[9px] font-black uppercase tracking-[0.4em] text-primary/60 italic">${message}</p>
-                            <div class="h-[1px] w-8 bg-primary/20 rounded-full overflow-hidden">
+                            <p class="text-[9px] font-black uppercase tracking-[0.4em] text-primary/80 italic">${message}</p>
+                            <div class="h-[1px] w-12 bg-white/10 rounded-full overflow-hidden">
                                 <div class="h-full bg-primary w-full animate-[shimmer_2s_infinite]"></div>
                             </div>
                         </div>

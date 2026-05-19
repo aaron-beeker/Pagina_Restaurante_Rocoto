@@ -62,7 +62,7 @@ export class HomeView {
       <!-- Preloader Essence Ultra-Minimalista -->
       <div
         id="main-preloader"
-        class="fixed inset-0 z-[1000] bg-black flex flex-col items-center justify-center transition-opacity duration-1000"
+        class="fixed inset-0 z-[1000] bg-black flex flex-col items-center justify-center transition-opacity duration-800"
       >
         <div
           class="relative flex flex-col items-center gap-6 animate-pulse"
@@ -71,16 +71,16 @@ export class HomeView {
           <div class="relative h-16 w-16 sm:h-20 sm:w-20 flex items-center justify-center">
             <img
               src="${logoSolo}"
-              class="h-full w-full object-contain opacity-80 select-none"
+              class="h-full w-full object-contain opacity-90 brightness-0 invert select-none"
               alt="Rocoto"
             />
             <div
-              class="absolute inset-0 -m-2 border-t border-primary/10 rounded-full animate-[spin_6s_linear_infinite]"
+              class="absolute inset-0 -m-2 border-t border-white/20 rounded-full animate-[spin_6s_linear_infinite]"
             ></div>
           </div>
           <div class="flex flex-col items-center">
             <span
-              class="text-stone-700 font-medium uppercase tracking-[1.5em] text-[7px] sm:text-[8px] select-none translate-x-[0.75em]"
+              class="text-stone-300 font-medium uppercase tracking-[1.5em] text-[7px] sm:text-[8px] select-none translate-x-[0.75em]"
               >Rocoto</span
             >
           </div>
@@ -93,10 +93,10 @@ export class HomeView {
 
       <main
         id="main-content"
-        class="bg-[#fafafa] opacity-0 transition-opacity duration-1000 overflow-x-hidden"
+        class="bg-[#fafafa] overflow-x-hidden"
       >
         <!-- SECCIÓN: HERO -->
-        <div id="hero-container" class="bg-white"></div>
+        <div id="hero-container" class="bg-stone-50"></div>
 
         <!-- SECCIÓN: MENÚ DEL DÍA -->
         <div id="daily-menu-container" class="relative bg-stone-50/50">
@@ -155,15 +155,15 @@ export class HomeView {
       preloader = document.createElement("div");
       preloader.id = "main-preloader";
       preloader.className =
-        "fixed inset-0 z-[1000] bg-black flex flex-col items-center justify-center transition-opacity duration-1000";
+        "fixed inset-0 z-[1000] bg-black flex flex-col items-center justify-center transition-opacity duration-800";
       preloader.innerHTML = `
           <div class="relative flex flex-col items-center gap-6 animate-pulse" style="animation-duration: 3s">
             <div class="relative h-16 w-16 sm:h-20 sm:w-20 flex items-center justify-center">
-              <img src="${logoSolo}" class="h-full w-full object-contain opacity-80 select-none" alt="Rocoto" />
-              <div class="absolute inset-0 -m-2 border-t border-primary/10 rounded-full animate-[spin_6s_linear_infinite]"></div>
+              <img src="${logoSolo}" class="h-full w-full object-contain opacity-90 brightness-0 invert select-none" alt="Rocoto" />
+              <div class="absolute inset-0 -m-2 border-t border-white/20 rounded-full animate-[spin_6s_linear_infinite]"></div>
             </div>
             <div class="flex flex-col items-center">
-              <span class="text-stone-700 font-medium uppercase tracking-[1.5em] text-[7px] sm:text-[8px] select-none translate-x-[0.75em]">Rocoto</span>
+              <span class="text-stone-300 font-medium uppercase tracking-[1.5em] text-[7px] sm:text-[8px] select-none translate-x-[0.75em]">Rocoto</span>
             </div>
           </div>
         `;
@@ -172,10 +172,6 @@ export class HomeView {
 
     preloader.classList.remove("opacity-0");
     preloader.style.display = "";
-    if (mainContent) {
-      mainContent.classList.remove("opacity-100");
-      mainContent.classList.add("opacity-0");
-    }
     this._isFirstLoad = false;
   }
 
@@ -270,8 +266,6 @@ export class HomeView {
       if (this.elements.preloader.style.display === "none") return;
 
       this.elements.preloader.classList.add("opacity-0");
-      this.elements.mainContent.classList.remove("opacity-0");
-      this.elements.mainContent.classList.add("opacity-100");
 
       // FORZAR INICIO AL TOP (0,0) en carga o recarga
       if (this._isFirstLoad) {
@@ -291,7 +285,7 @@ export class HomeView {
       setTimeout(() => {
         if (this.elements.preloader) this.elements.preloader.style.display = "none";
         document.body.style.overflow = "auto";
-      }, 700);
+      }, 800);
     }
   }
 
@@ -600,11 +594,9 @@ export class HomeView {
   _renderHero(heroPromo) {
     if (!heroPromo)
       return html`<div
-        class="w-full h-[450px] sm:h-[650px] bg-stone-950 flex flex-col items-center justify-center relative overflow-hidden"
+        class="w-full h-[450px] sm:h-[650px] bg-stone-50 flex flex-col items-center justify-center relative overflow-hidden"
       >
-        <div class="relative h-20 w-20 flex items-center justify-center opacity-20">
-          <img src="${logoSolo}" class="h-full w-full object-contain animate-pulse" alt="Loading" />
-        </div>
+        <!-- Placeholder neutro sin logo para evitar destellos -->
       </div>`;
     const banners = heroPromo?.banners?.filter((b) => b.activo) || [];
     return html`<section class="relative w-full overflow-hidden bg-background" id="hero">
@@ -630,7 +622,7 @@ export class HomeView {
 
   _renderHeroPlaceholder() {
     return html`<div
-      class="swiper-slide w-full h-[600px] bg-stone-900 flex items-center justify-center"
+      class="swiper-slide w-full h-[600px] bg-stone-100 flex items-center justify-center"
     >
       <span class="text-stone-700 font-black uppercase tracking-[0.5em] italic font-display"
         >Rocoto Experience</span
@@ -1207,7 +1199,7 @@ export class HomeView {
           <div class="lg:col-span-7 relative group">
             <!-- Contenedor con fondo de marca para el efecto de tintado -->
             <div
-              class="relative aspect-[4/3] sm:aspect-video rounded-[3rem] overflow-hidden shadow-[0_30px_100px_-20px_rgba(0,0,0,0.2)] border-8 border-white bg-stone-950"
+              class="relative aspect-[4/3] sm:aspect-video rounded-[3rem] overflow-hidden shadow-[0_30px_100px_-20px_rgba(0,0,0,0.2)] border-8 border-white bg-stone-100"
             >
               <!-- Mapa con filtros avanzados -->
               <iframe

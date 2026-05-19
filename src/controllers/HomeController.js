@@ -140,31 +140,30 @@ export class HomeController {
     this.homeView.show();
     this.homeView.renderStaticShell(state.restaurantInfo);
 
+    // Actualizar UI de forma síncrona/directa para que esté lista antes de quitar el velo
     this.homeView.updateUserUI(state.restaurantInfo, state.user);
+    this.homeView.updateHeroUI(state.heroPromo);
+    this.homeView.updateDailyMenuUI(state.dailyMenu);
+    this.homeView.updateCompaniesUI(state.companies);
+    this.homeView.updateMobileNavUI();
 
-    requestAnimationFrame(() => {
-      this.homeView.updateHeroUI(state.heroPromo);
+    this._bindEvents();
 
-      requestAnimationFrame(async () => {
-        this.homeView.updateDailyMenuUI(state.dailyMenu);
-        this.homeView.updateCompaniesUI(state.companies);
-        this.homeView.updateMobileNavUI();
+    this.menuView.filterContainer = document.getElementById("menu-filters");
+    const gridContainer = document.getElementById("menu-grid");
+    this.menuView.gridContainer = gridContainer;
 
-        if (state.authInitialized) {
-          this.homeView.dismissPreloader();
-        }
+    if (gridContainer) {
+      await this.renderMenu();
+    }
 
-        this._bindEvents();
-
-        this.menuView.filterContainer = document.getElementById("menu-filters");
-        this.gridContainer = document.getElementById("menu-grid");
-        this.menuView.gridContainer = this.gridContainer;
-
-        if (this.gridContainer) {
-          await this.renderMenu();
-        }
+    // SOLO quitar el preloader si tenemos los datos esenciales (Auth + Banner)
+    // Esto evita ver el "esqueleto" o el logo pulsando antes de tiempo
+    if (state.authInitialized && state.heroPromo) {
+      requestAnimationFrame(() => {
+        this.homeView.dismissPreloader();
       });
-    });
+    }
   }
 
   _bindEvents() {

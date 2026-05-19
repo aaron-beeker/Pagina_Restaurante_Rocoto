@@ -32,6 +32,14 @@ export class AdminMenuController {
       
       let currentPlatos = [];
       let currentCategorias = [];
+      let initialLoadCount = 0;
+
+      const checkInitialLoad = () => {
+        initialLoadCount++;
+        if (initialLoadCount >= 2 && !silent) {
+          preloader.hide();
+        }
+      };
 
       const acciones = {
         onBack: () => {
@@ -141,6 +149,7 @@ export class AdminMenuController {
             acciones.onSearch(this.lastAdminSearch);
           }
         }
+        checkInitialLoad();
       });
 
       this.unsubscribeCartaCategorias = this.menuRepository.subscribeToCategories((categorias) => {
@@ -153,9 +162,11 @@ export class AdminMenuController {
             acciones.onSearch(this.lastAdminSearch);
           }
         }
+        checkInitialLoad();
       });
 
-    } finally {
+    } catch (error) {
+      console.error("Error en abrirGestionCarta:", error);
       if (!silent) preloader.hide();
     }
   }
@@ -168,6 +179,7 @@ export class AdminMenuController {
       const v = new HeroPromoAdminView(document.getElementById("admin-layer"));
       
       let currentData = null;
+      let hasLoadedFirstTime = false;
 
       const acciones = {
         onSave: async (p) => {
@@ -192,9 +204,15 @@ export class AdminMenuController {
         currentData = data;
         v.render(currentData, acciones);
         if (onUpdateHero) onUpdateHero(currentData);
+
+        if (!hasLoadedFirstTime && !silent) {
+          hasLoadedFirstTime = true;
+          preloader.hide();
+        }
       });
 
-    } finally {
+    } catch (error) {
+      console.error("Error en abrirGestionHero:", error);
       if (!silent) preloader.hide();
     }
   }
@@ -209,6 +227,14 @@ export class AdminMenuController {
 
       let configActual = null;
       let opc = { entradas: [], segundos: [], refrescos: [] };
+      let initialLoadCount = 0;
+
+      const checkInitialLoad = () => {
+        initialLoadCount++;
+        if (initialLoadCount >= 2 && !silent) {
+          preloader.hide();
+        }
+      };
 
       // Marcar seleccionados según la config actual para que el admin vea qué está activo
       const renderView = () => {
@@ -294,6 +320,7 @@ export class AdminMenuController {
           ),
         };
         renderView();
+        checkInitialLoad();
       });
 
       this.unsubscribeDailyMenuConfig = this.menuRepository.subscribeToDailyMenuConfig((config) => {
@@ -308,9 +335,11 @@ export class AdminMenuController {
           const pdfBtnMobile = document.getElementById("download-pdf-carta-mobile");
           if (pdfBtnMobile) pdfBtnMobile.onclick = handleDownloadPdf;
         }, 100);
+        checkInitialLoad();
       });
 
-    } finally {
+    } catch (error) {
+      console.error("Error en abrirGestionMenuDiario:", error);
       if (!silent) preloader.hide();
     }
   }
