@@ -1,0 +1,101 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ============================================================
+    // HELPERS
+    // ============================================================
+
+    // Verifica que el usuario está autenticado
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Verifica que el usuario existe y tiene rol de admin en la colección "users"
+    function isAdmin() {
+      return isAuthenticated()
+        && exists(/databases/$(database)/documents/users/$(request.auth.token.email))
+        && get(/databases/$(database)/documents/users/$(request.auth.token.email)).data.role == "admin";
+    }
+
+    // ============================================================
+    // users — Roles de usuario
+    // ============================================================
+    // El ID del documento es el email del usuario (en minúsculas)
+    match /users/{email} {
+      // Solo admins pueden leer la lista completa de usuarios
+      allow read: if isAdmin();
+
+      // Solo admins pueden crear, actualizar o eliminar usuarios
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ============================================================
+    // platos_carta — Platos del menú (carta)
+    // ============================================================
+    match /platos_carta/{platoId} {
+      // Público: cualquier persona puede leer (para la web del restaurante)
+      allow read: if true;
+
+      // Solo admins pueden modificar platos
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ============================================================
+    // categorias_carta — Categorías del menú
+    // ============================================================
+    match /categorias_carta/{categoryId} {
+      // Público: cualquier persona puede leer
+      allow read: if true;
+
+      // Solo admins pueden modificar categorías
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ============================================================
+    // configuracion — Documentos de configuración
+    //   - menu_ejecutivo (menú del día)
+    //   - hero_promocion (banners del hero)
+    // ============================================================
+    match /configuracion/{configDoc} {
+      // Público: cualquier persona puede leer
+      allow read: if true;
+
+      // Solo admins pueden modificar configuración
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ============================================================
+    // trabajadores_fasal — Registro de trabajadores
+    // ============================================================
+    match /trabajadores_fasal/{workerId} {
+      // Solo admins pueden leer trabajadores (contiene datos sensibles: DNI, huellas)
+      allow read: if isAdmin();
+
+      // Solo admins pueden crear, actualizar o eliminar trabajadores
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ============================================================
+    // asistencia_fasal — Registros de asistencia
+    // ============================================================
+    match /asistencia_fasal/{attendanceId} {
+      // Solo admins pueden leer asistencia
+      allow read: if isAdmin();
+
+      // Solo admins pueden crear, actualizar o eliminar registros
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ============================================================
+    // empresas_fasal — Empresas aliadas (servicio pensión)
+    // ============================================================
+    match /empresas_fasal/{companyId} {
+      // Solo admins pueden leer empresas
+      allow read: if isAdmin();
+
+      // Solo admins pueden crear, actualizar o eliminar empresas
+      allow create, update, delete: if isAdmin();
+    }
+  }
+}

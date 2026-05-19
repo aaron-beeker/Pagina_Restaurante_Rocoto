@@ -5,12 +5,14 @@ Este proyecto es la plataforma web oficial de **Rocoto Restaurante Chifa**, dise
 ## 🚀 Características Principales
 
 ### Para Clientes
+
 - **Menú Interactivo:** Navegación por categorías de la carta completa.
 - **Menú Diario:** Sección dedicada a los especiales del día (entradas, segundos y refrescos).
 - **Promociones:** Visualización dinámica de ofertas y banners principales.
 - **Diseño Responsivo:** Optimizado para dispositivos móviles y escritorio.
 
 ### Para Administración (Panel de Gestión)
+
 - **Gestión de Carta:** Control total sobre los platos, categorías y disponibilidad.
 - **Gestión de Personal:** Registro y control de trabajadores y empresas colaboradoras.
 - **Control de Asistencia:** Sistema para registrar la asistencia diaria del personal.
@@ -28,28 +30,29 @@ Este proyecto es la plataforma web oficial de **Rocoto Restaurante Chifa**, dise
 ## 📦 Instalación y Configuración
 
 1. **Clonar el repositorio:**
+
    ```bash
    git clone <url-del-repositorio>
    cd Pagina_Restaurante_Rocoto
    ```
 
 2. **Instalar dependencias:**
+
    ```bash
    npm install
    ```
 
 3. **Configurar variables de entorno:**
-   Crea un archivo `.env` en la raíz del proyecto con tus credenciales de Firebase:
-   ```env
-   VITE_FIREBASE_API_KEY=tu_api_key
-   VITE_FIREBASE_AUTH_DOMAIN=tu_auth_domain
-   VITE_FIREBASE_PROJECT_ID=tu_project_id
-   VITE_FIREBASE_STORAGE_BUCKET=tu_storage_bucket
-   VITE_FIREBASE_MESSAGING_SENDER_ID=tu_sender_id
-   VITE_FIREBASE_APP_ID=tu_app_id
+   Copia el archivo de ejemplo y completa con tus credenciales de Firebase:
+
+   ```bash
+   cp .env.example .env
    ```
 
+   Luego edita `.env` con tus valores reales. Puedes obtenerlos en la [Consola de Firebase](https://console.firebase.google.com/) > Project Settings > General > Your apps.
+
 4. **Ejecutar en modo desarrollo:**
+
    ```bash
    npm run dev
    ```
@@ -74,11 +77,56 @@ src/
 └── views/          # Plantillas y vistas de la aplicación (Lit-html)
 ```
 
+## 🔒 Seguridad (Firestore Rules)
+
+El archivo `firestore.rules` define las reglas de seguridad de la base de datos:
+
+| Colección            | Lectura    | Escritura  |
+| -------------------- | ---------- | ---------- |
+| `platos_carta`       | Público    | Solo admin |
+| `categorias_carta`   | Público    | Solo admin |
+| `configuracion`      | Público    | Solo admin |
+| `users`              | Solo admin | Solo admin |
+| `trabajadores_fasal` | Solo admin | Solo admin |
+| `asistencia_fasal`   | Solo admin | Solo admin |
+| `empresas_fasal`     | Solo admin | Solo admin |
+
+### Cómo desplegar las reglas:
+
+1. **Instala Firebase CLI** (si no lo tienes):
+
+   ```bash
+   npm install -g firebase-tools
+   ```
+
+2. **Inicia sesión en Firebase:**
+
+   ```bash
+   firebase login
+   ```
+
+3. **Inicializa el proyecto** (solo la primera vez):
+
+   ```bash
+   firebase init firestore
+   ```
+
+   Selecciona tu proyecto de Firebase y cuando pregunte qué archivo usar, indica `firestore.rules`.
+
+4. **Despliega las reglas:**
+   ```bash
+   firebase deploy --only firestore:rules
+   ```
+
+> **Importante:** Antes de desplegar, verifica que tu primer usuario admin esté registrado en la colección `users` de Firestore con `role: "admin"`. De lo contrario, nadie podrá acceder al panel de administración después de aplicar las reglas.
+
 ## 🌐 Despliegue
 
 El proyecto está configurado para desplegarse fácilmente en **Vercel**.
+
 - Conecta tu repositorio de GitHub a Vercel.
 - Asegúrate de configurar las variables de entorno en el panel de Vercel.
 
 ---
+
 Desarrollado para **Rocoto Restaurante Chifa**.

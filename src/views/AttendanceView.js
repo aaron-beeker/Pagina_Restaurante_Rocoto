@@ -13,25 +13,25 @@ export class AttendanceView {
     // Detener cualquier escaneo previo al re-renderizar
     this.isAutoScanning = false;
     this.isProcessing = false;
-    
+
     const currentMeal = this.getSuggestedMeal();
-    
+
     const mealStyles = {
-        "Desayuno": { 
-            active: "border-amber-400 bg-amber-50 text-amber-700 shadow-md shadow-amber-200/50", 
-            icon: '<path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>',
-            accent: "text-amber-500"
-        },
-        "Almuerzo": { 
-            active: "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-md shadow-emerald-200/50", 
-            icon: '<path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>',
-            accent: "text-emerald-500"
-        },
-        "Cena": { 
-            active: "border-indigo-500 bg-indigo-50 text-indigo-700 shadow-md shadow-indigo-200/50", 
-            icon: '<path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>',
-            accent: "text-indigo-500"
-        }
+      Desayuno: {
+        active: "border-amber-400 bg-amber-50 text-amber-700 shadow-md shadow-amber-200/50",
+        icon: '<path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>',
+        accent: "text-amber-500",
+      },
+      Almuerzo: {
+        active: "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-md shadow-emerald-200/50",
+        icon: '<path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>',
+        accent: "text-emerald-500",
+      },
+      Cena: {
+        active: "border-indigo-500 bg-indigo-50 text-indigo-700 shadow-md shadow-indigo-200/50",
+        icon: '<path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>',
+        accent: "text-indigo-500",
+      },
     };
 
     this.rootElement.innerHTML = `
@@ -53,12 +53,16 @@ export class AttendanceView {
                         
                         <div class="w-full space-y-3">
                             <div class="grid grid-cols-3 gap-2">
-                                ${Object.entries(mealStyles).map(([meal, style]) => `
-                                    <button type="button" class="meal-btn group flex flex-col items-center gap-2.5 p-4 rounded-3xl border-2 transition-all duration-500 active:scale-95 ${currentMeal === meal ? style.active : 'border-stone-50 bg-stone-50/40 text-stone-300'}" data-meal="${meal}" data-active-class="${style.active}">
+                                ${Object.entries(mealStyles)
+                                  .map(
+                                    ([meal, style]) => `
+                                    <button type="button" class="meal-btn group flex flex-col items-center gap-2.5 p-4 rounded-3xl border-2 transition-all duration-500 active:scale-95 ${currentMeal === meal ? style.active : "border-stone-50 bg-stone-50/40 text-stone-300"}" data-meal="${meal}" data-active-class="${style.active}">
                                         <svg class="h-5 w-5 transition-transform duration-500 group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">${style.icon}</svg>
                                         <span class="text-[8px] font-black uppercase tracking-widest leading-none">${meal}</span>
                                     </button>
-                                `).join('')}
+                                `
+                                  )
+                                  .join("")}
                             </div>
                         </div>
 
@@ -138,171 +142,179 @@ export class AttendanceView {
     const feedback = document.getElementById("scan-feedback");
     const autoToggle = document.getElementById("auto-scan-toggle");
 
-    this.rootElement.querySelectorAll(".meal-btn").forEach(btn => {
-        btn.onclick = () => {
-            this.rootElement.querySelectorAll(".meal-btn").forEach(b => {
-                const activeClasses = b.dataset.activeClass.split(" ");
-                b.classList.remove(...activeClasses, "shadow-md");
-                b.classList.add("border-stone-50", "bg-stone-50/40", "text-stone-300");
-            });
-            const myActiveClass = btn.dataset.activeClass.split(" ");
-            btn.classList.add(...myActiveClass, "shadow-md");
-            btn.classList.remove("border-stone-50", "bg-stone-50/40", "text-stone-300");
-            selectedMeal = btn.dataset.meal;
-        };
+    this.rootElement.querySelectorAll(".meal-btn").forEach((btn) => {
+      btn.onclick = () => {
+        this.rootElement.querySelectorAll(".meal-btn").forEach((b) => {
+          const activeClasses = b.dataset.activeClass.split(" ");
+          b.classList.remove(...activeClasses, "shadow-md");
+          b.classList.add("border-stone-50", "bg-stone-50/40", "text-stone-300");
+        });
+        const myActiveClass = btn.dataset.activeClass.split(" ");
+        btn.classList.add(...myActiveClass, "shadow-md");
+        btn.classList.remove("border-stone-50", "bg-stone-50/40", "text-stone-300");
+        selectedMeal = btn.dataset.meal;
+      };
     });
 
     const performScan = async () => {
-        if (this.isProcessing) return;
-        this.isProcessing = true;
-        
-        const dni = dniInput.value.trim();
-        if (!this.isAutoScanning) btn.disabled = true;
-        
-        feedback.classList.add("scale-150", "opacity-100");
-        status.innerHTML = `<p class="text-[8px] font-black text-primary animate-pulse uppercase tracking-[0.2em]">Coloque su dedo...</p>`;
+      if (this.isProcessing) return;
+      this.isProcessing = true;
 
-        const onStep = (step) => {
-            if (step === 'captured') {
-                status.innerHTML = `
+      const dni = dniInput.value.trim();
+      if (!this.isAutoScanning) btn.disabled = true;
+
+      feedback.classList.add("scale-150", "opacity-100");
+      status.innerHTML = `<p class="text-[8px] font-black text-primary animate-pulse uppercase tracking-[0.2em]">Coloque su dedo...</p>`;
+
+      const onStep = (step) => {
+        if (step === "captured") {
+          status.innerHTML = `
                     <p class="text-[10px] font-black text-emerald-500 uppercase animate-bounce tracking-widest leading-none">¡CAPTURADO!</p>
                     <p class="text-[8px] font-bold text-emerald-600 mt-1 uppercase tracking-tighter">Retire el dedo</p>
                 `;
-                this.showSuccessAnimation();
-            }
-        };
+          this.showSuccessAnimation();
+        }
+      };
 
-        try {
-            let result = (dni.length === 8) 
-                ? await onVerify(dni, selectedMeal, onStep) 
-                : await onScanFingerprint(selectedMeal, onStep);
-            
-            if (result.success) {
-                status.innerHTML = `
+      try {
+        const result =
+          dni.length === 8
+            ? await onVerify(dni, selectedMeal, onStep)
+            : await onScanFingerprint(selectedMeal, onStep);
+
+        if (result.success) {
+          status.innerHTML = `
                     <p class="text-xs font-black text-green-600 uppercase tracking-tight leading-none">¡Bienvenido!</p>
                     <p class="text-[8px] font-bold text-green-700 mt-1 uppercase truncate max-w-[200px] mx-auto">${result.workerName}</p>
                 `;
-                dniInput.value = "";
-                if (this.isAutoScanning) await new Promise(r => setTimeout(r, 3000));
-            } else {
-                status.innerHTML = `<p class="text-[9px] font-black text-red-500 uppercase">${result.error}</p>`;
-                if (this.isAutoScanning) await new Promise(r => setTimeout(r, 2000)); // Espera más larga si falla
-            }
-        } catch (e) { 
-            status.innerHTML = `<p class="text-[9px] font-black text-red-500 uppercase">Error</p>`;
-            if (this.isAutoScanning) await new Promise(r => setTimeout(r, 2000));
-        } finally {
-            this.isProcessing = false;
-            feedback.classList.remove("scale-150", "opacity-100");
-            if (!this.isAutoScanning) {
-                btn.disabled = false;
-                setTimeout(() => {
-                    if (!status.innerText.includes("!")) {
-                        status.innerHTML = `<p class="text-[8px] font-black text-stone-300 uppercase tracking-widest">Listo</p>`;
-                    }
-                }, 3000);
-            }
+          dniInput.value = "";
+          if (this.isAutoScanning) await new Promise((r) => setTimeout(r, 3000));
+        } else {
+          status.innerHTML = `<p class="text-[9px] font-black text-red-500 uppercase">${result.error}</p>`;
+          if (this.isAutoScanning) await new Promise((r) => setTimeout(r, 2000)); // Espera más larga si falla
         }
+      } catch (e) {
+        status.innerHTML = `<p class="text-[9px] font-black text-red-500 uppercase">Error</p>`;
+        if (this.isAutoScanning) await new Promise((r) => setTimeout(r, 2000));
+      } finally {
+        this.isProcessing = false;
+        feedback.classList.remove("scale-150", "opacity-100");
+        if (!this.isAutoScanning) {
+          btn.disabled = false;
+          setTimeout(() => {
+            if (!status.innerText.includes("!")) {
+              status.innerHTML = `<p class="text-[8px] font-black text-stone-300 uppercase tracking-widest">Listo</p>`;
+            }
+          }, 3000);
+        }
+      }
     };
 
     autoToggle.onchange = async () => {
-        this.isAutoScanning = autoToggle.checked;
-        if (this.isAutoScanning) {
-            btnText.textContent = "ESCANEO ACTIVADO";
-            btnText.classList.add("text-emerald-500", "opacity-100");
-            btn.classList.add("ring-emerald-400/50", "ring-8");
-            
-            while (this.isAutoScanning && document.getElementById("auto-scan-toggle")) {
-                await performScan();
-                // Si no se capturó o hubo error, esperamos 2 segundos para no saturar con luces
-                // Si tuvo éxito, esperamos 3 segundos para que el usuario se retire
-                const delay = status.innerText.includes("!") ? 3000 : 2000;
-                await new Promise(r => setTimeout(r, delay));
-            }
-        } else {
-            btnText.textContent = "INICIAR";
-            btnText.classList.remove("text-emerald-500", "opacity-100");
-            btn.classList.remove("ring-emerald-400/50", "ring-8");
-            status.innerHTML = `<p class="text-[8px] font-black text-stone-300 uppercase tracking-widest">Modo manual</p>`;
+      this.isAutoScanning = autoToggle.checked;
+      if (this.isAutoScanning) {
+        btnText.textContent = "ESCANEO ACTIVADO";
+        btnText.classList.add("text-emerald-500", "opacity-100");
+        btn.classList.add("ring-emerald-400/50", "ring-8");
+
+        while (this.isAutoScanning && document.getElementById("auto-scan-toggle")) {
+          await performScan();
+          // Si no se capturó o hubo error, esperamos 2 segundos para no saturar con luces
+          // Si tuvo éxito, esperamos 3 segundos para que el usuario se retire
+          const delay = status.innerText.includes("!") ? 3000 : 2000;
+          await new Promise((r) => setTimeout(r, delay));
         }
+      } else {
+        btnText.textContent = "INICIAR";
+        btnText.classList.remove("text-emerald-500", "opacity-100");
+        btn.classList.remove("ring-emerald-400/50", "ring-8");
+        status.innerHTML = `<p class="text-[8px] font-black text-stone-300 uppercase tracking-widest">Modo manual</p>`;
+      }
     };
 
     btn.onclick = async () => {
-        if (this.isAutoScanning) {
-            autoToggle.checked = false;
-            autoToggle.dispatchEvent(new Event('change'));
-            return;
-        }
-        await performScan();
+      if (this.isAutoScanning) {
+        autoToggle.checked = false;
+        autoToggle.dispatchEvent(new Event("change"));
+        return;
+      }
+      await performScan();
     };
 
     const handleManualDni = async () => {
-        const dni = dniInput.value.trim();
-        if (dni.length !== 8) { toast.error("DNI inválido."); return; }
-        if (this.isProcessing) return;
-        this.isProcessing = true;
-        status.innerHTML = `<p class="text-[8px] font-black text-primary animate-pulse uppercase tracking-[0.2em]">Verificando...</p>`;
-        try {
-            const result = await onManualDni(dni, selectedMeal);
-            if (result.success) {
-                status.innerHTML = `
+      const dni = dniInput.value.trim();
+      if (dni.length !== 8) {
+        toast.error("DNI inválido.");
+        return;
+      }
+      if (this.isProcessing) return;
+      this.isProcessing = true;
+      status.innerHTML = `<p class="text-[8px] font-black text-primary animate-pulse uppercase tracking-[0.2em]">Verificando...</p>`;
+      try {
+        const result = await onManualDni(dni, selectedMeal);
+        if (result.success) {
+          status.innerHTML = `
                     <p class="text-xs font-black text-green-600 uppercase tracking-tight leading-none">¡Acceso Correcto!</p>
                     <p class="text-[8px] font-bold text-green-700 mt-1 uppercase truncate max-w-[200px] mx-auto">${result.workerName}</p>
                 `;
-                dniInput.value = "";
-                this.showSuccessAnimation();
-            } else {
-                status.innerHTML = `<p class="text-[9px] font-black text-red-500 uppercase">${result.error}</p>`;
-            }
-        } catch (e) {
-            status.innerHTML = `<p class="text-[9px] font-black text-red-500 uppercase">Error</p>`;
-        } finally { this.isProcessing = false; }
+          dniInput.value = "";
+          this.showSuccessAnimation();
+        } else {
+          status.innerHTML = `<p class="text-[9px] font-black text-red-500 uppercase">${result.error}</p>`;
+        }
+      } catch (e) {
+        status.innerHTML = `<p class="text-[9px] font-black text-red-500 uppercase">Error</p>`;
+      } finally {
+        this.isProcessing = false;
+      }
     };
 
     document.getElementById("manual-dni-btn").onclick = handleManualDni;
 
     dniInput.onkeydown = async (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            await handleManualDni();
-        }
+      if (e.key === "Enter") {
+        e.preventDefault();
+        await handleManualDni();
+      }
     };
 
     const homeAction = () => {
-        this.isAutoScanning = false;
-        if (this._connectionInterval) clearInterval(this._connectionInterval);
-        acciones.onBack();
+      this.isAutoScanning = false;
+      if (this._connectionInterval) clearInterval(this._connectionInterval);
+      acciones.onBack();
     };
 
     // --- Monitor de Conexión (Heartbeat) ---
     const checkScanner = async () => {
-        const isConnected = await acciones.onCheckConnection();
-        const statusEl = document.getElementById("attendance-status");
-        if (!statusEl) return;
+      const isConnected = await acciones.onCheckConnection();
+      const statusEl = document.getElementById("attendance-status");
+      if (!statusEl) return;
 
-        if (isConnected) {
-            statusEl.innerHTML = `
+      if (isConnected) {
+        statusEl.innerHTML = `
                 <div class="flex items-center justify-center gap-2">
                     <div class="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
                     <p class="text-[8px] font-black text-emerald-600 uppercase tracking-widest">Lector en línea</p>
                 </div>
             `;
-        } else {
-            statusEl.innerHTML = `
+      } else {
+        statusEl.innerHTML = `
                 <div class="flex items-center justify-center gap-2">
                     <div class="h-1.5 w-1.5 rounded-full bg-red-500 shadow-[0_0_5px_rgba(239,68,68,0.5)]"></div>
                     <p class="text-[8px] font-black text-red-500 uppercase tracking-widest">Lector desconectado</p>
                 </div>
             `;
-        }
+      }
     };
 
     // Primer check inmediato y luego cada 5 segundos
     checkScanner();
     this._connectionInterval = setInterval(checkScanner, 5000);
 
-    const b1 = document.getElementById("back-to-home"); if (b1) b1.onclick = homeAction;
-    const b2 = document.getElementById("back-to-home-mobile"); if (b2) b2.onclick = homeAction;
+    const b1 = document.getElementById("back-to-home");
+    if (b1) b1.onclick = homeAction;
+    const b2 = document.getElementById("back-to-home-mobile");
+    if (b2) b2.onclick = homeAction;
   }
 
   showSuccessAnimation() {
@@ -315,26 +327,34 @@ export class AttendanceView {
   renderLastRegistrations(list) {
     const container = document.getElementById("last-registrations");
     if (!container) return;
-    if (list.length === 0) { container.innerHTML = ""; return; }
+    if (list.length === 0) {
+      container.innerHTML = "";
+      return;
+    }
     container.innerHTML = `
         <div class="flex items-center justify-between mb-4 px-2">
             <h3 class="text-[9px] font-black uppercase tracking-[0.4em] text-stone-300">Actividad Reciente</h3>
             <div class="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
         </div>
         <div class="space-y-3">
-            ${list.slice(0, 5).map(reg => `
+            ${list
+              .slice(0, 5)
+              .map(
+                (reg) => `
                 <div class="bg-white/70 backdrop-blur-xl border border-white/50 p-4 rounded-[2rem] flex items-center justify-between animate-slide-in-right shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-lg transition-all duration-500">
                     <div class="flex items-center gap-4 min-w-0">
-                        <div class="h-11 w-11 rounded-[1.2rem] ${reg.soloCampo ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100'} flex items-center justify-center shrink-0 border shadow-sm">
-                            ${reg.soloCampo ? 'C' : 'OK'}
+                        <div class="h-11 w-11 rounded-[1.2rem] ${reg.soloCampo ? "bg-amber-50 text-amber-600 border-amber-100" : "bg-emerald-50 text-emerald-600 border-emerald-100"} flex items-center justify-center shrink-0 border shadow-sm">
+                            ${reg.soloCampo ? "C" : "OK"}
                         </div>
                         <div class="min-w-0">
                             <p class="text-xs font-black text-stone-800 uppercase truncate tracking-tight leading-none">${reg.nombreCompleto}</p>
-                            <p class="text-[8px] font-bold text-stone-400 uppercase mt-1">${reg.tipo} • ${escapeHtml(reg.empresa || 'Particular')}</p>
+                            <p class="text-[8px] font-bold text-stone-400 uppercase mt-1">${reg.tipo} • ${escapeHtml(reg.empresa || "Particular")}</p>
                         </div>
                     </div>
                 </div>
-            `).join('')}
+            `
+              )
+              .join("")}
         </div>
     `;
   }

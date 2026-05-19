@@ -10,7 +10,6 @@ import { SupremaService } from "../services/SupremaService.js";
 import { toast, preloader } from "../utils/notifications.js";
 import { appStore } from "../utils/Store.js";
 
-// Nuevos Controladores y Vistas
 import { AttendanceController } from "./AttendanceController.js";
 import { AdminMenuController } from "./AdminMenuController.js";
 import { UserRepository } from "../services/UserRepository.js";
@@ -22,8 +21,7 @@ export class HomeController {
     this.menuView = menuView;
     this.menuRepository = menuRepository;
     this.restaurantInfo = restaurantInfo;
-    
-    // Servicios
+
     this.userRepository = new UserRepository();
     this.pdfService = new PdfService(restaurantInfo);
     const excelService = new ExcelService(restaurantInfo);
@@ -32,16 +30,13 @@ export class HomeController {
     const attendanceRepository = new AttendanceRepository();
     const supremaService = new SupremaService();
 
-    // Estado interno para evitar re-renderizados innecesarios
     this.isUpdating = false;
-    this.lastHash = null; // Para rastrear el último hash renderizado
     this.lastRenderedState = {
-        userEmail: "initial",
-        activeCategory: "Inicio",
-        categoriesJson: ""
+      userEmail: "initial",
+      activeCategory: "Inicio",
+      categoriesJson: "",
     };
 
-    // Inicializar Controladores Especializados
     this.attendanceController = new AttendanceController({
       workerRepository,
       companyRepository,
@@ -49,24 +44,25 @@ export class HomeController {
       supremaService,
       excelService,
       pdfService: this.pdfService,
-      navigateTo: this.navigateTo.bind(this)
+      navigateTo: null,
     });
 
     this.adminMenuController = new AdminMenuController({
       menuRepository: this.menuRepository,
       pdfService: this.pdfService,
-      navigateTo: this.navigateTo.bind(this)
+      navigateTo: null,
     });
 
-    // Estado inicial en Store
     appStore.setState({ restaurantInfo });
-    
-    this.currentHash = window.location.hash || '#/';
-    window.addEventListener('hashchange', () => this.handleRouting());
+  }
+
+  setRouter(router) {
+    this.attendanceController.navigate = router.navigate.bind(router);
+    this.adminMenuController.navigateTo = router.navigate.bind(router);
+    this.navigate = router.navigate.bind(router);
   }
 
   async initialize() {
-    // Suscribirse a cambios de estado para actualizaciones reactivas
     appStore.subscribe(async (state) => {
       if (this.isUpdating) return;
       this.isUpdating = true;
@@ -80,94 +76,94 @@ export class HomeController {
     onAuthStateChanged(auth, async (user) => {
       console.log("Auth state changed. User:", user ? user.email : "none");
       let userData = null;
-      
+
       try {
-          if (user) {
-            const role = await this.userRepository.getUserRole(user.email);
-            userData = {
-              name: user.displayName?.split(' ')[0] || "Usuario",
-              email: user.email.toLowerCase().trim(),
-              role: role
-            };
-          }
-          
-          console.log("Loading initial data...");
-          // Cargar datos con un catch para evitar bloqueos totales
-          await this.menuRepository.loadAllPlatos().catch(e => console.error("Error platos:", e));
-          
-          const [daily, hero] = await Promise.all([
-              this.menuRepository.getDailyMenuConfig().catch(() => null),
-              this.menuRepository.getHeroPromo().catch(() => null)
-          ]);
+        if (user) {
+          const role = await this.userRepository.getUserRole(user.email);
+          userData = {
+            name: user.displayName?.split(" ")[0] || "Usuario",
+            email: user.email.toLowerCase().trim(),
+            role: role,
+          };
+        }
 
-          let companies = [];
-          try {
-              companies = await this.attendanceController.companyRepository.getAllCompanies();
-          } catch (error) {
-              console.warn("Error empresas:", error);
-          }
+        console.log("Loading initial data...");
+        await this.menuRepository.loadAllPlatos().catch((e) => console.error("Error platos:", e));
 
-          console.log("Data loaded. Updating state...");
-          appStore.setState({ 
-              user: userData,
-              dailyMenu: daily || { entradas: [], segundos: [], refrescos: [] },
-              heroPromo: hero,
-              companies: companies,
-              authInitialized: true 
-          });
+        console.log("Data loaded. Updating state...");
+        appStore.setState({
+          user: userData,
+          authInitialized: true,
+        });
+
+        // Suscripciones globales para mantener la app actualizada en tiempo real
+        this.menuRepository.subscribeToDailyMenuConfig((daily) => {
+          appStore.setState({ dailyMenu: daily || { entradas: [], segundos: [], refrescos: [] } });
+        });
+
+        this.menuRepository.subscribeToHeroPromo((hero) => {
+          appStore.setState({ heroPromo: hero });
+        });
+
+        this.menuRepository.subscribeToCategories((categories) => {
+          appStore.setState({ categories });
+        });
+
+        this.menuRepository.subscribeToPlatos((platos) => {
+          appStore.setState({ platosUpdated: Date.now() });
+        });
+        
+        this.attendanceController.companyRepository.subscribeToCompanies((companies) => {
+          appStore.setState({ companies });
+        });
+
       } catch (criticalError) {
-          console.error("Critical error in initialize:", criticalError);
-          // Forzar inicialización aunque haya error crítico
-          appStore.setState({ authInitialized: true });
+        console.error("Critical error in initialize:", criticalError);
+        appStore.setState({ authInitialized: true });
       }
     });
   }
 
-  /**
-   * Orquestador de actualizaciones parciales basadas en el estado.
-   */
   async updateUI(state) {
-    const hash = window.location.hash || '#/';
-    const isHome = hash === '#/' || hash === '' || (!hash.startsWith('#/admin') && !hash.startsWith('#/'));
-    
+    const hash = window.location.hash || "#/";
+    const isHome =
+      hash === "#/" || hash === "" || (!hash.startsWith("#/admin") && !hash.startsWith("#/"));
+
     if (!isHome) {
-        if (state.authInitialized) {
-            this.homeView.hide(); // Ocultar Home
-            await this.handleRouting(true);
-            this.homeView.dismissPreloader();
-        }
-        return;
+      if (state.authInitialized) {
+        this.homeView.hide();
+      }
+      this.homeView.dismissPreloader();
+      return;
     }
 
-    // 1. Mostrar restaurante y limpiar Admin
     this.homeView.show();
     this.homeView.renderStaticShell(state.restaurantInfo);
-    
-    // 2. Actualizar datos dinámicos
+
     this.homeView.updateUserUI(state.restaurantInfo, state.user);
-    
+
     requestAnimationFrame(() => {
-        this.homeView.updateHeroUI(state.heroPromo);
-        
-        requestAnimationFrame(async () => {
-            this.homeView.updateDailyMenuUI(state.dailyMenu);
-            this.homeView.updateCompaniesUI(state.companies);
-            this.homeView.updateMobileNavUI(state.restaurantInfo);
+      this.homeView.updateHeroUI(state.heroPromo);
 
-            if (state.authInitialized) {
-                this.homeView.dismissPreloader();
-            }
+      requestAnimationFrame(async () => {
+        this.homeView.updateDailyMenuUI(state.dailyMenu);
+        this.homeView.updateCompaniesUI(state.companies);
+        this.homeView.updateMobileNavUI();
 
-            this._bindEvents();
-            
-            this.menuView.filterContainer = document.getElementById("menu-filters");
-            this.gridContainer = document.getElementById("menu-grid");
-            this.menuView.gridContainer = this.gridContainer;
-            
-            if (this.gridContainer) {
-                await this.renderMenu();
-            }
-        });
+        if (state.authInitialized) {
+          this.homeView.dismissPreloader();
+        }
+
+        this._bindEvents();
+
+        this.menuView.filterContainer = document.getElementById("menu-filters");
+        this.gridContainer = document.getElementById("menu-grid");
+        this.menuView.gridContainer = this.gridContainer;
+
+        if (this.gridContainer) {
+          await this.renderMenu();
+        }
+      });
     });
   }
 
@@ -188,7 +184,6 @@ export class HomeController {
       };
     }
 
-    // Botones de Admin en el menú de usuario
     const loginBtn = document.getElementById("login-btn-panel");
     if (loginBtn) {
       loginBtn.onclick = () => this.login();
@@ -199,23 +194,20 @@ export class HomeController {
       logoutBtn.onclick = () => this.logout();
     }
 
-    // Links de navegación móvil
-    document.querySelectorAll(".mobile-nav-link").forEach(link => {
+    document.querySelectorAll(".mobile-nav-link").forEach((link) => {
       link.onclick = () => {
         const panel = document.getElementById("mobile-nav-panel");
         if (panel) panel.classList.add("hidden");
       };
     });
 
-    // Botones de cierre
-    document.querySelectorAll(".close-nav, .close-user-menu").forEach(btn => {
-        btn.onclick = () => {
-            const panel = btn.classList.contains("close-nav") ? "mobile-nav-panel" : "user-menu-panel";
-            document.getElementById(panel)?.classList.add("hidden");
-        };
+    document.querySelectorAll(".close-nav, .close-user-menu").forEach((btn) => {
+      btn.onclick = () => {
+        const panel = btn.classList.contains("close-nav") ? "mobile-nav-panel" : "user-menu-panel";
+        document.getElementById(panel)?.classList.add("hidden");
+      };
     });
 
-    // Botones de gestión admin
     const adminButtons = [
       { id: "admin-daily-menu-btn", route: "#/admin/menu-diario" },
       { id: "admin-manage-carta-btn", route: "#/admin/carta" },
@@ -224,15 +216,15 @@ export class HomeController {
       { id: "admin-fasal-manage-attendance-btn", route: "#/admin/reportes" },
       { id: "admin-fasal-workers-btn", route: "#/admin/personal" },
       { id: "admin-fasal-companies-btn", route: "#/admin/empresas" },
-      { id: "admin-manage-users-btn", route: "#/admin/users" }
+      { id: "admin-manage-users-btn", route: "#/admin/users" },
     ];
 
-    adminButtons.forEach(btn => {
+    adminButtons.forEach((btn) => {
       const el = document.getElementById(btn.id);
-      if (el) el.onclick = () => {
-          this.navigateTo(btn.route);
-          //document.getElementById("user-menu-panel")?.classList.add("hidden");
-      };
+      if (el)
+        el.onclick = () => {
+          this.navigate(btn.route);
+        };
     });
   }
 
@@ -251,178 +243,118 @@ export class HomeController {
       await signOut(auth);
       appStore.setState({ user: null, activeCategory: "Inicio" });
       toast.info("Sesión cerrada");
-      this.navigateTo("#/");
+      this.navigate("#/");
     } catch (error) {
       console.error("Logout error:", error);
     }
   }
 
-
-
   async abrirGestionUsuarios(silent = false) {
     if (!silent) preloader.show("Cargando Usuarios...");
     try {
-        const users = await this.userRepository.getAllUsers();
-        
-        this.homeView.hide(); 
-        const adminLayer = this._getCleanAdminLayer();
-        const manageView = new ManageUsersView(adminLayer);
-        
-        manageView.render(users, {
-          onBack: () => this.navigateTo("#/"),
-          onSave: async (userData, oldEmail) => {
-            try {
-                const { email } = userData;
-                
-                if (oldEmail && oldEmail !== email) {
-                    await this.userRepository.deleteUser(oldEmail);
-                }
+      const users = await this.userRepository.getAllUsers();
 
-                if (await this.userRepository.saveUser(email, userData)) {
-                  toast.success(oldEmail ? "Usuario actualizado" : "Usuario creado");
-                  await this.abrirGestionUsuarios(true);
-                } else {
-                  toast.error("Error al procesar el usuario");
-                }
-            } catch (error) {
-                console.error("Error al guardar usuario:", error);
-                toast.error("Error al guardar usuario");
+      this.homeView.hide();
+      const adminLayer = this._getCleanAdminLayer();
+      const manageView = new ManageUsersView(adminLayer);
+
+      manageView.render(users, {
+        onBack: () => this.navigate("#/"),
+        onSave: async (userData, oldEmail) => {
+          try {
+            const { email } = userData;
+
+            if (oldEmail && oldEmail !== email) {
+              await this.userRepository.deleteUser(oldEmail);
             }
-          },
-          onDelete: async (email) => {
-            try {
-                if (await this.userRepository.deleteUser(email)) {
-                  toast.success("Usuario eliminado");
-                  await this.abrirGestionUsuarios(true);
-                }
-            } catch (error) {
-                console.error("Error al eliminar usuario:", error);
-                toast.error("Error al eliminar usuario");
+
+            if (await this.userRepository.saveUser(email, userData)) {
+              toast.success(oldEmail ? "Usuario actualizado" : "Usuario creado");
+              await this.abrirGestionUsuarios(true);
+            } else {
+              toast.error("Error al procesar el usuario");
             }
+          } catch (error) {
+            console.error("Error al guardar usuario:", error);
+            toast.error("Error al guardar usuario");
           }
-        });
+        },
+        onDelete: async (email) => {
+          try {
+            if (await this.userRepository.deleteUser(email)) {
+              toast.success("Usuario eliminado");
+              await this.abrirGestionUsuarios(true);
+            }
+          } catch (error) {
+            console.error("Error al eliminar usuario:", error);
+            toast.error("Error al eliminar usuario");
+          }
+        },
+      });
     } catch (error) {
-        console.error("Error al abrir gestión de usuarios:", error);
-        toast.error("No se pudieron cargar los usuarios");
+      console.error("Error al abrir gestión de usuarios:", error);
+      toast.error("No se pudieron cargar los usuarios");
     } finally {
-        if (!silent) preloader.hide();
+      if (!silent) preloader.hide();
     }
   }
 
-
-
-
-
-  navigateTo(hash) {
-    if (window.location.hash === hash) {
-      this.handleRouting();
-    } else {
-      window.location.hash = hash;
-    }
-  }
-
-  async handleRouting(fromStateUpdate = false) {
-    const hash = window.location.hash || '#/';
-    
-    // Si viene de actualización de estado y el hash ya fue renderizado, ignorar
-    if (fromStateUpdate && hash === this.lastHash) return;
-    this.lastHash = hash;
-
-    // Si es Home o un ancla de sección del home
-    const isHome = hash === '#/' || hash === '' || (!hash.startsWith('#/admin') && !hash.startsWith('#/'));
-
-    if (isHome) {
-      this.homeView.show(); // Asegurar que el restaurante sea visible
-      await this.updateUI(appStore.getState());
-      return;
-    }
-
-    // --- RUTA DE ADMINISTRACIÓN ---
-    this.homeView.hide(); // Ocultar restaurante
-
-    // HARD RESET: Reemplazar el contenedor por uno nuevo para eliminar marcas corruptas de Lit-html
-    const adminLayer = this._getCleanAdminLayer();
-
-    if (hash === '#/admin/menu-diario') {
-      const state = appStore.getState();
-      await this.adminMenuController.abrirGestionMenuDiario(state.dailyMenu, (newMenu) => {
-          appStore.setState({ dailyMenu: newMenu });
-      });
-    } else if (hash === '#/admin/carta') {
-      await this.adminMenuController.abrirGestionCarta();
-    } else if (hash === '#/admin/hero') {
-      await this.adminMenuController.abrirGestionHero((newHero) => {
-          appStore.setState({ heroPromo: newHero });
-      });
-    } else if (hash === '#/admin/asistencia') {
-      await this.attendanceController.abrirRegistroAsistencia();
-    } else if (hash === '#/admin/reportes') {
-      await this.attendanceController.abrirGestionAsistencia();
-    } else if (hash === '#/admin/personal') {
-      await this.attendanceController.abrirGestionTrabajadores();
-    } else if (hash === '#/admin/empresas') {
-      await this.attendanceController.abrirGestionEmpresas();
-    } else if (hash === '#/admin/users') {
-      await this.abrirGestionUsuarios();
-    }
-    
-    // Una vez abierta la vista de admin, quitar el preloader si estaba activo
-    this.homeView.dismissPreloader();
-  }
-
-  // Helper para limpiar el rastro de errores del DOM (Solución definitiva al error de ChildPart)
   _getCleanAdminLayer() {
-      const oldLayer = document.getElementById("admin-layer");
-      if (!oldLayer) return null;
-      
-      const newLayer = oldLayer.cloneNode(false); // Clonar sin hijos
-      newLayer.classList.remove("hidden"); // Asegurar que sea visible
-      oldLayer.parentNode.replaceChild(newLayer, oldLayer);
-      return newLayer;
+    const oldLayer = document.getElementById("admin-layer");
+    if (!oldLayer) return null;
+    const newLayer = oldLayer.cloneNode(false);
+    newLayer.classList.remove("hidden");
+    oldLayer.parentNode.replaceChild(newLayer, oldLayer);
+    return newLayer;
   }
 
   async renderMenu() {
     const state = appStore.getState();
-    const categories = await this.menuRepository.getCategoriesFromFirestore();
-    
-    // Normalizar nombres para evitar duplicados por tildes o mayúsculas
-    const normalize = (str) => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-    
-    // Obtener categorías únicas filtrando las que son exclusivas del menú diario
+    // Use categories from state if available, otherwise fetch as fallback
+    const categories = state.categories || await this.menuRepository.getCategoriesFromFirestore();
+
+    const normalize = (str) =>
+      str
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase();
+
     const specialNormalized = CATEGORIAS_SOLO_MENU_DIARIO.map(normalize);
-    
-    const uniqueCats = categories.filter(cat => {
-        const normalized = normalize(cat.nombre);
-        return normalized && !specialNormalized.includes(normalized) && cat.activo !== false;
+
+    const uniqueCats = categories.filter((cat) => {
+      const normalized = normalize(cat.nombre);
+      return normalized && !specialNormalized.includes(normalized) && cat.activo !== false;
     });
 
-    // CONTROL DE DUPLICIDAD: Verificar si el estado visual actual es idéntico al solicitado
-    const currentCatsJson = JSON.stringify(uniqueCats.map(c => normalize(c.nombre)));
+    const currentCatsJson = JSON.stringify(uniqueCats.map((c) => normalize(c.nombre)));
     const currentUserEmail = state.user?.email || null;
-    
-    if (this.lastRenderedState.activeCategory === state.activeCategory && 
-        this.lastRenderedState.categoriesJson === currentCatsJson &&
-        this.lastRenderedState.userEmail === currentUserEmail) {
-        return; // No re-renderizar si es exactamente lo mismo
+    const currentPlatosUpdated = state.platosUpdated || null;
+
+    if (
+      this.lastRenderedState.activeCategory === state.activeCategory &&
+      this.lastRenderedState.categoriesJson === currentCatsJson &&
+      this.lastRenderedState.userEmail === currentUserEmail &&
+      this.lastRenderedState.platosUpdated === currentPlatosUpdated
+    ) {
+      return;
     }
 
-    // Actualizar caché de renderizado
     this.lastRenderedState = {
-        activeCategory: state.activeCategory,
-        categoriesJson: currentCatsJson,
-        userEmail: currentUserEmail
+      activeCategory: state.activeCategory,
+      categoriesJson: currentCatsJson,
+      userEmail: currentUserEmail,
+      platosUpdated: currentPlatosUpdated,
     };
-    
+
     if (state.activeCategory === "Inicio") {
-        this.menuView.renderCategoryGrid(uniqueCats, (cat) => { 
-            appStore.setState({ activeCategory: cat });
-            // Eliminado scrollIntoView para permitir que el usuario permanezca en la sección
-        });
+      this.menuView.renderCategoryGrid(uniqueCats, (cat) => {
+        appStore.setState({ activeCategory: cat });
+      });
     } else {
-        const items = this.menuRepository.getByCategory(state.activeCategory);
-        this.menuView.renderCategoryDetail(state.activeCategory, items, () => { 
-            appStore.setState({ activeCategory: "Inicio" });
-        });
+      const items = this.menuRepository.getByCategory(state.activeCategory);
+      this.menuView.renderCategoryDetail(state.activeCategory, items, () => {
+        appStore.setState({ activeCategory: "Inicio" });
+      });
     }
   }
 }

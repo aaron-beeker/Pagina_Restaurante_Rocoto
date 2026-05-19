@@ -1,11 +1,17 @@
-import { defineConfig } from 'vite';
+﻿import { defineConfig } from "vite";
 
 export default defineConfig({
-  root: '.',
+  root: ".",
   build: {
-    outDir: 'dist',
+    outDir: "dist",
   },
   server: {
     port: 3000,
+  },
+  test: {
+    environment: "jsdom",
+    globals: true,
+    include: ["src/**/*.test.js"],
+    setupFiles: ["src/setupTests.js"],
   },
 });

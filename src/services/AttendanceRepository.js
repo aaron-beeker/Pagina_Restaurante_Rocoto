@@ -1,22 +1,35 @@
 import { db } from "./firebaseConfig.js";
-import { 
-  collection, 
-  getDocs, 
-  doc, 
-  addDoc, 
+import {
+  collection,
+  getDocs,
+  doc,
+  addDoc,
   updateDoc,
   deleteDoc,
-  query,      
+  query,
   where,
   orderBy,
-  limit
+  limit,
+  onSnapshot,
 } from "firebase/firestore";
 
+/**
+ * Repositorio para gestionar registros de asistencia (control de alimentación).
+ * Colección: `asistencia_fasal`.
+ */
 export class AttendanceRepository {
   constructor() {
+    /** @type {string} */
     this.collectionName = "asistencia_fasal";
   }
 
+  /**
+   * Obtiene un registro detallado de asistencia por DNI, fecha y tipo.
+   * @param {string} dni - DNI del trabajador.
+   * @param {string} fecha - Fecha en formato YYYY-MM-DD.
+   * @param {string} tipo - Tipo de comida ("desayuno", "almuerzo", "cena").
+   * @returns {Promise<{id: string, dni: string, fecha: string, tipo: string, soloCampo: boolean, [key: string]: any}|null>}
+   */
   async getDetailedAttendance(dni, fecha, tipo) {
     try {
       const q = query(
@@ -29,12 +42,19 @@ export class AttendanceRepository {
       const snapshot = await getDocs(q);
       if (snapshot.empty) return null;
       return { id: snapshot.docs[0].id, ...snapshot.docs[0].data() };
-    } catch (error) { return null; }
+    } catch (error) {
+      return null;
+    }
   }
 
+  /**
+   * Registra asistencia con lógica de unificación: si ya existe un registro
+   * del mismo servicio para el mismo trabajador, se unifican las raciones.
+   * @param {{dni: string, fecha: string, tipo: string, soloCampo: boolean, cantidadCampo?: number, [key: string]: any}} attendanceData
+   * @returns {Promise<boolean>} True si se registró o unificó correctamente.
+   */
   async registerAttendance(attendanceData) {
     try {
-      // Intentar unificar con un registro previo del mismo servicio para el mismo trabajador
       const q = query(
         collection(db, this.collectionName),
         where("dni", "==", attendanceData.dni),
@@ -48,27 +68,22 @@ export class AttendanceRepository {
         const docRef = snapshot.docs[0].ref;
         const existingData = snapshot.docs[0].data();
 
-        // REGLA DE UNIFICACIÓN:
-        // 1. Si el nuevo registro es de consumo local (soloCampo: false), unificamos SIEMPRE.
-        // 2. Si el registro existente ya era local, bloqueamos (esto se valida en el controller también).
         if (attendanceData.soloCampo === false || existingData.soloCampo === false) {
           await updateDoc(docRef, {
             ...attendanceData,
-            // Sumamos las raciones si ambos tienen montos, o mantenemos el mayor
             cantidadCampo: (existingData.cantidadCampo || 0) + (attendanceData.cantidadCampo || 0),
-            soloCampo: false, // Si cualquiera de los dos es consumo local, el resultado es consumo local
+            soloCampo: false,
             updatedAt: new Date(),
-            updatedBy: "sistema_unificar"
+            updatedBy: "sistema_unificar",
           });
           return true;
         }
       }
 
-      // Si no hay nada que unificar o son registros de campo totalmente independientes
       const timestamp = new Date();
       await addDoc(collection(db, this.collectionName), {
         ...attendanceData,
-        timestamp: timestamp
+        timestamp: timestamp,
       });
       return true;
     } catch (error) {
@@ -77,12 +92,17 @@ export class AttendanceRepository {
     }
   }
 
+  /**
+   * Agrega un registro de asistencia sin lógica de unificación.
+   * @param {{dni: string, fecha: string, tipo: string, timestamp?: Date, [key: string]: any}} attendanceData
+   * @returns {Promise<boolean>} True si se agregó correctamente.
+   */
   async addAttendance(attendanceData) {
     try {
       const timestamp = attendanceData.timestamp || new Date();
       await addDoc(collection(db, this.collectionName), {
         ...attendanceData,
-        timestamp: timestamp
+        timestamp: timestamp,
       });
       return true;
     } catch (error) {
@@ -91,6 +111,12 @@ export class AttendanceRepository {
     }
   }
 
+  /**
+   * Actualiza un registro de asistencia existente.
+   * @param {string} id - ID del documento de asistencia.
+   * @param {{[key: string]: any}} data - Datos a actualizar.
+   * @returns {Promise<boolean>} True si se actualizó correctamente.
+   */
   async updateAttendance(id, data) {
     try {
       const docRef = doc(db, this.collectionName, id);
@@ -102,6 +128,11 @@ export class AttendanceRepository {
     }
   }
 
+  /**
+   * Elimina un registro de asistencia por su ID.
+   * @param {string} id - ID del documento de asistencia.
+   * @returns {Promise<boolean>} True si se eliminó correctamente.
+   */
   async deleteAttendance(id) {
     try {
       await deleteDoc(doc(db, this.collectionName, id));
@@ -112,30 +143,33 @@ export class AttendanceRepository {
     }
   }
 
+  /**
+   * Obtiene registros de asistencia por fecha específica o los últimos 1000 si no hay fecha.
+   * @param {string|null} fecha - Fecha en formato YYYY-MM-DD, o null para los más recientes.
+   * @returns {Promise<Array<{id: string, dni: string, fecha: string, tipo: string, timestamp: {seconds: number}, [key: string]: any}>>}
+   */
   async getAttendanceByDate(fecha) {
     try {
       const collRef = collection(db, this.collectionName);
       let q;
-      
+
       if (fecha) {
         q = query(collRef, where("fecha", "==", fecha));
       } else {
-        // Si no hay fecha, traemos los últimos 1000 registros
         q = query(collRef, orderBy("timestamp", "desc"), limit(1000));
       }
 
       const querySnapshot = await getDocs(q);
-      const docs = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      
+      const docs = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+
       if (fecha) {
-        // Sort by timestamp desc in JS for consistency
         return docs.sort((a, b) => {
           const timeA = a.timestamp?.seconds || 0;
           const timeB = b.timestamp?.seconds || 0;
           return timeB - timeA;
         });
       }
-      
+
       return docs;
     } catch (error) {
       console.error("Error getting attendance by date:", error);
@@ -143,17 +177,45 @@ export class AttendanceRepository {
     }
   }
 
+  /**
+   * Suscribe a los cambios de registros de asistencia por fecha específica.
+   * @param {string} fecha - Fecha en formato YYYY-MM-DD.
+   * @param {function} callback - Función a llamar cuando hay cambios. Recibe la lista de documentos.
+   * @returns {function} Función para desuscribirse.
+   */
+  subscribeToAttendanceByDate(fecha, callback) {
+    const collRef = collection(db, this.collectionName);
+    const q = query(collRef, where("fecha", "==", fecha));
+
+    return onSnapshot(q, (snapshot) => {
+      const docs = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      const sortedDocs = docs.sort((a, b) => {
+        const timeA = a.timestamp?.seconds || 0;
+        const timeB = b.timestamp?.seconds || 0;
+        return timeB - timeA;
+      });
+      callback(sortedDocs);
+    }, (error) => {
+      console.error("Error in real-time listener:", error);
+    });
+  }
+
+  /**
+   * Obtiene registros de asistencia en un rango de fechas.
+   * @param {string} startDate - Fecha inicio en formato YYYY-MM-DD.
+   * @param {string} endDate - Fecha fin en formato YYYY-MM-DD.
+   * @returns {Promise<Array<{id: string, dni: string, fecha: string, tipo: string, [key: string]: any}>>}
+   */
   async getAttendanceByDateRange(startDate, endDate) {
     try {
       const q = query(
-        collection(db, this.collectionName), 
+        collection(db, this.collectionName),
         where("fecha", ">=", startDate),
         where("fecha", "<=", endDate)
       );
       const querySnapshot = await getDocs(q);
-      const docs = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      
-      // Sort in JS
+      const docs = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+
       return docs.sort((a, b) => {
         if (a.fecha !== b.fecha) {
           return a.fecha.localeCompare(b.fecha);
@@ -168,15 +230,47 @@ export class AttendanceRepository {
     }
   }
 
+  /**
+   * Suscribe a los cambios de registros de asistencia en un rango de fechas.
+   * @param {string} startDate - Fecha inicio en formato YYYY-MM-DD.
+   * @param {string} endDate - Fecha fin en formato YYYY-MM-DD.
+   * @param {function} callback - Función a llamar cuando hay cambios.
+   * @returns {function} Función para desuscribirse.
+   */
+  subscribeToAttendanceByDateRange(startDate, endDate, callback) {
+    const q = query(
+      collection(db, this.collectionName),
+      where("fecha", ">=", startDate),
+      where("fecha", "<=", endDate)
+    );
+
+    return onSnapshot(q, (snapshot) => {
+      const docs = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      const sortedDocs = docs.sort((a, b) => {
+        if (a.fecha !== b.fecha) {
+          return a.fecha.localeCompare(b.fecha);
+        }
+        const timeA = a.timestamp?.seconds || 0;
+        const timeB = b.timestamp?.seconds || 0;
+        return timeA - timeB;
+      });
+      callback(sortedDocs);
+    }, (error) => {
+      console.error("Error in real-time listener (range):", error);
+    });
+  }
+
+  /**
+   * Obtiene todos los registros de asistencia de un trabajador por su DNI.
+   * @param {string} dni - DNI del trabajador.
+   * @returns {Promise<Array<{id: string, dni: string, fecha: string, tipo: string, timestamp: {seconds: number}, [key: string]: any}>>}
+   */
   async getAttendanceByDni(dni) {
     try {
-      const q = query(
-        collection(db, this.collectionName), 
-        where("dni", "==", dni)
-      );
+      const q = query(collection(db, this.collectionName), where("dni", "==", dni));
       const querySnapshot = await getDocs(q);
-      const docs = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      
+      const docs = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+
       return docs.sort((a, b) => {
         const timeA = a.timestamp?.seconds || 0;
         const timeB = b.timestamp?.seconds || 0;
@@ -188,10 +282,17 @@ export class AttendanceRepository {
     }
   }
 
+  /**
+   * Verifica si ya existe un registro de asistencia para un DNI, fecha y tipo.
+   * @param {string} dni - DNI del trabajador.
+   * @param {string} fecha - Fecha en formato YYYY-MM-DD.
+   * @param {string} tipo - Tipo de comida.
+   * @returns {Promise<boolean>} True si existe al menos un registro.
+   */
   async checkIfExists(dni, fecha, tipo) {
     try {
       const q = query(
-        collection(db, this.collectionName), 
+        collection(db, this.collectionName),
         where("dni", "==", dni),
         where("fecha", "==", fecha),
         where("tipo", "==", tipo),
