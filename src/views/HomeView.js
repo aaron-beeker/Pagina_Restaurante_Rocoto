@@ -754,37 +754,29 @@ export class HomeView {
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-24 items-center mb-32">
           <!-- Lado Imagen -->
           <div class="lg:col-span-5 order-2 lg:order-1">
-            <div class="relative group">
+            <div class="relative group flex justify-center">
+              <!-- Sticker: ligeramente rotado, como pegado a la pared -->
               <div
-                class="absolute -inset-8 bg-gradient-to-br from-amber-300/20 via-orange-300/10 to-transparent rounded-full blur-3xl"
-              ></div>
-              <div
-                class="absolute -inset-4 border border-amber-200/30 rounded-[4rem] -z-10 group-hover:scale-[1.02] transition-transform duration-1000 shadow-2xl shadow-amber-900/10"
-              ></div>
-              <div
-                class="relative aspect-[4/5] bg-gradient-to-br from-amber-50 via-white to-amber-100 rounded-[2.5rem] overflow-hidden shadow-2xl shadow-stone-900/10"
+                class="relative -rotate-[1.5deg] sm:-rotate-[2deg] group-hover:rotate-0 transition-all duration-700 ease-out"
               >
-                <img
-                  src="https://res.cloudinary.com/dhcgrkrdc/image/upload/v1778388097/FB_IMG_1542216440936-removebg-preview_icr9pc.png"
-                  class="absolute inset-0 w-full h-full object-contain scale-110 translate-y-8 group-hover:scale-[1.15] transition-transform duration-[3s]"
-                  alt="Alicia Mattos"
-                />
+                <!-- Cuerpo del sticker (base blanca + sombra realista) -->
                 <div
-                  class="absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-amber-900/20 to-transparent pointer-events-none"
-                ></div>
-                <div
-                  class="absolute bottom-6 left-6 right-6 p-5 bg-primary/95 backdrop-blur-md rounded-2xl border border-white/20 shadow-lg shadow-primary/30"
+                  class="relative bg-white rounded-2xl shadow-[8px_8px_30px_rgba(0,0,0,0.08),0_0_0_1px_rgba(0,0,0,0.03)] group-hover:shadow-[14px_14px_45px_rgba(0,0,0,0.14)] transition-shadow duration-700"
                 >
-                  <div class="flex items-center gap-3">
-                    <svg class="w-5 h-5 text-amber-300 shrink-0" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M17 8C8 10 5.9 16.17 3.82 21.34L5.71 22L6.66 19.7C7.14 19.87 7.64 20 8 20C19 20 22 3 22 3C21 5 14 5.25 9 6.25C4 7.25 2 11.5 2 13.5C2 15.5 3.75 17.25 3.75 17.25C7 8 17 8 17 8Z"/>
-                    </svg>
-                    <div>
-                      <p class="text-[9px] uppercase tracking-[0.4em] text-amber-300 font-bold mb-0.5">
-                        El Corazón de Rocoto
-                      </p>
-                      <h4 class="text-lg font-display italic text-white">Alicia Mattos</h4>
-                    </div>
+                  <!-- La imagen PNG sin fondo sobre fondo blanco -->
+                  <img
+                    src="https://res.cloudinary.com/dhcgrkrdc/image/upload/v1778388097/FB_IMG_1542216440936-removebg-preview_icr9pc.png"
+                    class="block w-full max-w-[320px] h-auto object-contain select-none group-hover:scale-[1.02] transition-transform duration-700"
+                    alt="Alicia Mattos"
+                  />
+                  <!-- Texto impreso en el sticker -->
+                  <div class="py-3 px-4 text-center border-t border-stone-100">
+                    <p
+                      class="text-[7px] uppercase tracking-[0.4em] text-primary font-bold"
+                    >
+                      El Corazón de Rocoto
+                    </p>
+                    <h4 class="text-sm font-display italic text-stone-900">Alicia Mattos</h4>
                   </div>
                 </div>
               </div>
@@ -840,37 +832,52 @@ export class HomeView {
 
   _renderAboutUsStats() {
     const stats = [
-      { val: "100%", label: "Insumos Locales" },
-      { val: "Tradición", label: "Cocina de Hogar" },
-      { val: "Amazonía", label: "Nuestra Identidad" },
+      { val: "100%", label: "Insumos Locales", icon: "M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" },
+      { val: "Tradición", label: "Cocina de Hogar", icon: "M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" },
+      { val: "Amazonía", label: "Nuestra Identidad", icon: "M17 8C8 10 5.9 16.17 3.82 21.34L5.71 22L6.66 19.7C7.14 19.87 7.64 20 8 20C19 20 22 3 22 3C21 5 14 5.25 9 6.25C4 7.25 2 11.5 2 13.5C2 15.5 3.75 17.25 3.75 17.25C7 8 17 8 17 8Z" },
     ];
-    return html` <div class="grid grid-cols-3 gap-8 pt-8 border-t border-stone-100">
-      ${stats.map(
-        (s) =>
-          html` <div class="space-y-1">
+    return html` <div class="relative pt-8 mt-8">
+      <div class="absolute top-0 left-1/2 -translate-x-1/2 flex items-center gap-3">
+        <div class="h-px w-16 bg-gradient-to-r from-transparent via-amber-300/50 to-transparent"></div>
+        <svg class="w-4 h-4 text-primary" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M17 8C8 10 5.9 16.17 3.82 21.34L5.71 22L6.66 19.7C7.14 19.87 7.64 20 8 20C19 20 22 3 22 3C21 5 14 5.25 9 6.25C4 7.25 2 11.5 2 13.5C2 15.5 3.75 17.25 3.75 17.25C7 8 17 8 17 8Z"/>
+        </svg>
+        <div class="h-px w-16 bg-gradient-to-r from-transparent via-amber-300/50 to-transparent"></div>
+      </div>
+      <div class="grid grid-cols-3 gap-8 pt-8">
+        ${stats.map(
+          (s) =>
+            html` <div class="space-y-2 text-center">
+              <svg class="w-6 h-6 mx-auto text-amber-600/60" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <path d="${s.icon}" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
             <span class="block text-2xl font-black text-primary italic font-display leading-none"
               >${s.val}</span
             >
-            <span class="block text-[8px] uppercase tracking-widest text-stone-400 font-bold"
+            <span class="block text-[8px] uppercase tracking-widest text-amber-700/60 font-bold"
               >${s.label}</span
             >
           </div>`
-      )}
+        )}
+      </div>
     </div>`;
   }
 
   _renderCommitmentBanner() {
     return html` <div
-      class="bg-stone-950 rounded-[4rem] p-12 sm:p-20 text-white overflow-hidden relative mb-32"
+      class="bg-gradient-to-br from-emerald-950 via-stone-950 to-emerald-950 rounded-[4rem] p-12 sm:p-20 text-white overflow-hidden relative mb-32"
     >
       <div
-        class="absolute top-0 right-0 w-96 h-96 bg-primary/10 rounded-full blur-[120px] -mr-48 -mt-48"
+        class="absolute top-0 right-0 w-96 h-96 bg-amber-500/10 rounded-full blur-[120px] -mr-48 -mt-48"
+      ></div>
+      <div
+        class="absolute bottom-0 left-0 w-72 h-72 bg-emerald-500/5 rounded-full blur-[100px] -ml-36 -mb-36"
       ></div>
 
       <div class="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
         <div class="space-y-8">
           <h3 class="text-4xl font-display italic leading-tight">
-            Excelencia en cada <span class="text-primary">detalle.</span>
+            Excelencia en cada <span class="text-amber-400">detalle.</span>
           </h3>
           <p class="text-stone-400 font-light leading-relaxed">
             Nuestro compromiso va más allá del sabor. Implementamos los más altos estándares de
@@ -879,19 +886,29 @@ export class HomeView {
           </p>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-10 border-l border-white/10 pl-10">
-          <div class="space-y-2">
-            <span class="text-[9px] uppercase tracking-widest text-primary font-bold"
-              >Inocuidad</span
-            >
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-10 border-l border-amber-500/20 pl-10">
+          <div class="space-y-3">
+            <div class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-amber-400 shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+              </svg>
+              <span class="text-[9px] uppercase tracking-widest text-amber-400 font-bold"
+                >Inocuidad</span
+              >
+            </div>
             <p class="text-sm font-light text-stone-300 italic">
               Procesos certificados de seguridad alimentaria.
             </p>
           </div>
-          <div class="space-y-2">
-            <span class="text-[9px] uppercase tracking-widest text-primary font-bold"
-              >Dirección</span
-            >
+          <div class="space-y-3">
+            <div class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-amber-400 shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+              </svg>
+              <span class="text-[9px] uppercase tracking-widest text-amber-400 font-bold"
+                >Dirección</span
+              >
+            </div>
             <div class="space-y-1">
               <p class="text-xs font-bold text-white uppercase tracking-tighter">
                 B. Aarón Valdéz Mattos
@@ -925,15 +942,20 @@ export class HomeView {
       },
     ];
     return html` <div class="space-y-24 mt-20 sm:mt-40">
-      <!-- Título minimalista -->
       <div class="flex flex-col items-center text-center space-y-4">
-        <div class="h-12 w-px bg-primary/20"></div>
+        <div class="flex items-center gap-3">
+          <div class="h-px w-12 bg-gradient-to-r from-transparent via-amber-300/50 to-transparent"></div>
+          <svg class="w-4 h-4 text-primary" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M17 8C8 10 5.9 16.17 3.82 21.34L5.71 22L6.66 19.7C7.14 19.87 7.64 20 8 20C19 20 22 3 22 3C21 5 14 5.25 9 6.25C4 7.25 2 11.5 2 13.5C2 15.5 3.75 17.25 3.75 17.25C7 8 17 8 17 8Z"/>
+          </svg>
+          <div class="h-px w-12 bg-gradient-to-r from-transparent via-amber-300/50 to-transparent"></div>
+        </div>
         <h2
           class="text-3xl sm:text-4xl font-display italic text-stone-950 uppercase tracking-tighter"
         >
           Platos <span class="text-primary font-black not-italic">Insignia</span>
         </h2>
-        <span class="text-[8px] uppercase tracking-[0.6em] text-stone-400 font-bold"
+        <span class="text-[8px] uppercase tracking-[0.6em] text-amber-700/60 font-bold"
           >Selección de la Casa</span
         >
       </div>
@@ -942,16 +964,17 @@ export class HomeView {
         ${dishes.map(
           (d) =>
             html` <div class="group relative flex flex-col items-center text-center space-y-8">
-              <!-- Pedestal circular con efecto de profundidad -->
               <div class="relative w-64 h-64 sm:w-72 sm:h-72 flex items-center justify-center">
                 <div
-                  class="absolute inset-0 bg-stone-50 rounded-full border border-stone-100 group-hover:bg-primary/[0.03] group-hover:scale-105 group-hover:border-primary/10 transition-all duration-1000"
+                  class="absolute inset-0 bg-gradient-to-br from-amber-50 to-orange-50/30 rounded-full border border-amber-200/20 group-hover:bg-gradient-to-br group-hover:from-amber-100 group-hover:to-orange-100/30 group-hover:scale-105 group-hover:border-amber-300/30 transition-all duration-1000"
                 ></div>
                 <div
-                  class="absolute inset-8 border border-dashed border-stone-200 rounded-full group-hover:rotate-45 group-hover:border-primary/20 transition-all duration-1000"
+                  class="absolute inset-8 border border-dashed border-amber-200/30 rounded-full group-hover:rotate-45 group-hover:border-primary/20 transition-all duration-1000"
+                ></div>
+                <div
+                  class="absolute inset-4 bg-gradient-to-br from-amber-200/10 via-transparent to-transparent rounded-full blur-xl"
                 ></div>
 
-                <!-- Imagen Flotante (PNG) -->
                 <img
                   src="${d.img}"
                   class="relative z-10 w-[110%] max-w-none h-auto object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.15)] group-hover:-translate-y-6 group-hover:rotate-2 group-hover:scale-110 transition-all duration-700 select-none"
@@ -959,17 +982,16 @@ export class HomeView {
                 />
               </div>
 
-              <!-- Información Minimalista -->
               <div class="space-y-2 relative z-20">
                 <h4 class="text-xl sm:text-2xl font-display italic text-stone-900 leading-none">
                   ${d.name}
                 </h4>
                 <div class="flex items-center justify-center gap-3">
-                  <div class="h-px w-4 bg-primary/20"></div>
-                  <p class="text-[9px] uppercase tracking-[0.3em] text-primary font-bold">
+                  <div class="h-px w-4 bg-amber-300/40"></div>
+                  <p class="text-[9px] uppercase tracking-[0.3em] text-amber-700 font-bold">
                     ${d.desc}
                   </p>
-                  <div class="h-px w-4 bg-primary/20"></div>
+                  <div class="h-px w-4 bg-amber-300/40"></div>
                 </div>
               </div>
             </div>`
